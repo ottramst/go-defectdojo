@@ -161,7 +161,7 @@ type SystemSettings struct {
 
 	// ReadOnlyMode rejects every change through the UI and the API, except
 	// to the system settings, with a 423 ([ErrLocked]), and pauses scheduled
-	// background jobs. It is new in DefectDojo 3.5 and nil on older servers.
+	// background jobs. It is new in DefectDojo 3.5.100 and nil on older servers.
 	ReadOnlyMode *bool `json:"read_only_mode"`
 
 	// InstallID identifies the DefectDojo installation. It is read-only.
@@ -266,7 +266,7 @@ type SystemSettingsPatch struct {
 	APIExposeErrorDetails *bool `json:"api_expose_error_details,omitempty"`
 	FilterStringMatching  *bool `json:"filter_string_matching,omitempty"`
 
-	// ReadOnlyMode is new in DefectDojo 3.5; older servers ignore it and
+	// ReadOnlyMode is new in DefectDojo 3.5.100; older servers ignore it and
 	// answer 200 without changing anything.
 	ReadOnlyMode *bool `json:"read_only_mode,omitempty"`
 }

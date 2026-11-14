@@ -87,7 +87,7 @@ func TestAccSystemSettings(t *testing.T) {
 	if err == nil || errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Patch(minimum 8) error = %v, want a client-side error", err)
 	}
-	// A secret that isn't nullable can't be blank.
+	// The Jira webhook secret is nullable, but can't be blank.
 	_, _, err = client.SystemSettings.Patch(ctx, before.ID, &defectdojo.SystemSettingsPatch{JiraWebhookSecret: defectdojo.Value("")})
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["jira_webhook_secret"]) == 0 {
@@ -102,6 +102,8 @@ func nullableInt(v *int) defectdojo.Nullable[int] {
 	return defectdojo.Value(*v)
 }
 
+// nullableString restores a nullable string read as v. A read can't tell
+// null from "", so "" is restored as null.
 func nullableString(v string) defectdojo.Nullable[string] {
 	if v == "" {
 		return defectdojo.Null[string]()

@@ -21,7 +21,7 @@ import (
 //
 // DefectDojo answers a missing or invalid token with 403 Forbidden, not 401,
 // so check for [ErrForbidden] when authentication fails. [ErrLocked] means the
-// server is in read-only mode (DefectDojo 3.5 and later): it rejects every
+// server is in read-only mode (DefectDojo 3.5.100 and later): it rejects every
 // change except to the system settings.
 var (
 	ErrBadRequest      = errors.New("defectdojo: bad request")
