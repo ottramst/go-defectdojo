@@ -1,4 +1,4 @@
-## Unreleased
+## v0.1.0
 
 FEATURES:
 
@@ -12,6 +12,7 @@ NOTES:
 * `Products.Create` and `Products.Update` send every writable field, so `EnableFullRiskAcceptance`, which DefectDojo defaults to `true`, is `false` unless it is set. Zero values of nullable fields (`Platform`, `ProductManager` and the like) are sent as `null`, a zero `SLAConfiguration` and nil `UserRecords` and `Revenue` are left out (DefectDojo's default on create, the current value on update), and `ProdNumericGrade`, which DefectDojo calculates, is only written by `Products.Patch` ([#9](https://github.com/ottramst/go-defectdojo/issues/9))
 * `Engagements.Create` and `Engagements.Update` send `ThreatModel`, `APITest`, `PenTest` and `CheckList`, which DefectDojo defaults to `true`, so they are `false` unless they are set; an empty `Status` or `EngagementType` is left out (DefectDojo's default on create, the current value on update), and nil `Tags` too, so that a new engagement inherits its product's tags and `Update` keeps the current tags; a non-nil empty `Tags` removes them all, inherited ones included. An engagement's name can't be cleared: DefectDojo names it after its target start ([#10](https://github.com/ottramst/go-defectdojo/issues/10))
 * `Products.GetByName` matches names case-sensitively: DefectDojo's `name_exact` filter ignores case, and product names that differ only in case can coexist ([#9](https://github.com/ottramst/go-defectdojo/issues/9))
+* Completes the v0.1.0 milestone (products, engagements and the user profile), for terraform-provider-defectdojo v0.1.0. Tested against DefectDojo 3.4.304 and 3.5.103
 
 ## v0.0.1
 
