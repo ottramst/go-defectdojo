@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/ottramst/go-defectdojo"
 )
@@ -20,11 +21,15 @@ func TestUserProfileService_Get(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
+	joined, err := time.Parse(time.RFC3339Nano, "2026-11-14T12:07:36.179289Z")
+	if err != nil {
+		t.Fatal(err)
+	}
 	wantUser := &defectdojo.User{
 		ID: 2, Username: "alice", FirstName: "Alice", LastName: "Smith", Email: "alice@example.com",
-		IsActive: true, ConfigurationPermissions: []int{}, DateJoined: profile.User.DateJoined,
+		IsActive: true, ConfigurationPermissions: []int{}, DateJoined: joined,
 	}
-	if !reflect.DeepEqual(profile.User, wantUser) || profile.User.DateJoined.Year() != 2026 || !profile.User.LastLogin.IsZero() {
+	if !reflect.DeepEqual(profile.User, wantUser) {
 		t.Errorf("User = %+v, want %+v", profile.User, wantUser)
 	}
 	wantInfo := &defectdojo.UserContactInfo{

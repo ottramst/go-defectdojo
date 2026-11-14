@@ -32,13 +32,16 @@ type User struct {
 	IsActive bool `json:"is_active"`
 
 	// IsStaff and IsSuperuser grant access beyond the authorized users of
-	// product types and products. Most configuration endpoints need a
-	// superuser.
+	// product types and products. Some configuration endpoints, such as
+	// users, system settings, notifications and Jira, need a superuser;
+	// staff users can also manage others, such as SLA configurations and the
+	// lookup tables.
 	IsStaff     bool `json:"is_staff"`
 	IsSuperuser bool `json:"is_superuser"`
 
 	// ConfigurationPermissions are the IDs of the configuration permissions
-	// the user has.
+	// the user has. (The schema allows null items, an artifact of the
+	// many-to-many field; permission IDs are never null.)
 	ConfigurationPermissions []int `json:"configuration_permissions"`
 
 	DateJoined time.Time `json:"date_joined,omitzero"`
