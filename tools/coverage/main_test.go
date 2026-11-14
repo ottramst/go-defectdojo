@@ -122,3 +122,13 @@ func TestRun_missingSpec(t *testing.T) {
 		t.Error("run() error = nil, want error")
 	}
 }
+
+func TestAliasOf(t *testing.T) {
+	got, ok := aliasOf(endpoint{"GET", "/api/v2/jira_configurations/{id}/"})
+	if want := (endpoint{"GET", "/api/v2/jira_instances/{id}/"}); !ok || got != want {
+		t.Errorf("aliasOf(jira_configurations) = %v, %v; want %v", got, ok, want)
+	}
+	if _, ok := aliasOf(endpoint{"GET", "/api/v2/jira_instances/"}); ok {
+		t.Error("aliasOf(jira_instances) is an alias")
+	}
+}

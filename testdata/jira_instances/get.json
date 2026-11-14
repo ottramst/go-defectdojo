@@ -1,0 +1,21 @@
+{
+  "id": 1,
+  "configuration_name": "Acme Jira",
+  "url": "https://jira.example.com",
+  "username": "defectdojo-bot",
+  "default_issue_type": "Security",
+  "issue_template_dir": null,
+  "epic_name_id": 10011,
+  "open_status_key": 11,
+  "close_status_key": 31,
+  "info_mapping_severity": "Lowest",
+  "low_mapping_severity": "Low",
+  "medium_mapping_severity": "Medium",
+  "high_mapping_severity": "High",
+  "critical_mapping_severity": "Highest",
+  "finding_text": "Reported by DefectDojo",
+  "accepted_mapping_resolution": "Won't Fix",
+  "false_positive_mapping_resolution": null,
+  "global_jira_sla_notification": true,
+  "finding_jira_sync": false
+}
