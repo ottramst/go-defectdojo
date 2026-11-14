@@ -1,0 +1,14 @@
+{
+  "id": 4,
+  "created": "2026-11-14T08:32:05.530483Z",
+  "updated": "2026-11-14T08:32:05.530494Z",
+  "name": "Web Applications",
+  "description": "Customer-facing web applications",
+  "critical_product": true,
+  "key_product": false,
+  "archived_at": null,
+  "archive_batch": null,
+  "authorized_users": [
+    1
+  ]
+}

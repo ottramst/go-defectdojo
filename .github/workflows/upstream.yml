@@ -1,0 +1,90 @@
+name: Upstream
+
+# Watches DefectDojo, which ships a minor release every month and patches every
+# week. Neither job is part of the CI gate: they report, they do not block.
+on:
+  schedule:
+    # Nightly canary; on Mondays the release watch runs too.
+    - cron: '23 3 * * *'
+  workflow_dispatch:
+
+permissions: {}
+
+jobs:
+  # The acceptance and contract tests against the nightly DefectDojo image,
+  # to see breaking API changes before they are released.
+  canary:
+    name: Canary (DefectDojo nightly-dev)
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    permissions:
+      contents: read
+    env:
+      DD_VERSION: nightly-dev
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: 'go.mod'
+          cache: true
+      - name: Start DefectDojo
+        run: docker compose pull && docker compose up -d --wait
+      - name: Acceptance tests
+        run: DEFECTDOJO_ACC=1 go test -v -cover -timeout 15m ./...
+      - name: Contract test against the served schema
+        run: |
+          set -euo pipefail
+          mkdir -p .cache/specs
+          curl -fsS -o .cache/specs/defectdojo-nightly.json 'http://localhost:8080/api/v2/oa3/schema/?format=json'
+          DEFECTDOJO_SPEC_DIR=.cache/specs DEFECTDOJO_SPEC_VERSIONS=nightly go test -v -count=1 -run TestContract .
+      - name: Stack logs
+        if: ${{ !success() }}
+        run: docker compose logs --tail 200
+
+  # Opens an issue when DefectDojo releases a minor that is newer than the
+  # newest supported one, so the version matrix gets bumped.
+  release-watch:
+    name: DefectDojo release watch
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      issues: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - name: Compare with the supported versions
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          set -euo pipefail
+          # Only on Mondays for the scheduled run.
+          if [ "$GITHUB_EVENT_NAME" = schedule ] && [ "$(date -u +%u)" != 1 ]; then
+            echo "Not Monday; skipping."
+            exit 0
+          fi
+          latest=$(gh release view --repo DefectDojo/django-DefectDojo --json tagName --jq .tagName)
+          newest=$(jq -r '.versions[-1]' .github/defectdojo-versions.json)
+          minor() { cut -d. -f1,2 <<< "$1"; }
+          echo "Latest DefectDojo release: $latest; newest supported: $newest"
+          if [ "$(printf '%s\n%s\n' "$(minor "$newest")" "$(minor "$latest")" | sort -V | tail -1)" = "$(minor "$newest")" ]; then
+            echo "No new minor release."
+            exit 0
+          fi
+          title="Support DefectDojo $(minor "$latest")"
+          if [ -n "$(gh issue list --repo "$GITHUB_REPOSITORY" --state open --search "\"$title\" in:title" --json number --jq '.[0].number // empty')" ]; then
+            echo "Issue \"$title\" is already open."
+            exit 0
+          fi
+          body="DefectDojo $latest is out: https://github.com/DefectDojo/django-DefectDojo/releases/tag/$latest
+
+          The supported versions are the latest patch of the two newest minors. To support $(minor "$latest"):
+
+          - [ ] Read the release notes for API changes
+          - [ ] Update .github/defectdojo-versions.json (drop the oldest minor, add $latest) and the DD_VERSION default in docker-compose.yml
+          - [ ] Run \`make contract\`, \`make coverage\` and the acceptance tests (\`make up testacc\`)
+          - [ ] Update the support table in README.md and the CHANGELOG"
+          gh issue create --repo "$GITHUB_REPOSITORY" --title "$title" --label "type/chore" --body "$body"

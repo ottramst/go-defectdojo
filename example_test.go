@@ -1,0 +1,80 @@
+package defectdojo_test
+
+import (
+	"context"
+	"errors"
+	"fmt"
+	"log"
+	"os"
+
+	"github.com/ottramst/go-defectdojo"
+)
+
+func ExampleNewClient() {
+	client, err := defectdojo.NewClient("https://defectdojo.example.com",
+		defectdojo.WithAPIToken(os.Getenv("DEFECTDOJO_API_TOKEN")))
+	if err != nil {
+		log.Fatal(err)
+	}
+	list, _, err := client.ProductTypes.List(context.Background(), nil)
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(list.Count, "product types")
+}
+
+func ExampleAuthService_Token() {
+	ctx := context.Background()
+	login, err := defectdojo.NewClient("https://defectdojo.example.com")
+	if err != nil {
+		log.Fatal(err)
+	}
+	token, _, err := login.Auth.Token(ctx, "admin", os.Getenv("DEFECTDOJO_PASSWORD"))
+	if err != nil {
+		log.Fatal(err)
+	}
+	client, err := defectdojo.NewClient("https://defectdojo.example.com", defectdojo.WithAPIToken(token))
+	if err != nil {
+		log.Fatal(err)
+	}
+	_ = client
+}
+
+func ExampleProductTypesService_ListAll() {
+	var client *defectdojo.Client // from NewClient
+	for pt, err := range client.ProductTypes.ListAll(context.Background(), nil) {
+		if err != nil {
+			log.Fatal(err)
+		}
+		fmt.Println(pt.ID, pt.Name)
+	}
+}
+
+func ExampleProductTypesService_Patch() {
+	var client *defectdojo.Client // from NewClient
+	// Only the fields that are set change: clear the description and mark
+	// the product type as critical.
+	_, _, err := client.ProductTypes.Patch(context.Background(), 4, &defectdojo.ProductTypePatch{
+		Description:     defectdojo.Null[string](),
+		CriticalProduct: new(true),
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
+func ExampleProductTypesService_Delete() {
+	var client *defectdojo.Client // from NewClient
+	ctx := context.Background()
+	// Deleting a product type deletes its products too: refuse if it has any.
+	n, _, err := client.ProductTypes.CountProducts(ctx, 4)
+	if err != nil {
+		log.Fatal(err)
+	}
+	if n > 0 {
+		log.Fatalf("product type 4 still has %d products", n)
+	}
+	if _, err := client.ProductTypes.Delete(ctx, 4); err != nil && !errors.Is(err, defectdojo.ErrNotFound) {
+		log.Fatal(err)
+	}
+}

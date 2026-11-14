@@ -1,0 +1,22 @@
+{
+  "count": 3,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "Product_Type",
+      "id": 4,
+      "name": "Web Applications"
+    },
+    {
+      "model": "Product",
+      "id": 2,
+      "name": "Storefront"
+    },
+    {
+      "model": "Product_Type_authorized_users",
+      "id": 2,
+      "name": "Product_Type_authorized_users object (2)"
+    }
+  ]
+}
