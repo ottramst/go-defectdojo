@@ -34,8 +34,9 @@ type User struct {
 	// IsStaff and IsSuperuser grant access beyond the authorized users of
 	// product types and products. Some configuration endpoints, such as
 	// users, system settings, notifications and Jira, need a superuser;
-	// staff users can also manage others, such as SLA configurations and the
-	// lookup tables.
+	// staff users can also manage others, such as SLA configurations,
+	// development environments and the product platforms, lifecycles and
+	// origins.
 	IsStaff     bool `json:"is_staff"`
 	IsSuperuser bool `json:"is_superuser"`
 
