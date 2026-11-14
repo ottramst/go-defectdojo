@@ -1,4 +1,4 @@
-## Unreleased
+## v0.0.1
 
 FEATURES:
 
@@ -10,4 +10,5 @@ FEATURES:
 
 NOTES:
 
+* First preview release, for terraform-provider-defectdojo v0.0.1. Products, engagements and the other services of the v0.1.0 milestone follow
 * Tested against DefectDojo 3.4.304 and 3.5.103. A contract test checks the client's types against the OpenAPI schema of each supported version ([#7](https://github.com/ottramst/go-defectdojo/issues/7))
