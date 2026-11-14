@@ -40,7 +40,7 @@ make testacc
 make down
 ```
 
-The compose stack is PostgreSQL 18 (tmpfs), Valkey, a one-shot `initializer` (migrations, admin user, fixtures) and `uwsgi`, whose HTTP router on port 8081 is published on `127.0.0.1:8080`. nginx and Celery are left out: the API needs neither, and `DD_ASYNC_OBJECT_DELETE` is off, so deletes are synchronous. The superuser is `admin` / `DefectDojoAcc1!`. Tests read `DEFECTDOJO_URL`, `DEFECTDOJO_API_TOKEN` or `DEFECTDOJO_USERNAME`/`DEFECTDOJO_PASSWORD`, falling back to those defaults. Fixtures that the initializer loads: the product type "Research and Development" (id 1, null timestamps), the "Default" SLA configuration, development environments, regulations and test types.
+The compose stack is PostgreSQL 18 (tmpfs), Valkey, a one-shot `initializer` (migrations, admin user, fixtures), `uwsgi`, and DefectDojo's `nginx` on `127.0.0.1:8080`. Celery is left out (the API doesn't need it) and `DD_ASYNC_OBJECT_DELETE` is off, so deletes are synchronous. Don't publish uwsgi's own HTTP router (port 8081): it is meant for liveness checks and drops reused keep-alive connections, which makes writes fail with `EOF`. The nginx image has `wget` but no `curl` in 3.5. The superuser is `admin` / `DefectDojoAcc1!`. Tests read `DEFECTDOJO_URL`, `DEFECTDOJO_API_TOKEN` or `DEFECTDOJO_USERNAME`/`DEFECTDOJO_PASSWORD`, falling back to those defaults. Fixtures that the initializer loads: the product type "Research and Development" (id 1, null timestamps), the "Default" SLA configuration, development environments, regulations and test types.
 
 ## Architecture
 

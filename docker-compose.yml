@@ -5,8 +5,9 @@
 # Credentials: admin / DefectDojoAcc1! (superuser). The secrets below are
 # DefectDojo's public development defaults: not for production use.
 #
-# The API is served by uwsgi's HTTP router on port 8081, so nginx (which only
-# adds static files and TLS) and Celery (background tasks) are left out.
+# Celery (background tasks) is left out: the API does not need it. nginx stays
+# in front of uwsgi: uwsgi's own HTTP router on port 8081 is only meant for
+# liveness checks, and drops reused connections.
 name: go-defectdojo
 
 x-defectdojo-env: &defectdojo-env
@@ -75,8 +76,6 @@ services:
       DD_UWSGI_NUM_OF_THREADS: "4"
       # Deletes stay synchronous, so a 204 means the object is gone.
       DD_ASYNC_OBJECT_DELETE: "False"
-    ports:
-      - "127.0.0.1:8080:8081"
     healthcheck:
       # The image has no curl; the login page needs Django and the database.
       test: ["CMD", "python3", "-c", "import urllib.request; urllib.request.urlopen('http://localhost:8081/login', timeout=5)"]
@@ -84,3 +83,20 @@ services:
       timeout: 10s
       retries: 60
       start_period: 20s
+
+  nginx:
+    image: docker.io/defectdojo/defectdojo-nginx:${DD_VERSION:-3.5.103}
+    depends_on:
+      uwsgi:
+        condition: service_healthy
+    environment:
+      DD_UWSGI_HOST: uwsgi
+      DD_UWSGI_PORT: "3031"
+    ports:
+      - "127.0.0.1:8080:8080"
+    healthcheck:
+      # /uwsgi_health goes through nginx to uwsgi. The image has wget, not curl.
+      test: ["CMD", "wget", "-q", "-O", "/dev/null", "http://127.0.0.1:8080/uwsgi_health"]
+      interval: 3s
+      timeout: 10s
+      retries: 40
