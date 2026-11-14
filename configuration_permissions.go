@@ -29,7 +29,8 @@ type ConfigurationPermissionsService service
 type ConfigurationPermission struct {
 	ID int `json:"id"`
 
-	// Name describes the permission, such as "Can add Product_Type".
+	// Name describes the permission, such as "Can add user" (DefectDojo
+	// writes some model names oddly, as in "Can add product_ type").
 	Name string `json:"name"`
 
 	// Codename identifies the permission, such as "add_product_type".

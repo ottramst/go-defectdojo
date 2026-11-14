@@ -95,10 +95,10 @@ func TestAccUsers(t *testing.T) {
 		t.Errorf("Update() = %+v, want the new last name, staff and permissions %v", updated, permissions)
 	}
 
-	// Nil permissions keep them; names are cleared with "".
-	updated.ConfigurationPermissions = nil
+	// Empty permissions keep them; names are cleared with "".
+	updated.ConfigurationPermissions = []int{}
 	if kept, _, err := client.Users.Update(ctx, got.ID, updated); err != nil || !sameInts(kept.ConfigurationPermissions, permissions) {
-		t.Errorf("Update(nil permissions) = %+v, %v; want the permissions kept", kept, err)
+		t.Errorf("Update(empty permissions) = %+v, %v; want the permissions kept", kept, err)
 	}
 	patched, _, err := client.Users.Patch(ctx, got.ID, &defectdojo.UserPatch{FirstName: new(""), ConfigurationPermissions: new([]int{})})
 	if err != nil {

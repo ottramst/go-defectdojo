@@ -41,7 +41,9 @@ type User struct {
 	IsSuperuser bool `json:"is_superuser"`
 
 	// ConfigurationPermissions are the IDs of the configuration permissions
-	// the user has. (The schema allows null items, an artifact of the
+	// the user has; see [ConfigurationPermissionsService]. [UsersService.Create]
+	// and [UsersService.Update] leave an empty list out, which keeps the
+	// user's permissions: remove them with [UsersService.Patch]. (The schema allows null items, an artifact of the
 	// many-to-many field; permission IDs are never null.)
 	ConfigurationPermissions []int `json:"configuration_permissions"`
 

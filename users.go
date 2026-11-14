@@ -11,8 +11,8 @@ import (
 
 // UsersService handles communication with the user methods of the DefectDojo
 // API. Managing users needs a superuser, or the configuration permissions
-// for users; only superusers can change staff users, superusers and
-// configuration permissions.
+// for users; only superusers can change staff users, superusers,
+// configuration permissions, and the username or email of another user.
 //
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type UsersService service
@@ -43,9 +43,11 @@ type userRequest struct {
 	IsSuperuser bool   `json:"is_superuser"`
 	Password    string `json:"password,omitempty"`
 
-	// ConfigurationPermissions is left out when nil, which keeps the user's
-	// permissions: an empty list removes all of them.
-	ConfigurationPermissions []int `json:"configuration_permissions,omitzero"`
+	// ConfigurationPermissions is left out when empty, which keeps the user's
+	// permissions: DefectDojo answers an empty list by removing all the
+	// user's Django permissions, and a user read with Get has an empty, not
+	// a nil, list when it has no configuration permissions.
+	ConfigurationPermissions []int `json:"configuration_permissions,omitempty"`
 }
 
 // newUserRequest validates a user and returns its writable fields.
@@ -194,7 +196,7 @@ func (s *UsersService) GetByUsername(ctx context.Context, username string, opts 
 }
 
 // Create creates a user with the given initial password. Its read-only
-// fields are ignored, and so are nil ConfigurationPermissions.
+// fields are ignored.
 //
 // Every writable field is sent, so IsActive, which DefectDojo defaults to
 // true, is false unless it is set: a zero IsActive creates an inactive user.
@@ -222,9 +224,9 @@ func (s *UsersService) Create(ctx context.Context, u *UserCreate, opts ...Reques
 }
 
 // Update replaces the writable fields of the user with the given ID. Every
-// writable field is sent, except nil ConfigurationPermissions, which keeps
-// the user's permissions; a non-nil empty ConfigurationPermissions removes
-// all the user's Django permissions, not only the configuration
+// writable field is sent, except empty ConfigurationPermissions, which keep
+// the user's permissions; to remove them, use [UsersService.Patch]. A
+// non-empty ConfigurationPermissions replaces the user's configuration
 // permissions. Update a user returned by [UsersService.Get] to keep its other
 // fields, or use [UsersService.Patch].
 //

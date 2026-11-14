@@ -165,10 +165,10 @@ func TestUsersService_Create(t *testing.T) {
 func TestUsersService_Create_withoutPassword(t *testing.T) {
 	mux, client := setup(t)
 	mux.HandleFunc("POST /api/v2/users/", func(w http.ResponseWriter, r *http.Request) {
-		// No password is left out (single sign-on users); empty permissions
-		// are sent.
+		// No password is left out (single sign-on users), and so are empty
+		// permissions.
 		testJSONBody(t, r, `{"username":"sso","first_name":"","last_name":"","email":"sso@example.com",`+
-			`"is_active":false,"is_staff":false,"is_superuser":false,"configuration_permissions":[]}`)
+			`"is_active":false,"is_staff":false,"is_superuser":false}`)
 		writeJSON(t, w, http.StatusCreated, fixture(t, "users/get.json"))
 	})
 	_, _, err := client.Users.Create(context.Background(), &defectdojo.UserCreate{
@@ -191,6 +191,13 @@ func TestUsersService_Update(t *testing.T) {
 			name: "nil permissions",
 			user: &defectdojo.User{Username: "dt", Email: "dt@example.com", FirstName: "D", IsActive: true, IsStaff: true},
 			want: `{"username":"dt","first_name":"D","last_name":"","email":"dt@example.com","is_active":true,"is_staff":true,"is_superuser":false}`,
+		},
+		{
+			// A user read with Get has an empty, not a nil, list: sending it
+			// would remove every Django permission the user has.
+			name: "empty permissions",
+			user: &defectdojo.User{Username: "dt", Email: "dt@example.com", ConfigurationPermissions: []int{}},
+			want: `{"username":"dt","first_name":"","last_name":"","email":"dt@example.com","is_active":false,"is_staff":false,"is_superuser":false}`,
 		},
 		{
 			name: "permissions",

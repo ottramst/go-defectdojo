@@ -13,7 +13,7 @@ ENHANCEMENTS:
 NOTES:
 
 * `SLAConfigurations.Create` and `SLAConfigurations.Update` send every writable field, so `EnforceCritical`, `EnforceHigh`, `EnforceMedium` and `EnforceLow`, which DefectDojo defaults to `true`, are `false` unless they are set. Days below 1, which DefectDojo's API accepts but its UI rejects, are refused before sending ([#13](https://github.com/ottramst/go-defectdojo/issues/13))
-* `Users.Create` sends every writable field, so `IsActive`, which DefectDojo defaults to `true`, is `false` unless it is set. `Users.Create` and `Users.Update` leave nil `ConfigurationPermissions` out, which keeps the user's permissions: an empty list removes all the user's Django permissions, not only the configuration permissions. DefectDojo's API can't change a password once the user exists ([#14](https://github.com/ottramst/go-defectdojo/issues/14))
+* `Users.Create` sends every writable field, so `IsActive`, which DefectDojo defaults to `true`, is `false` unless it is set. `Users.Create` and `Users.Update` leave empty `ConfigurationPermissions` out, which keeps the user's permissions, so that a user read with `Users.Get` can be updated safely: DefectDojo answers an empty list by removing all the user's Django permissions, not only the configuration permissions. Remove them with `Users.Patch`. DefectDojo's API can't change a password once the user exists ([#14](https://github.com/ottramst/go-defectdojo/issues/14))
 
 ## v0.1.0
 
