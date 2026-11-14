@@ -35,7 +35,7 @@ defaults to the newest supported version.
 
 ```shell
 make up
-# make up DD_VERSION=3.4.304
+# make down && make up DD_VERSION=3.4.304
 
 make testacc
 # or a single test:

@@ -89,7 +89,9 @@ type ProductTypePatch struct {
 	Description     Nullable[string] `json:"description,omitzero"`
 	CriticalProduct *bool            `json:"critical_product,omitempty"`
 	KeyProduct      *bool            `json:"key_product,omitempty"`
-	AuthorizedUsers *[]int           `json:"authorized_users,omitempty"`
+	// AuthorizedUsers replaces the authorized users; a pointer to an empty
+	// or nil slice removes them all.
+	AuthorizedUsers *[]int `json:"authorized_users,omitempty"`
 }
 
 // ListProductTypesOptions are the options of [ProductTypesService.List] and
@@ -232,6 +234,12 @@ func (s *ProductTypesService) Patch(ctx context.Context, id int, patch *ProductT
 	}
 	if patch == nil {
 		return nil, nil, errors.New("defectdojo: product type patch must not be nil")
+	}
+	if patch.AuthorizedUsers != nil && *patch.AuthorizedUsers == nil {
+		// null is a 400; send [] from a copy, leaving the caller's patch as is.
+		p := *patch
+		p.AuthorizedUsers = &[]int{}
+		patch = &p
 	}
 	updated := new(ProductType)
 	resp, err := s.client.do(ctx, http.MethodPatch, productTypePath(id), patch, updated, opts)

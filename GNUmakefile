@@ -28,7 +28,7 @@ down:
 
 # Needs a running DefectDojo: make up
 testacc:
-	DEFECTDOJO_ACC=1 DD_VERSION=$(DD_VERSION) go test -v -cover -timeout 15m ./...
+	DEFECTDOJO_ACC=1 go test -v -cover -timeout 15m ./...
 
 # Downloads the OpenAPI schemas of the supported versions once into .cache/.
 specs:

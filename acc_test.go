@@ -5,6 +5,7 @@ import (
 	"crypto/rand"
 	"encoding/hex"
 	"os"
+	"regexp"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -39,6 +40,9 @@ func accClient(t *testing.T) *defectdojo.Client {
 	}
 	return client
 }
+
+// releaseVersion matches DefectDojo release versions such as "3.5.103".
+var releaseVersion = regexp.MustCompile(`^\d+\.\d+\.\d+$`)
 
 func envOr(key, fallback string) string {
 	if v := os.Getenv(key); v != "" {
@@ -75,7 +79,9 @@ func TestAccServerVersion(t *testing.T) {
 	if err != nil {
 		t.Fatalf("ServerVersion() error = %v", err)
 	}
-	if want := os.Getenv("DD_VERSION"); want != "" && v != want {
+	// CI sets DD_VERSION to the image tag it started; tags that are not
+	// releases, such as nightly-dev, serve versions like "3.6.0-dev".
+	if want := os.Getenv("DD_VERSION"); releaseVersion.MatchString(want) && v != want {
 		t.Errorf("ServerVersion() = %q, want %q (DD_VERSION)", v, want)
 	}
 	t.Logf("DefectDojo %s", v)

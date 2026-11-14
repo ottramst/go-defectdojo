@@ -57,6 +57,9 @@ var contracts = []contract{
 	{value: productTypeRequest{}, schema: "ProductTypeRequest", request: true},
 	{value: ProductTypePatch{}, schema: "PatchedProductTypeRequest", request: true},
 	{value: DeletedObject{}, schema: "DeletePreview"},
+	{value: listPage[ProductType]{}, schema: "PaginatedProductTypeList"},
+	{value: tokenRequest{}, schema: "ForcedResetAuthTokenRequest", request: true},
+	{value: tokenResponse{}, schema: "ForcedResetAuthToken"},
 }
 
 // supportedVersions returns the versions to check: those in

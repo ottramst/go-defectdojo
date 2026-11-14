@@ -6,6 +6,17 @@ import (
 	"net/http"
 )
 
+// tokenRequest is the body of a token request.
+type tokenRequest struct {
+	Username string `json:"username"`
+	Password string `json:"password"`
+}
+
+// tokenResponse is the body of a token response.
+type tokenResponse struct {
+	Token string `json:"token"`
+}
+
 // AuthService handles communication with the authentication methods of the
 // DefectDojo API.
 //
@@ -26,13 +37,8 @@ func (s *AuthService) Token(ctx context.Context, username, password string, opts
 	if username == "" {
 		return "", nil, errors.New("defectdojo: username must not be empty")
 	}
-	body := struct {
-		Username string `json:"username"`
-		Password string `json:"password"`
-	}{username, password}
-	var result struct {
-		Token string `json:"token"`
-	}
+	body := tokenRequest{Username: username, Password: password}
+	var result tokenResponse
 	resp, err := s.client.do(ctx, http.MethodPost, "/api/v2/api-token-auth/", body, &result, opts)
 	if err != nil {
 		return "", resp, err

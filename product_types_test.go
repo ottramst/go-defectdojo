@@ -302,3 +302,20 @@ func TestProductTypesService_invalidArguments(t *testing.T) {
 		})
 	}
 }
+
+func TestProductTypesService_Patch_nilAuthorizedUsers(t *testing.T) {
+	mux, client := setup(t)
+	mux.HandleFunc("PATCH /api/v2/product_types/4/", func(w http.ResponseWriter, r *http.Request) {
+		// null is a 400 in DefectDojo, so a nil slice is sent as [].
+		testJSONBody(t, r, `{"authorized_users":[]}`)
+		writeJSON(t, w, http.StatusOK, fixture(t, "product_types/get.json"))
+	})
+	var users []int
+	patch := &defectdojo.ProductTypePatch{AuthorizedUsers: &users}
+	if _, _, err := client.ProductTypes.Patch(context.Background(), 4, patch); err != nil {
+		t.Fatalf("Patch() error = %v", err)
+	}
+	if patch.AuthorizedUsers != &users || users != nil {
+		t.Error("Patch() changed the caller's patch")
+	}
+}
