@@ -38,8 +38,9 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Authentication | API token for a username and password ✅ |
 | Product types | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Products | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
+| Engagements | CRUD, partial update, list with an iterator, close and reopen, delete preview ✅ |
 | Server version | from the served OpenAPI schema ✅ |
-| Engagements, user profile | planned ([v0.1.0](https://github.com/ottramst/go-defectdojo/milestone/1)) |
+| User profile | planned ([v0.1.0](https://github.com/ottramst/go-defectdojo/milestone/1)) |
 
 [COVERAGE.md](COVERAGE.md) lists every endpoint of the DefectDojo OpenAPI schemas and the method that
 implements it.

@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"log"
 	"os"
+	"time"
 
 	"github.com/ottramst/go-defectdojo"
 )
@@ -96,4 +97,22 @@ func ExampleProductsService_Create() {
 		log.Fatal(err)
 	}
 	fmt.Println(p.ID)
+}
+
+func ExampleEngagementsService_Create() {
+	var client *defectdojo.Client // from NewClient
+	// A long-lived engagement for a CI/CD pipeline's scans. Imports move the
+	// target end to the scan date, so a far-away one keeps it stable.
+	e, _, err := client.Engagements.Create(context.Background(), &defectdojo.Engagement{
+		Product:        7,
+		Name:           "CI",
+		EngagementType: defectdojo.EngagementTypeCICD,
+		TargetStart:    defectdojo.DateOf(time.Now()),
+		TargetEnd:      defectdojo.Date{Year: 2099, Month: time.December, Day: 31},
+		BranchTag:      "main",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(e.ID)
 }

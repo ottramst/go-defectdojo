@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**16 of 404 endpoints implemented.**
+**25 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -23,7 +23,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [endpoint_status](#endpoint_status) | 0 / 2 |
 | [endpoints](#endpoints) | 0 / 3 |
 | [engagement_presets](#engagement_presets) | 0 / 7 |
-| [engagements](#engagements) | 0 / 19 |
+| [engagements](#engagements) | 9 / 19 |
 | [export](#export) | 0 / 2 |
 | [finding_templates](#finding_templates) | 0 / 7 |
 | [findings](#findings) | 0 / 30 |
@@ -199,24 +199,24 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/engagements/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/engagements/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/engagements/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/engagements/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/engagements/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/engagements/{id}/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/engagements/` | ✅ | ✅ | `EngagementsService.List` |  |
+| POST | `/api/v2/engagements/` | ✅ | ✅ | `EngagementsService.Create` |  |
+| GET | `/api/v2/engagements/{id}/` | ✅ | ✅ | `EngagementsService.Get` |  |
+| PUT | `/api/v2/engagements/{id}/` | ✅ | ✅ | `EngagementsService.Update` |  |
+| PATCH | `/api/v2/engagements/{id}/` | ✅ | ✅ | `EngagementsService.Patch` |  |
+| DELETE | `/api/v2/engagements/{id}/` | ✅ | ✅ | `EngagementsService.Delete` |  |
 | POST | `/api/v2/engagements/{id}/accept_risks/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/engagements/{id}/close/` | ✅ | ✅ |  |  |
+| POST | `/api/v2/engagements/{id}/close/` | ✅ | ✅ | `EngagementsService.Close` |  |
 | GET | `/api/v2/engagements/{id}/complete_checklist/` | ✅ | ✅ |  |  |
 | POST | `/api/v2/engagements/{id}/complete_checklist/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/engagements/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/engagements/{id}/delete_preview/` | ✅ | ✅ | `EngagementsService.DeletePreview` |  |
 | GET | `/api/v2/engagements/{id}/files/` | ✅ | ✅ |  |  |
 | POST | `/api/v2/engagements/{id}/files/` | ✅ | ✅ |  |  |
 | GET | `/api/v2/engagements/{id}/files/download/{file_id}/` | ✅ | ✅ |  |  |
 | POST | `/api/v2/engagements/{id}/generate_report/` | ✅ | ✅ |  |  |
 | GET | `/api/v2/engagements/{id}/notes/` | ✅ | ✅ |  |  |
 | POST | `/api/v2/engagements/{id}/notes/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/engagements/{id}/reopen/` | ✅ | ✅ |  |  |
+| POST | `/api/v2/engagements/{id}/reopen/` | ✅ | ✅ | `EngagementsService.Reopen` |  |
 | POST | `/api/v2/engagements/{id}/update_jira_epic/` | ✅ | ✅ |  |  |
 
 ## export

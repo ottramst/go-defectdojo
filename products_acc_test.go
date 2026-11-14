@@ -8,6 +8,7 @@ import (
 	"strconv"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/ottramst/go-defectdojo"
 )
@@ -219,13 +220,15 @@ func createSLAConfiguration(t *testing.T, client *defectdojo.Client) int {
 	return sla.ID
 }
 
-// createEngagement creates an engagement in the product through the raw
-// API, until the client has an Engagements service. It is deleted with the
-// product.
+// createEngagement creates an engagement in the product. It is deleted with
+// the product.
 func createEngagement(t *testing.T, client *defectdojo.Client, productID int) {
 	t.Helper()
-	body := map[string]any{"name": randName(t, "acc"), "product": productID, "target_start": "2026-01-01", "target_end": "2026-12-31"}
-	rawRequest(t, client, http.MethodPost, "/api/v2/engagements/", body, nil)
+	day := defectdojo.Date{Year: 2026, Month: time.January, Day: 1}
+	e := &defectdojo.Engagement{Name: randName(t, "acc"), Product: productID, TargetStart: day, TargetEnd: day}
+	if _, _, err := client.Engagements.Create(t.Context(), e); err != nil {
+		t.Fatalf("creating engagement: %v", err)
+	}
 }
 
 func rawRequest(t *testing.T, client *defectdojo.Client, method, path string, body, v any) {
