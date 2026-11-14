@@ -1,0 +1,24 @@
+# Binaries and test artifacts
+*.exe
+*.dll
+*.so
+*.dylib
+*.test
+*.out
+*.prof
+coverage.txt
+
+# Downloaded files, such as the OpenAPI specs of `make coverage`; never commit them
+.cache/
+
+# Editors and OS files
+.idea
+*.iml
+.vscode/
+.DS_Store
+*~
+.*.swp
+
+# Local Claude Code settings; project subagents in .claude/agents/ are shared
+.claude/*
+!.claude/agents/
