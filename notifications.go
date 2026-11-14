@@ -162,7 +162,9 @@ type notificationSettingsRequest struct {
 	SLABreachCombined        []string `json:"sla_breach_combined,omitzero"`
 	RiskAcceptanceExpiration []string `json:"risk_acceptance_expiration,omitzero"`
 
-	// ScanAddedEmpty is a single channel, or "" for none; nil is left out.
+	// ScanAddedEmpty is a single channel, or "" for none. It is always
+	// sent: DefectDojo has no default for it in requests, so a PUT that
+	// leaves it out would keep it.
 	ScanAddedEmpty *string `json:"scan_added_empty,omitempty"`
 }
 
@@ -205,13 +207,10 @@ func newNotificationSettingsRequest(n *NotificationSettings) (*notificationSetti
 }
 
 // singleChannel returns the channel of scan_added_empty as DefectDojo's API
-// takes it: nil for nil channels, "" for none, or the one channel.
+// takes it: "" for none, or the one channel.
 func singleChannel(channels NotificationChannels) (*string, error) {
 	switch len(channels) {
 	case 0:
-		if channels == nil {
-			return nil, nil
-		}
 		return new(""), nil
 	case 1:
 		return &channels[0], nil
@@ -393,7 +392,7 @@ func (s *NotificationsService) GetByScope(ctx context.Context, user, product int
 
 // Create creates notification settings. Nil events are left out, so that
 // DefectDojo's default (alert) applies; an empty, non-nil event has no
-// channels. A row for a scope that has one is a 400 ([ErrBadRequest]), and so
+// channels, and so has a nil ScanAddedEmpty, whose default is none. A row for a scope that has one is a 400 ([ErrBadRequest]), and so
 // is a second template.
 //
 // DefectDojo API: POST /api/v2/notifications/
@@ -413,7 +412,7 @@ func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettin
 // Update replaces the notification settings with the given ID. The user,
 // product and template are always sent: DefectDojo resets them when they are
 // left out. Nil events are left out, which resets them to DefectDojo's
-// default (alert).
+// default (alert); a nil ScanAddedEmpty is sent as no channel.
 //
 // Don't update the template with Update: DefectDojo refuses an update with
 // Template set while a template exists, the template itself included. Use

@@ -279,9 +279,9 @@ func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opts
 //
 // Deleting the user the client authenticates as is a 400 ([ErrBadRequest]),
 // deleting a staff user or superuser needs a superuser (403), and deleting a
-// user that other objects refer to is a 409 ([ErrConflict]): findings it
-// reported or imported, tests and engagements it leads, risk acceptances it
-// owns, products that name it as a contact. Deactivate such users instead
+// user that other objects refer to is a 409 ([ErrConflict]), for example
+// findings and finding groups it reported or imported, tests and engagements
+// it leads, risk acceptances it owns, products that name it as a contact. Deactivate such users instead
 // (IsActive false).
 //
 // DefectDojo API: DELETE /api/v2/users/{id}/

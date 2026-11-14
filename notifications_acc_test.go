@@ -55,6 +55,10 @@ func TestAccNotifications_systemAndPersonal(t *testing.T) {
 		!reflect.DeepEqual(updated.ProductAdded, []string{"alert"}) {
 		t.Errorf("Update(system) = %+v, want other [mail] and the rest reset to alert", updated)
 	}
+	// scan_added_empty, which DefectDojo would keep, is reset too.
+	if got, _, err := client.Notifications.Get(ctx, system.ID); err != nil || len(got.ScanAddedEmpty) != 0 {
+		t.Errorf("Get(system) after Update = %+v, %v; want no scan_added_empty channel", got, err)
+	}
 
 	// A new user gets personal settings.
 	u, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{

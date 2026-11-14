@@ -211,7 +211,7 @@ func TestNotificationsService_Update(t *testing.T) {
 		{
 			name: "template",
 			in:   &defectdojo.NotificationSettings{Template: true},
-			want: `{"user":null,"product":null,"template":true}`,
+			want: `{"user":null,"product":null,"template":true,"scan_added_empty":""}`,
 		},
 	}
 	for _, tt := range tests {
