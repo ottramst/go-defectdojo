@@ -169,9 +169,9 @@ func newJiraProjectRequest(p *JiraProject) (*jiraProjectRequest, error) {
 		ProjectKey:                           p.ProjectKey,
 		IssueTemplateDir:                     orNull(p.IssueTemplateDir),
 		Component:                            p.Component,
-		CustomFields:                         p.CustomFields,
-		CloseTransitionFields:                p.CloseTransitionFields,
-		ReopenTransitionFields:               p.ReopenTransitionFields,
+		CustomFields:                         nilIfEmpty(p.CustomFields),
+		CloseTransitionFields:                nilIfEmpty(p.CloseTransitionFields),
+		ReopenTransitionFields:               nilIfEmpty(p.ReopenTransitionFields),
 		DefaultAssignee:                      orNull(p.DefaultAssignee),
 		JiraLabels:                           orNull(p.JiraLabels),
 		AddVulnerabilityIDToJiraLabel:        p.AddVulnerabilityIDToJiraLabel,
@@ -186,8 +186,18 @@ func newJiraProjectRequest(p *JiraProject) (*jiraProjectRequest, error) {
 	}, nil
 }
 
+// nilIfEmpty returns nil for an empty JSON value, which is sent as null like
+// a nil one, rather than failing the request's encoding.
+func nilIfEmpty(v json.RawMessage) json.RawMessage {
+	if len(v) == 0 {
+		return nil
+	}
+	return v
+}
+
 // checkJiraProjectJSON returns an error if one of the JSON fields that are set
-// isn't valid JSON, which would fail the request's encoding.
+// isn't valid JSON, which would fail the request's encoding. Empty values are
+// sent as null.
 func checkJiraProjectJSON(fields ...*json.RawMessage) error {
 	names := []string{"CustomFields", "CloseTransitionFields", "ReopenTransitionFields"}
 	for i, f := range fields {
@@ -233,12 +243,15 @@ type JiraProjectPatch struct {
 type ListJiraProjectsOptions struct {
 	ListOptions
 
-	JiraInstance int    `url:"jira_instance,omitempty"`
-	Product      int    `url:"product,omitempty"`
-	Engagement   int    `url:"engagement,omitempty"`
-	ProjectKey   string `url:"project_key,omitempty"`
-	Component    string `url:"component,omitempty"`
-	Enabled      *bool  `url:"enabled,omitempty"`
+	JiraInstance                int    `url:"jira_instance,omitempty"`
+	Product                     int    `url:"product,omitempty"`
+	Engagement                  int    `url:"engagement,omitempty"`
+	ProjectKey                  string `url:"project_key,omitempty"`
+	Component                   string `url:"component,omitempty"`
+	Enabled                     *bool  `url:"enabled,omitempty"`
+	PushAllIssues               *bool  `url:"push_all_issues,omitempty"`
+	EnableEngagementEpicMapping *bool  `url:"enable_engagement_epic_mapping,omitempty"`
+	PushNotes                   *bool  `url:"push_notes,omitempty"`
 }
 
 // JiraProjectList is a page of Jira projects.
@@ -330,6 +343,10 @@ func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opts .
 // Update replaces the writable fields of the Jira project with the given ID.
 // Every writable field is sent, except an empty EpicIssueTypeName and a nil
 // SuppressSLANotificationComments, which keep their values.
+//
+// Update needs a JiraInstance, as Create does, so a configuration that another
+// API client created without one can only be changed with
+// [JiraProjectsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/jira_projects/{id}/
 func (s *JiraProjectsService) Update(ctx context.Context, id int, p *JiraProject, opts ...RequestOption) (*JiraProject, *Response, error) {

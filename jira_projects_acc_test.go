@@ -123,7 +123,7 @@ func TestAccJiraProjects(t *testing.T) {
 	}
 
 	preview, _, err := client.JiraProjects.DeletePreview(ctx, created.ID, nil)
-	if err != nil || preview.Objects[0].Model != "JIRA_Project" {
+	if err != nil || len(preview.Objects) == 0 || preview.Objects[0].Model != "JIRA_Project" {
 		t.Errorf("DeletePreview() = %+v, %v; want the configuration", preview, err)
 	}
 	if _, err := client.JiraProjects.Delete(ctx, created.ID); err != nil {

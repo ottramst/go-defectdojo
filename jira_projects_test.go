@@ -170,6 +170,7 @@ func TestJiraProjectsService_Create_invalid(t *testing.T) {
 			p.SuppressSLANotificationComments = new(true)
 		},
 		"invalid custom fields": func(p *defectdojo.JiraProject) { p.CustomFields = json.RawMessage(`{`) },
+		"invalid close fields":  func(p *defectdojo.JiraProject) { p.CloseTransitionFields = json.RawMessage(`x`) },
 	}
 	for name, mutate := range tests {
 		p := valid
@@ -280,4 +281,35 @@ func jsonEqual(t *testing.T, got json.RawMessage, want string) bool {
 		t.Fatal(err)
 	}
 	return reflect.DeepEqual(g, w)
+}
+
+func TestJiraProjectsService_Create_emptyJSON(t *testing.T) {
+	mux, client := setup(t)
+	mux.HandleFunc("POST /api/v2/jira_projects/", func(w http.ResponseWriter, r *http.Request) {
+		var body map[string]any
+		if err := json.NewDecoder(r.Body).Decode(&body); err != nil {
+			t.Error(err)
+		}
+		if v, ok := body["custom_fields"]; !ok || v != nil {
+			t.Errorf("custom_fields = %v, want null", v)
+		}
+		writeJSON(t, w, http.StatusCreated, []byte(`{"id":3}`))
+	})
+	// An empty value is sent as null, like nil.
+	if _, _, err := client.JiraProjects.Create(context.Background(), &defectdojo.JiraProject{JiraInstance: 1, Product: 7, CustomFields: json.RawMessage{}}); err != nil {
+		t.Errorf("Create() error = %v", err)
+	}
+}
+
+func TestJiraProjectsService_List_flags(t *testing.T) {
+	mux, client := setup(t)
+	mux.HandleFunc("GET /api/v2/jira_projects/", func(w http.ResponseWriter, r *http.Request) {
+		testQuery(t, r, "enable_engagement_epic_mapping=false&push_all_issues=true&push_notes=true")
+		writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"results":[]}`))
+	})
+	if _, _, err := client.JiraProjects.List(context.Background(), &defectdojo.ListJiraProjectsOptions{
+		PushAllIssues: new(true), EnableEngagementEpicMapping: new(false), PushNotes: new(true),
+	}); err != nil {
+		t.Errorf("List() error = %v", err)
+	}
 }
