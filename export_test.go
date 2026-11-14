@@ -9,3 +9,9 @@ import (
 func Paginate[T any](ctx context.Context, from, size int, fetch func(ctx context.Context, from, size int) ([]T, int, error)) iter.Seq2[T, error] {
 	return paginate(ctx, from, size, fetch)
 }
+
+// CompareVersions exposes compareVersions to the tests of package
+// defectdojo_test.
+func CompareVersions(a, b string) int {
+	return compareVersions(a, b)
+}

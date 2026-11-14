@@ -79,6 +79,9 @@ var contracts = []contract{
 	{value: slaConfigurationRequest{}, schema: "SLAConfigurationRequest", request: true},
 	{value: SLAConfigurationPatch{}, schema: "PatchedSLAConfigurationRequest", request: true},
 	{value: listPage[SLAConfiguration]{}, schema: "PaginatedSLAConfigurationList"},
+	{value: SystemSettings{}, schema: "SystemSettings", since: map[string]string{"read_only_mode": "3.5.100"}},
+	{value: SystemSettingsPatch{}, schema: "PatchedSystemSettingsRequest", request: true, since: map[string]string{"read_only_mode": "3.5.100"}},
+	{value: listPage[SystemSettings]{}, schema: "PaginatedSystemSettingsList"},
 	{value: userRequest{}, schema: "UserRequest", request: true},
 	{value: UserPatch{}, schema: "PatchedUserRequest", request: true},
 	{value: listPage[User]{}, schema: "PaginatedUserList"},
@@ -267,8 +270,11 @@ func sendsNull(f reflect.StructField) bool {
 }
 
 // compareVersions compares two dotted versions such as "3.5.103". Missing
-// parts count as 0.
+// parts count as 0, and a suffix such as "-dev" is ignored, so that
+// "3.6.1-dev" compares as "3.6.1".
 func compareVersions(a, b string) int {
+	a, _, _ = strings.Cut(a, "-")
+	b, _, _ = strings.Cut(b, "-")
 	pa, pb := strings.Split(a, "."), strings.Split(b, ".")
 	for i := range max(len(pa), len(pb)) {
 		var x, y int

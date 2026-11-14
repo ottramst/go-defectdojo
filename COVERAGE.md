@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**57 of 404 endpoints implemented.**
+**59 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -60,7 +60,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [sla_configurations](#sla_configurations) | 7 / 7 |
 | [sonarqube_issues](#sonarqube_issues) | 0 / 7 |
 | [sonarqube_transitions](#sonarqube_transitions) | 0 / 7 |
-| [system_settings](#system_settings) | 0 / 3 |
+| [system_settings](#system_settings) | 2 / 3 |
 | [technologies](#technologies) | 0 / 7 |
 | [test_imports](#test_imports) | 0 / 7 |
 | [test_types](#test_types) | 0 / 5 |
@@ -651,9 +651,9 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/system_settings/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/system_settings/` | ✅ | ✅ | `SystemSettingsService.Get` |  |
 | PUT | `/api/v2/system_settings/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/system_settings/{id}/` | ✅ | ✅ |  |  |
+| PATCH | `/api/v2/system_settings/{id}/` | ✅ | ✅ | `SystemSettingsService.Patch` |  |
 
 ## technologies
 

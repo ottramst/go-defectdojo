@@ -1,3 +1,14 @@
+## Unreleased
+
+FEATURES:
+
+* New `SystemSettings` service: `Get` and `Patch` (`SystemSettingsPatch`). DefectDojo has no GET by ID, and no `Update`: a PUT keeps the fields it leaves out, like a PATCH ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
+* `ErrLocked`, which a 423 response matches: DefectDojo 3.5.100 and later answer every change with it while the system setting `read_only_mode` is on ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
+
+NOTES:
+
+* `SystemSettings` returns `SlackToken`, `MSTeamsURL` and `JiraWebhookSecret` in plain text, as DefectDojo does. `SystemSettings.Patch` rejects password lengths outside 9 to 48, and a minimum above the maximum when both are in the patch, which DefectDojo accepts. `ReadOnlyMode` is nil on servers before 3.5.100, which ignore it in a patch ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
+
 ## v0.2.0
 
 FEATURES:

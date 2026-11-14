@@ -66,6 +66,7 @@ type Client struct {
 	Products                 *ProductsService
 	ProductTypes             *ProductTypesService
 	SLAConfigurations        *SLAConfigurationsService
+	SystemSettings           *SystemSettingsService
 	UserProfile              *UserProfileService
 	Users                    *UsersService
 }
@@ -177,6 +178,7 @@ func (c *Client) initServices() {
 	c.Products = (*ProductsService)(&c.common)
 	c.ProductTypes = (*ProductTypesService)(&c.common)
 	c.SLAConfigurations = (*SLAConfigurationsService)(&c.common)
+	c.SystemSettings = (*SystemSettingsService)(&c.common)
 	c.UserProfile = (*UserProfileService)(&c.common)
 	c.Users = (*UsersService)(&c.common)
 }
