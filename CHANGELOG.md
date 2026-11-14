@@ -5,6 +5,7 @@ FEATURES:
 * New `Products` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete`, `DeletePreview` and `CountEngagements` ([#9](https://github.com/ottramst/go-defectdojo/issues/9))
 * New `Engagements` service: `List`, `ListAll`, `Get`, `Create`, `Update`, `Patch`, `Delete`, `DeletePreview`, `Close`, `Reopen` and `CountTests` ([#10](https://github.com/ottramst/go-defectdojo/issues/10))
 * `Date`, a calendar date sent as `2006-01-02`, with `DateOf` and `ParseDate` ([#10](https://github.com/ottramst/go-defectdojo/issues/10))
+* New `UserProfile` service: `Get` returns the user the client authenticates as, with its contact information ([#11](https://github.com/ottramst/go-defectdojo/issues/11))
 
 NOTES:
 

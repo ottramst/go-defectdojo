@@ -40,7 +40,7 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Products | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Engagements | CRUD, partial update, list with an iterator, close and reopen, delete preview ✅ |
 | Server version | from the served OpenAPI schema ✅ |
-| User profile | planned ([v0.1.0](https://github.com/ottramst/go-defectdojo/milestone/1)) |
+| User profile | the authenticated user and its contact information ✅ |
 
 [COVERAGE.md](COVERAGE.md) lists every endpoint of the DefectDojo OpenAPI schemas and the method that
 implements it.
