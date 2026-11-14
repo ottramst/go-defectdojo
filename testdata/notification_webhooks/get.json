@@ -1,0 +1,13 @@
+{
+  "id": 4,
+  "name": "Chat relay",
+  "url": "https://hooks.example.com/defectdojo",
+  "header_name": "Authorization",
+  "header_value": "Bearer fake-token",
+  "status": "active",
+  "first_error": null,
+  "last_error": null,
+  "note": "",
+  "owner": null,
+  "prefetch": {}
+}
