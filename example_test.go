@@ -99,6 +99,22 @@ func ExampleProductsService_Create() {
 	fmt.Println(p.ID)
 }
 
+func ExampleSLAConfigurationsService_Patch() {
+	var client *defectdojo.Client // from NewClient
+	_, _, err := client.SLAConfigurations.Patch(context.Background(), 3, &defectdojo.SLAConfigurationPatch{
+		Critical: new(3),
+		High:     new(14),
+	})
+	if defectdojo.IsSLARecalculating(err) {
+		// DefectDojo is still recalculating the SLA dates of an earlier
+		// change; try again once its Celery task is done.
+		return
+	}
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func ExampleEngagementsService_Create() {
 	var client *defectdojo.Client // from NewClient
 	// A long-lived engagement for a CI/CD pipeline's scans. Imports move the

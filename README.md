@@ -39,6 +39,7 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Product types | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Products | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Engagements | CRUD, partial update, list with an iterator, close and reopen, delete preview ✅ |
+| SLA configurations | CRUD, partial update, list with an iterator, lookup by name, delete preview, detection of the recalculation lock ✅ |
 | Server version | from the served OpenAPI schema ✅ |
 | User profile | the authenticated user and its contact information ✅ |
 

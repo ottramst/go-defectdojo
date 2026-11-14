@@ -1,0 +1,9 @@
+{
+  "non_field_errors": [
+    "Finding SLA expiration dates are currently being calculated. The SLA days for this SLA configuration cannot be changed until the calculation is complete."
+  ],
+  "message": "Finding SLA expiration dates are currently being calculated. The SLA days for this SLA configuration cannot be changed until the calculation is complete.",
+  "pro": [
+    "Pro comes with support. Get Pro from $100/mo or email us at hello@defectdojo.com"
+  ]
+}

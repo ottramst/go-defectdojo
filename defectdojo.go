@@ -58,11 +58,12 @@ type Client struct {
 	common service
 
 	// Services used for talking to different parts of the DefectDojo API.
-	Auth         *AuthService
-	Engagements  *EngagementsService
-	Products     *ProductsService
-	ProductTypes *ProductTypesService
-	UserProfile  *UserProfileService
+	Auth              *AuthService
+	Engagements       *EngagementsService
+	Products          *ProductsService
+	ProductTypes      *ProductTypesService
+	SLAConfigurations *SLAConfigurationsService
+	UserProfile       *UserProfileService
 }
 
 type service struct {
@@ -168,6 +169,7 @@ func (c *Client) initServices() {
 	c.Engagements = (*EngagementsService)(&c.common)
 	c.Products = (*ProductsService)(&c.common)
 	c.ProductTypes = (*ProductTypesService)(&c.common)
+	c.SLAConfigurations = (*SLAConfigurationsService)(&c.common)
 	c.UserProfile = (*UserProfileService)(&c.common)
 }
 
