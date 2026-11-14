@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**9 of 404 endpoints implemented.**
+**16 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -52,7 +52,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [product_origins](#product_origins) | 0 / 7 |
 | [product_platforms](#product_platforms) | 0 / 7 |
 | [product_types](#product_types) | 7 / 8 |
-| [products](#products) | 0 / 8 |
+| [products](#products) | 7 / 8 |
 | [regulations](#regulations) | 0 / 7 |
 | [reimport-scan](#reimport-scan) | 0 / 1 |
 | [request_response_pairs](#request_response_pairs) | 0 / 7 |
@@ -555,13 +555,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/products/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/products/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/products/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/products/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/products/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/products/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/products/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/products/` | ✅ | ✅ | `ProductsService.List` |  |
+| POST | `/api/v2/products/` | ✅ | ✅ | `ProductsService.Create` |  |
+| GET | `/api/v2/products/{id}/` | ✅ | ✅ | `ProductsService.Get` |  |
+| PUT | `/api/v2/products/{id}/` | ✅ | ✅ | `ProductsService.Update` |  |
+| PATCH | `/api/v2/products/{id}/` | ✅ | ✅ | `ProductsService.Patch` |  |
+| DELETE | `/api/v2/products/{id}/` | ✅ | ✅ | `ProductsService.Delete` |  |
+| GET | `/api/v2/products/{id}/delete_preview/` | ✅ | ✅ | `ProductsService.DeletePreview` |  |
 | POST | `/api/v2/products/{id}/generate_report/` | ✅ | ✅ |  |  |
 
 ## regulations
