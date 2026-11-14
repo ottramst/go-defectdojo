@@ -165,7 +165,7 @@ type notificationSettingsRequest struct {
 	// ScanAddedEmpty is a single channel, or "" for none. It is always
 	// sent: DefectDojo has no default for it in requests, so a PUT that
 	// leaves it out would keep it.
-	ScanAddedEmpty *string `json:"scan_added_empty,omitempty"`
+	ScanAddedEmpty string `json:"scan_added_empty"`
 }
 
 // newNotificationSettingsRequest validates notification settings and returns
@@ -208,14 +208,14 @@ func newNotificationSettingsRequest(n *NotificationSettings) (*notificationSetti
 
 // singleChannel returns the channel of scan_added_empty as DefectDojo's API
 // takes it: "" for none, or the one channel.
-func singleChannel(channels NotificationChannels) (*string, error) {
+func singleChannel(channels NotificationChannels) (string, error) {
 	switch len(channels) {
 	case 0:
-		return new(""), nil
+		return "", nil
 	case 1:
-		return &channels[0], nil
+		return channels[0], nil
 	}
-	return nil, fmt.Errorf("defectdojo: ScanAddedEmpty can hold one channel through DefectDojo's API, got %d", len(channels))
+	return "", fmt.Errorf("defectdojo: ScanAddedEmpty can hold one channel through DefectDojo's API, got %d", len(channels))
 }
 
 // NotificationSettingsPatch is the body of [NotificationsService.Patch]. Only
@@ -392,8 +392,9 @@ func (s *NotificationsService) GetByScope(ctx context.Context, user, product int
 
 // Create creates notification settings. Nil events are left out, so that
 // DefectDojo's default (alert) applies; an empty, non-nil event has no
-// channels, and so has a nil ScanAddedEmpty, whose default is none. A row for a scope that has one is a 400 ([ErrBadRequest]), and so
-// is a second template.
+// channels. A nil ScanAddedEmpty is sent as no channel, its default. A row
+// for a scope that has one is a 400 ([ErrBadRequest]), and so is a second
+// template.
 //
 // DefectDojo API: POST /api/v2/notifications/
 func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettings, opts ...RequestOption) (*NotificationSettings, *Response, error) {
