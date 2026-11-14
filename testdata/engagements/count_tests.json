@@ -1,0 +1,37 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "test_type_name": "API Test",
+      "deduplication_algorithm": "legacy",
+      "hash_code_fields": null,
+      "scan_type": null,
+      "title": "API scan",
+      "description": null,
+      "target_start": "2026-11-01T00:00:00Z",
+      "target_end": "2026-11-02T00:00:00Z",
+      "percent_complete": null,
+      "updated": "2026-11-14T11:57:48.938304Z",
+      "created": "2026-11-14T11:57:48.938309Z",
+      "version": null,
+      "build_id": null,
+      "commit_hash": null,
+      "branch_tag": null,
+      "archived_at": null,
+      "archive_batch": null,
+      "engagement": 1,
+      "lead": null,
+      "test_type": 1,
+      "environment": null,
+      "api_scan_configuration": null,
+      "notes": [],
+      "files": [],
+      "tags": [],
+      "finding_groups": []
+    }
+  ],
+  "prefetch": {}
+}

@@ -354,7 +354,8 @@ func (s *ProductsService) Create(ctx context.Context, p *Product, opts ...Reques
 // Every writable field is sent except a zero SLAConfiguration, nil
 // UserRecords and Revenue, and ProdNumericGrade, which are kept: empty
 // nullable fields are cleared, and nil AuthorizedUsers, Regulations and Tags remove
-// all entries. Update a product returned by [ProductsService.Get] to keep its
+// all entries. Clear UserRecords and Revenue with [ProductsService.Patch] and
+// [Null]. Update a product returned by [ProductsService.Get] to keep its
 // other fields, or use [ProductsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/products/{id}/

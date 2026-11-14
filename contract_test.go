@@ -61,6 +61,10 @@ var contracts = []contract{
 	{value: productRequest{}, schema: "ProductRequest", request: true},
 	{value: ProductPatch{}, schema: "PatchedProductRequest", request: true},
 	{value: listPage[Product]{}, schema: "PaginatedProductList"},
+	{value: Engagement{}, schema: "Engagement", since: map[string]string{"archived_at": "3.5.0", "archive_batch": "3.5.0"}},
+	{value: engagementRequest{}, schema: "EngagementRequest", request: true},
+	{value: EngagementPatch{}, schema: "PatchedEngagementRequest", request: true},
+	{value: listPage[Engagement]{}, schema: "PaginatedEngagementList"},
 	{value: DeletedObject{}, schema: "DeletePreview"},
 	{value: listPage[ProductType]{}, schema: "PaginatedProductTypeList"},
 	{value: tokenRequest{}, schema: "ForcedResetAuthTokenRequest", request: true},
@@ -148,6 +152,7 @@ func (s *openAPISpec) resolve(p *openAPISchema) *openAPISchema {
 
 var (
 	timeType     = reflect.TypeFor[time.Time]()
+	dateType     = reflect.TypeFor[Date]()
 	nullableName = reflect.TypeFor[Nullable[int]]().Name()[:len("Nullable")]
 )
 
@@ -253,8 +258,13 @@ func checkType(spec *openAPISpec, ft reflect.Type, prop *openAPISchema) error {
 	var got string
 	switch {
 	case ft == timeType:
-		if want != "string" || prop.Format != "date-time" && prop.Format != "date" {
+		if want != "string" || prop.Format != "date-time" {
 			return fmt.Errorf("Go time.Time, schema type %q format %q", want, prop.Format)
+		}
+		return nil
+	case ft == dateType:
+		if want != "string" || prop.Format != "date" {
+			return fmt.Errorf("Go Date, schema type %q format %q", want, prop.Format)
 		}
 		return nil
 	case ft.Kind() == reflect.String:
