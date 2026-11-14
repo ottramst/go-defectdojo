@@ -11,25 +11,32 @@ import (
 )
 
 // NotificationWebhooksService handles communication with the notification
-// webhook methods of the DefectDojo API. DefectDojo posts notifications to
-// the webhooks of users and products whose notification settings choose the
-// "webhooks" channel. The endpoints need a superuser.
+// webhook methods of the DefectDojo API. DefectDojo posts the notifications
+// whose settings choose the "webhooks" channel to the system webhooks, and a
+// user's notifications to the webhooks the user owns. The endpoints need a
+// superuser.
 //
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type NotificationWebhooksService service
 
 // Statuses of [NotificationWebhook.Status]. DefectDojo sets them when
-// deliveries fail; the API can't change them.
+// deliveries fail, and its UI when a webhook is deactivated or edited; the
+// API can't change them.
 const (
 	NotificationWebhookStatusActive = "active"
-	// NotificationWebhookStatusActiveTemporary means a delivery failed with
-	// a 5xx error or similar, and DefectDojo keeps trying.
+	// NotificationWebhookStatusActiveTemporary means a webhook was
+	// reactivated after a temporary failure, and fails permanently if the
+	// errors go on for a day.
 	NotificationWebhookStatusActiveTemporary = "active_tmp"
-	// NotificationWebhookStatusInactiveTemporary means deliveries failed for
-	// a while, and DefectDojo pauses them.
+	// NotificationWebhookStatusInactiveTemporary means a delivery failed
+	// with a 5xx or 429 response or a timeout, and DefectDojo pauses the
+	// webhook for about a minute.
 	NotificationWebhookStatusInactiveTemporary = "inactive_tmp"
 	// NotificationWebhookStatusInactivePermanent means DefectDojo gave up on
-	// the webhook. The API can't reactivate it: create a new one.
+	// the webhook: after a 4xx response, a connection error, a day of
+	// temporary errors, or a deactivation in the UI. The API can't
+	// reactivate it; editing it in the UI does, or delete it and create it
+	// again.
 	NotificationWebhookStatusInactivePermanent = "inactive_permanent"
 )
 
@@ -49,7 +56,8 @@ type NotificationWebhook struct {
 	// HeaderName and HeaderValue are a header that DefectDojo sends with
 	// each notification, such as an authorization header; each is at most
 	// 100 characters. DefectDojo returns HeaderValue in plain text to every
-	// client that may read the webhook.
+	// client that may read the webhook. Name, URL and the header are stored
+	// without leading and trailing whitespace.
 	HeaderName  string `json:"header_name"`
 	HeaderValue string `json:"header_value"`
 
@@ -57,8 +65,8 @@ type NotificationWebhook struct {
 	Status string `json:"status"`
 
 	// FirstError and LastError are when deliveries started failing and last
-	// failed, and Note describes the last error. They are zero or empty
-	// while deliveries succeed.
+	// failed, and Note describes the last error or status change, such as
+	// "Deactivate from UI".
 	FirstError time.Time `json:"first_error,omitzero"`
 	LastError  time.Time `json:"last_error,omitzero"`
 	Note       string    `json:"note"`
@@ -113,7 +121,9 @@ type NotificationWebhookPatch struct {
 // ListNotificationWebhooksOptions are the options of
 // [NotificationWebhooksService.List] and [NotificationWebhooksService.ListAll].
 // DefectDojo can also filter by header value, which the client leaves out so
-// that secrets don't end up in URLs and logs.
+// that secrets don't end up in URLs and logs. A Status that isn't one of the
+// NotificationWebhookStatus constants, or an Owner that doesn't exist, is a
+// 400 ([ErrBadRequest]).
 type ListNotificationWebhooksOptions struct {
 	ListOptions
 
@@ -152,6 +162,9 @@ func (s *NotificationWebhooksService) List(ctx context.Context, opt *ListNotific
 
 // ListAll returns an iterator over the notification webhooks, starting at
 // opt.Offset. It fetches opt.Limit webhooks per request (100 if zero).
+// DefectDojo lists webhooks in no particular order, so with more webhooks
+// than one request returns, a webhook that changes meanwhile can be skipped
+// or returned twice.
 //
 // Ranging over the iterator again starts over. On an error, the iterator
 // yields it once and stops.
