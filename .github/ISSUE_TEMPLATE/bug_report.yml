@@ -1,0 +1,60 @@
+name: Bug report
+description: Something in the client is not working as expected.
+labels: ["type/bug"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Thanks for taking the time to report a bug. Please check the
+        [support policy](https://github.com/ottramst/go-defectdojo#support-policy) first:
+        DefectDojo versions outside the tested range are supported on a best-effort basis only.
+  - type: input
+    id: client-version
+    attributes:
+      label: go-defectdojo version
+      description: The module version from your `go.mod`.
+      placeholder: "v0.1.0"
+    validations:
+      required: true
+  - type: input
+    id: go-version
+    attributes:
+      label: Go version
+      description: Output of `go version`.
+      placeholder: "go1.27.3 linux/amd64"
+    validations:
+      required: true
+  - type: input
+    id: defectdojo-version
+    attributes:
+      label: DefectDojo version
+      description: The DefectDojo version, as shown in the footer of the web UI or by `client.ServerVersion`, and whether it is the open-source edition or DefectDojo Pro.
+      placeholder: "3.5.103 (open source)"
+    validations:
+      required: true
+  - type: input
+    id: endpoints
+    attributes:
+      label: Affected services or methods
+      placeholder: ProductTypesService.Update
+  - type: textarea
+    id: code
+    attributes:
+      label: Code to reproduce
+      description: A minimal program that reproduces the problem. Remove any secrets.
+      render: go
+    validations:
+      required: true
+  - type: textarea
+    id: expected
+    attributes:
+      label: Expected behavior
+    validations:
+      required: true
+  - type: textarea
+    id: actual
+    attributes:
+      label: Actual behavior
+      description: Include the full error, and the status code and response body from `*defectdojo.ErrorResponse` if there is one.
+    validations:
+      required: true

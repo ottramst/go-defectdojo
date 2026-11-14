@@ -1,0 +1,34 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "created": null,
+      "updated": null,
+      "name": "Research and Development",
+      "description": null,
+      "critical_product": true,
+      "key_product": false,
+      "archived_at": null,
+      "archive_batch": null,
+      "authorized_users": []
+    },
+    {
+      "id": 4,
+      "created": "2026-11-14T08:32:05.530483Z",
+      "updated": "2026-11-14T08:32:05.530494Z",
+      "name": "Web Applications",
+      "description": "Customer-facing web applications",
+      "critical_product": true,
+      "key_product": false,
+      "archived_at": null,
+      "archive_batch": null,
+      "authorized_users": [
+        1
+      ]
+    }
+  ],
+  "prefetch": {}
+}

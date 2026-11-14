@@ -1,0 +1,35 @@
+name: Feature request
+description: Suggest a new endpoint, option, or improvement.
+labels: ["type/feature"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        Check the [roadmap](https://github.com/ottramst/go-defectdojo/milestones) and
+        [COVERAGE.md](https://github.com/ottramst/go-defectdojo/blob/main/COVERAGE.md) first:
+        the endpoint may already be planned.
+  - type: textarea
+    id: description
+    attributes:
+      label: Description
+      description: What would you like the client to do, and what problem does it solve?
+    validations:
+      required: true
+  - type: textarea
+    id: endpoints
+    attributes:
+      label: DefectDojo API endpoints
+      description: Optional. The endpoints involved (method and path), as listed in [COVERAGE.md](https://github.com/ottramst/go-defectdojo/blob/main/COVERAGE.md).
+      placeholder: POST /api/v2/products/
+  - type: textarea
+    id: usage
+    attributes:
+      label: Proposed usage
+      description: Optional. How you would like to call it from Go.
+      render: go
+  - type: input
+    id: defectdojo-version
+    attributes:
+      label: DefectDojo version
+      description: The DefectDojo version that provides the feature, if known.
+      placeholder: "3.5.0"

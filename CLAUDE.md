@@ -1,0 +1,110 @@
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+
+## Project Overview
+
+`github.com/ottramst/go-defectdojo` is a hand-written, idiomatic Go client for the [DefectDojo](https://github.com/DefectDojo/django-DefectDojo) REST API v2 (single package `defectdojo`, Go 1.26+, one dependency: `go-querystring`). It is pre-1.0. Breaking changes are allowed but must be listed under `BREAKING CHANGES` in `CHANGELOG.md`.
+
+Its main consumer is [terraform-provider-defectdojo](https://github.com/ottramst/terraform-provider-defectdojo), so v1.0 scope is DefectDojo's configuration objects: product types, products, engagements, SLA configurations, users, notifications, notification webhooks, Jira instances and projects, system settings, and lookup objects (regulations, note types, development environments, announcements, CI/CD infrastructure, product platforms/lifecycles/origins, test types). Runtime data (findings, tests, imports, risk acceptances) is backlog. Work is planned as GitHub milestones (v0.1.0 to v1.0.0) with one epic issue per area and one sub-issue per service. The OpenAPI schema is the reference, but the code is hand-written, not generated.
+
+The client supports and tests the latest patch of the two newest DefectDojo minors (currently 3.5.103 and 3.4.304), listed in `.github/defectdojo-versions.json`. DefectDojo renames and retypes fields in minor releases (3.2 renamed the engagement CI/CD fields, 3.3 turned product platform/lifecycle/origin into lookup tables, 3.6 removes the tool configuration endpoints), so check new code against both versions. 2.x is not supported: 3.0 removed the role-based access endpoints (groups, members, roles) from the open-source edition.
+
+## Common Commands
+
+```bash
+make default     # fmt, lint, test
+make build       # go build ./...
+make fmt         # gofmt -s
+make lint        # golangci-lint (v2 config, zero tolerance)
+make test        # unit tests
+make up          # start DefectDojo (DD_VERSION defaults to the newest supported)
+make testacc     # unit + acceptance tests (needs `make up`, DEFECTDOJO_ACC=1)
+make contract    # check the types against the supported versions' OpenAPI schemas
+make coverage    # download the schemas to .cache/ and regenerate COVERAGE.md
+make down        # stop the stack and delete its data
+```
+
+Run a single test:
+```bash
+go test -v -run TestProductTypesService_Patch ./...
+DEFECTDOJO_ACC=1 go test -v -run TestAccProductTypes ./...
+```
+
+## Running Acceptance Tests Locally
+
+```bash
+make up                        # DefectDojo 3.5.103 on localhost:8080, about 30 seconds
+# make up DD_VERSION=3.4.304   # the other supported version (make down first)
+make testacc
+make down
+```
+
+The compose stack is PostgreSQL 18 (tmpfs), Valkey, a one-shot `initializer` (migrations, admin user, fixtures), `uwsgi`, and DefectDojo's `nginx` on `127.0.0.1:8080`. Celery is left out (the API doesn't need it) and `DD_ASYNC_OBJECT_DELETE` is off, so deletes are synchronous. Don't publish uwsgi's own HTTP router (port 8081): it is meant for liveness checks, and with it the writes after the first request failed with `EOF` in CI (observed, consistent with dropped keep-alive connections; Go retries only idempotent requests). The nginx image has `wget` but no `curl` in 3.5. The superuser is `admin` / `DefectDojoAcc1!`. Tests read `DEFECTDOJO_URL`, `DEFECTDOJO_API_TOKEN` or `DEFECTDOJO_USERNAME`/`DEFECTDOJO_PASSWORD`, falling back to those defaults. Fixtures that the initializer loads: the product type "Research and Development" (id 1, null timestamps), the "Default" SLA configuration, development environments, regulations and test types.
+
+## Architecture
+
+**Client core (`defectdojo.go`, `request.go`, `errors.go`, `pagination.go`, `nullable.go`):**
+- `NewClient(baseURL, ...ClientOption)`. Options: `WithAPIToken` (`Authorization: Token <t>`), `WithBasicAuth`, `WithHTTPClient`, `WithUserAgent`. The base URL keeps any path prefix and loses its trailing slash. The default `http.Client` has no timeout; contexts govern. The User-Agent is `go-defectdojo/<module version>`, read from build info.
+- **Redirects are not followed.** `withoutRedirects` copies the HTTP client (also one passed to `WithHTTPClient`, unless it has its own `CheckRedirect`) and returns the 3xx response, which `CheckResponse` turns into an `*ErrorResponse` naming the `Location`. DefectDojo redirects paths without a trailing slash (301), and following would turn writes into reads.
+- Services use the go-github pattern: `type ProductTypesService service`, all sharing `Client.common`. A new service needs a field on `Client` and a line in `initServices()`.
+- `NewRequest(ctx, method, path, body, ...RequestOption)`: `path` is the literal API path (`/api/v2/.../`) with its trailing slash, segments already escaped and an optional `?query`. Paths with a `#` or unescaped characters are rejected. Headers: `Accept`, `Content-Type` (JSON bodies only), `User-Agent`, `Authorization`, then the caller's options. An `io.Reader` body is sent raw.
+- `Do(req, v)`: non-2xx returns `*ErrorResponse`. `v == nil` drains the body, an `io.Writer` gets it raw, anything else is JSON-decoded; an empty body (204) leaves `v` untouched; data after the JSON value is an error.
+- Helpers: `addQuery(path, opt)` encodes `url:"..."` tags with go-querystring; `WithQueryParam` appends without re-encoding; `requirePositive(name, id)` rejects IDs ≤ 0 so no request goes to a list endpoint by mistake.
+- `ErrorResponse{StatusCode, Message, Fields, Body}`. `Message` is the body's `message`, else its `detail`. `Fields` holds the other keys whose values are a string or a list of strings (DRF validation errors, including `non_field_errors`); the `pro` advertisement key is dropped. `Is()` maps 400/401/403/404/409/429 to the sentinels. Non-JSON bodies become `Message`, cut to 512 bytes.
+- `paginate` (offset pagination over `{count, next, results}`) backs every `ListAll` iterator: lazy, restartable, yields an error once and stops, stops on an empty page. `ListOptions{Limit, Offset}` is embedded in list option structs.
+- `Nullable[T]` (`Value(v)`, `Null[T]()`) is for nullable fields of `…Patch` structs, tagged `omitzero`: left out, `null`, or a value.
+
+**Service conventions** (`product_types.go` is the template):
+- Method names: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update` (PUT), `Patch` (PATCH), `Delete`, `DeletePreview`. Other operations are named after the endpoint.
+- Signatures: `(ctx, id int, body/options, ...RequestOption) (*T, *Response, error)`, or `(*Response, error)` without a body. IDs are DefectDojo's integer IDs.
+- Every method that calls one endpoint ends its doc comment with `// DefectDojo API: METHOD /api/v2/path/{id}/`, matching the schema path exactly; `tools/coverage` parses it (and godot ignores it). Helpers that read another service's endpoint, like `CountProducts`, name the endpoint in prose instead.
+- One exported type per object for reads and writes (`ProductType`), with JSON tags. `Create` and `Update` send an unexported `…Request` struct with only the writable fields, built by `new…Request`, which validates required fields and never mutates the caller's value. `Update` sends every writable field, so `""` clears text and a nil slice becomes `[]`. `…Patch` structs use pointers with `omitempty` for non-nullable fields and `Nullable[T]` with `omitzero` for nullable ones.
+- Nullable strings in responses decode as `""`; nullable timestamps as the zero `time.Time` (`omitzero`).
+- `GetByName` lists with the name filter and re-checks for an exact match on the client side, returning an error that matches `ErrNotFound`. Filters vary by endpoint (`name` is exact and case-sensitive on product types, a case-insensitive contains match on products, which also has `name_exact`).
+- Every type the client sends or decodes is listed in `contracts` in `contract_test.go`.
+
+**DefectDojo API quirks** (verified against 3.4.304 and 3.5.103):
+- Authentication: a missing or invalid token is **403** (`{"detail": "Invalid token."}`), not 401. Basic auth always works; tokens only when `DD_API_TOKENS_ENABLED`. `POST /api/v2/api-token-auth/` returns `{"token"}`, the same token every time.
+- Paths need their trailing slash: without it, 301 to the slashed path.
+- Errors: 404 is `{"detail": "No Product_Type matches the given query."}`. 400 is a field map plus a sentence-form `message` (3.4.300+) and a `pro` advertisement. A duplicate unique name is a **400** with a field error, not a 409; 409 means a delete blocked by a reference, or a race.
+- Unknown request fields are ignored, not rejected.
+- PUT keeps fields that are left out (only `name` is required on product types); PATCH changes only what is sent. `null` clears nullable fields; `authorized_users: null` is a 400, `[]` clears it.
+- Product types: `name` is unique, case-sensitive; `?name=` is an exact, case-sensitive match. `description` is nullable and stored as given (`""` and `null` differ). `created`/`updated` are null for fixtures. `archived_at`/`archive_batch` exist from 3.5 (DefectDojo Pro archiving) and are always null in the open-source edition.
+- **Deleting a product type deletes its products** with their engagements, tests and findings, and answers 204. `delete_preview` lists every object a delete removes, the object itself and M2M rows (`Product_Type_authorized_users`) included; on 3.4 it loads the whole tree. `GET /api/v2/products/?prod_type={id}&limit=1` counts the products cheaply.
+- There is no version endpoint: `info.version` of `GET /api/v2/oa3/schema/?format=json` (about 860 KB, served without authentication) is the only source.
+
+**Tooling:** `tools/coverage/` is a separate module, so the library keeps one dependency. It parses the `oas.json` release assets in `.cache/specs/` (JSON, read as YAML) and the `// DefectDojo API:` annotations, then writes `COVERAGE.md`. It fails on malformed annotations, annotations that match no schema, are not on a method, or are duplicated. Versions are passed oldest first.
+
+## Test Patterns
+
+- Unit tests are in package `defectdojo_test` and use the standard library only (no testify). Assertions read `t.Errorf("X = %q, want %q", got, want)`.
+- Helpers in `helpers_test.go`: `setup(t)` returns `(*http.ServeMux, *defectdojo.Client)` against an `httptest.Server`; `testHeader`, `testQuery`, `testJSONBody` (semantic JSON comparison), `fixture(t, "product_types/get.json")`, `writeJSON`.
+- Register handlers with method patterns (`mux.HandleFunc("PATCH /api/v2/product_types/4/", ...)`), so a wrong path (404) or method (405) fails the test.
+- Cover for each method: the happy path and the exact request body; read-only fields are not sent and the caller's value is not mutated; error mapping; ID and nil-body guards.
+- Fixtures in `testdata/` are **captured from real DefectDojo responses** (curl against the compose stack).
+- Acceptance tests (`*_acc_test.go`, `TestAcc*`): use `accClient(t)`, which skips unless `DEFECTDOJO_ACC` is set and never skips after that. Name objects with `randName(t, "acc")` and remove them in `cleanup(t, ...)`. Each test runs a full lifecycle: create, duplicate, get, get by name, read-modify-write update, patch, list, delete, then get returning `ErrNotFound`.
+- `contract_test.go` (package `defectdojo`, so it sees the unexported request types) runs when `DEFECTDOJO_SPEC_DIR` is set (`make contract`). It checks each listed type's JSON fields against its schema component: the property exists, its primitive type and nullability match, request fields are writable, and every required property is sent. Fields newer versions added go in `since`. `DEFECTDOJO_SPEC_VERSIONS` overrides the versions (the canary uses `nightly`, which counts as newest).
+- `example_test.go` holds compile-only `Example*` functions (no `// Output:`).
+
+## CI
+
+GitHub Actions workflows in `.github/workflows/`:
+- `main.yml` ("CI/CD") calls the reusable `lint`, `build`, `test` and `coverage` workflows. The single `CI gate` job is the required status check.
+- `build`: go.mod tidy check, build, vet, and race-enabled unit tests on Go 1.26.x and 1.27.x. The go.mod `go` directive is the oldest one.
+- `test`: a `versions` job reads `.github/defectdojo-versions.json` (and checks that the `DD_VERSION` default in `docker-compose.yml` is its newest version), then the acceptance tests run on each version via `docker compose up -d --wait` with `DD_VERSION` from the matrix.
+- `coverage`: tests the coverage tool, runs `make contract` and `make coverage`, and fails if `COVERAGE.md` changed.
+- `upstream.yml` (scheduled, not in the CI gate): the nightly `canary` runs the acceptance tests and the contract test (against the served schema) on the `nightly-dev` image; the `release-watch` job opens a `type/chore` issue on Mondays when DefectDojo has a newer minor release than the newest supported one.
+- Also: CodeQL, govulncheck and dependency review (`security.yml`), OpenSSF Scorecard, actionlint plus zizmor for workflow changes (reusable workflows are called with `./` paths plus `# zizmor: ignore[self-repository]`), lock threads, and waiting-response triage.
+- `release.yml`: pushing a `vX.Y.Z` tag creates the GitHub release from the `## vX.Y.Z` section of `CHANGELOG.md` (the heading must match exactly), in the `release` environment, which only allows `v*` tags. A `warm-proxy` job then warms proxy.golang.org. Never push a throwaway tag to test it: proxy versions cannot be removed.
+- All actions are pinned to commit SHAs with a version comment. Workflows use top-level `permissions: {}` or `contents: read` and grant more per job. Every job has a timeout, and checkouts use `persist-credentials: false`.
+- Never commit downloaded files: `.cache/` (the schemas) must stay in `.gitignore`.
+
+## Rules
+
+- Add a `CHANGELOG.md` entry under `## Unreleased` for user-visible changes (HashiCorp style: `BREAKING CHANGES`, `FEATURES`, `ENHANCEMENTS`, `BUG FIXES`, `NOTES`), linking the issue.
+- Every new service method needs the `// DefectDojo API:` annotation, unit tests, an acceptance test on both supported versions, its types in `contracts`, and a regenerated `COVERAGE.md` (`make coverage`).
+- Pull request titles follow Conventional Commits (`feat(products): ...`, `fix(product-types)!: ...`). PRs are squash-merged and reference their issue (`Closes #N`).
+- Keep the library to the standard library plus go-querystring. Tooling dependencies belong in `tools/`.
+- Record newly discovered DefectDojo API quirks in the "DefectDojo API quirks" section above.
+- Every pull request, including Dependabot and release pull requests, gets an independent review by the `pr-reviewer` subagent (`.claude/agents/pr-reviewer.md`) before it is merged. Spawn it with the PR number and the PR's purpose only, not your own conclusions, so the review is independent. Fix confirmed findings on the PR branch, and have the fix commits reviewed again before merging.
