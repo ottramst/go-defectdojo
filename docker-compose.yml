@@ -7,7 +7,7 @@
 #
 # Celery (background tasks) is left out: the API does not need it. nginx stays
 # in front of uwsgi: uwsgi's own HTTP router on port 8081 is only meant for
-# liveness checks, and drops reused connections.
+# liveness checks, and writes through it failed with EOF in CI.
 name: go-defectdojo
 
 x-defectdojo-env: &defectdojo-env
