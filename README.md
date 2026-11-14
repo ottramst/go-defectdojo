@@ -48,6 +48,7 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Notification settings | CRUD, partial update, list with an iterator, lookup by scope (system, template, user, product), delete preview ✅ |
 | System settings | get, partial update ✅ |
 | Jira instances | CRUD, partial update, list with an iterator, lookup by name, delete preview, count of the Jira projects using one ✅ |
+| Jira projects | CRUD, partial update, list with an iterator, delete preview ✅ |
 
 [COVERAGE.md](COVERAGE.md) lists every endpoint of the DefectDojo OpenAPI schemas and the method that
 implements it.

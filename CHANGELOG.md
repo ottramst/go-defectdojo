@@ -4,10 +4,12 @@ FEATURES:
 
 * New `SystemSettings` service: `Get` and `Patch` (`SystemSettingsPatch`). DefectDojo has no GET by ID, and no `Update`: a PUT keeps the fields it leaves out, like a PATCH ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
 * New `JiraInstances` service: `List`, `ListAll`, `Get`, `GetByName`, `Create` and `Update` (with `JiraInstanceWrite`, which adds the password DefectDojo never returns), `Patch`, `Delete`, `DeletePreview` and `CountJiraProjects` ([#19](https://github.com/ottramst/go-defectdojo/issues/19))
+* New `JiraProjects` service for the Jira project configurations of products and engagements: `List`, `ListAll`, `Get`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`. `CustomFields`, `CloseTransitionFields` and `ReopenTransitionFields` are `json.RawMessage`, nil when unset ([#20](https://github.com/ottramst/go-defectdojo/issues/20))
 * `ErrLocked`, which a 423 response matches: DefectDojo 3.5.100 and later answer every change with it while the system setting `read_only_mode` is on ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
 
 NOTES:
 
+* `JiraProjects`: a product can get several Jira project configurations, of which DefectDojo uses only one, so check with `List` before `Create`; an engagement can have one. Deleting a configuration deletes its links between findings and Jira issues. `SuppressSLANotificationComments` is nil before DefectDojo 3.5.103, which ignores it, and can't be set together with `ProductJiraSLANotification`. `Create` sends every writable field, so `Enabled`, which DefectDojo defaults to `true`, is `false` unless it is set ([#20](https://github.com/ottramst/go-defectdojo/issues/20))
 * `JiraInstances`: DefectDojo answers a delete of an instance that Jira projects use with a 500, not a 409, and `DeletePreview` doesn't show those projects: check `CountJiraProjects` first. A `Patch` that changes the URL needs the password. `ConfigurationName` isn't unique, so `GetByName` returns an error when several instances have the name ([#19](https://github.com/ottramst/go-defectdojo/issues/19))
 * `SystemSettings` returns `SlackToken`, `MSTeamsURL` and `JiraWebhookSecret` in plain text, as DefectDojo does. `SystemSettings.Patch` rejects password lengths outside 9 to 48, and a minimum above the maximum when both are in the patch, which DefectDojo accepts. `ReadOnlyMode` is nil on servers before 3.5.100, which ignore it in a patch ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
 
