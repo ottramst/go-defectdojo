@@ -1,0 +1,125 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "product": null,
+      "user": 1,
+      "product_type_added": [
+        "alert"
+      ],
+      "product_added": [
+        "alert"
+      ],
+      "engagement_added": [
+        "alert"
+      ],
+      "test_added": [
+        "alert"
+      ],
+      "scan_added": [
+        "alert"
+      ],
+      "jira_update": [
+        "alert"
+      ],
+      "upcoming_engagement": [
+        "alert"
+      ],
+      "stale_engagement": [
+        "alert"
+      ],
+      "auto_close_engagement": [
+        "alert"
+      ],
+      "close_engagement": [
+        "alert"
+      ],
+      "user_mentioned": [
+        "alert"
+      ],
+      "code_review": [
+        "alert"
+      ],
+      "review_requested": [
+        "alert"
+      ],
+      "other": [
+        "alert"
+      ],
+      "sla_breach": [
+        "alert"
+      ],
+      "sla_breach_combined": [
+        "alert"
+      ],
+      "risk_acceptance_expiration": [
+        "alert"
+      ],
+      "template": false,
+      "scan_added_empty": []
+    },
+    {
+      "id": 35,
+      "product": 284,
+      "user": 1,
+      "product_type_added": [
+        "alert"
+      ],
+      "product_added": [
+        "mail",
+        "alert"
+      ],
+      "engagement_added": [
+        "alert"
+      ],
+      "test_added": [
+        "alert"
+      ],
+      "scan_added": [
+        "alert"
+      ],
+      "jira_update": [
+        "alert"
+      ],
+      "upcoming_engagement": [
+        "alert"
+      ],
+      "stale_engagement": [
+        "alert"
+      ],
+      "auto_close_engagement": [
+        "alert"
+      ],
+      "close_engagement": [
+        "alert"
+      ],
+      "user_mentioned": [
+        "alert"
+      ],
+      "code_review": [
+        "alert"
+      ],
+      "review_requested": [
+        "alert"
+      ],
+      "other": [
+        "alert"
+      ],
+      "sla_breach": [],
+      "sla_breach_combined": [
+        "alert"
+      ],
+      "risk_acceptance_expiration": [
+        "alert"
+      ],
+      "template": false,
+      "scan_added_empty": [
+        "mail"
+      ]
+    }
+  ],
+  "prefetch": {}
+}
