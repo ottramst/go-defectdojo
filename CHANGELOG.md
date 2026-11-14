@@ -1,4 +1,4 @@
-## Unreleased
+## v0.3.0
 
 FEATURES:
 
@@ -12,6 +12,7 @@ NOTES:
 * `JiraProjects`: a product can get several Jira project configurations, of which DefectDojo uses only one, so check with `List` before `Create`; an engagement can have one. Deleting a configuration deletes its links between findings and Jira issues. `SuppressSLANotificationComments` is nil before DefectDojo 3.5.103, which ignores it, and can't be set together with `ProductJiraSLANotification`. `Create` sends every writable field, so `Enabled`, which DefectDojo defaults to `true`, is `false` unless it is set ([#20](https://github.com/ottramst/go-defectdojo/issues/20))
 * `JiraInstances`: DefectDojo answers a delete of an instance that Jira projects use with a 500, not a 409, and `DeletePreview` doesn't show those projects: check `CountJiraProjects` first. A `Patch` that changes the URL needs the password. `ConfigurationName` isn't unique, so `GetByName` returns an error when several instances have the name ([#19](https://github.com/ottramst/go-defectdojo/issues/19))
 * `SystemSettings` returns `SlackToken`, `MSTeamsURL` and `JiraWebhookSecret` in plain text, as DefectDojo does. `SystemSettings.Patch` rejects password lengths outside 9 to 48, and a minimum above the maximum when both are in the patch, which DefectDojo accepts. `ReadOnlyMode` is nil on servers before 3.5.100, which ignore it in a patch ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
+* Completes the v0.3.0 milestone (system settings, Jira instances and Jira projects), for terraform-provider-defectdojo v0.3.0. Tested against DefectDojo 3.4.304 and 3.5.103
 
 ## v0.2.0
 
