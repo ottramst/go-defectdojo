@@ -280,14 +280,19 @@ var aliases = map[string]string{
 	"/api/v2/jira_product_configurations/": "/api/v2/jira_projects/",
 }
 
-// aliasOf returns the endpoint that ep repeats, if it is an alias.
+// aliasOf returns the endpoint that ep repeats, if it is an alias. The
+// longest matching prefix wins, so the result doesn't depend on map order.
 func aliasOf(ep endpoint) (endpoint, bool) {
-	for prefix, target := range aliases {
-		if rest, ok := strings.CutPrefix(ep.path, prefix); ok {
-			return endpoint{ep.method, target + rest}, true
+	best := ""
+	for prefix := range aliases {
+		if strings.HasPrefix(ep.path, prefix) && len(prefix) > len(best) {
+			best = prefix
 		}
 	}
-	return endpoint{}, false
+	if best == "" {
+		return endpoint{}, false
+	}
+	return endpoint{ep.method, aliases[best] + strings.TrimPrefix(ep.path, best)}, true
 }
 
 func render(w io.Writer, specs []*spec, impl map[endpoint]annotation) error {

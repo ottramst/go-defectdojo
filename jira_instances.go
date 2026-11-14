@@ -86,7 +86,8 @@ type JiraInstanceWrite struct {
 	JiraInstance
 
 	// Password is the password or API token of the Jira account (at most
-	// 2000 characters). It is required.
+	// 2000 characters). It is required and can't be blank; DefectDojo stores
+	// it without surrounding whitespace.
 	Password string `json:"-"`
 }
 
