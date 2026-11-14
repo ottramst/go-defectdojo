@@ -182,7 +182,7 @@ edition. DefectDojo Pro features are not tested.
 The path to v1.0 is tracked in [milestones](https://github.com/ottramst/go-defectdojo/milestones) and
 on the [DefectDojo roadmap board](https://github.com/users/ottramst/projects/4), together with
 [terraform-provider-defectdojo](https://github.com/ottramst/terraform-provider-defectdojo). Each epic
-issue lists its services as sub-issues:
+issue lists its work as sub-issues:
 
 | Milestone | Scope |
 | --- | --- |
