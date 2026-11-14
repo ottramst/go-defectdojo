@@ -346,7 +346,15 @@ func TestEngagementsService_invalidArguments(t *testing.T) {
 			_, _, err := client.Engagements.Patch(ctx, 0, &defectdojo.EngagementPatch{})
 			return err
 		},
-		"Patch nil":             func() error { _, _, err := client.Engagements.Patch(ctx, 1, nil); return err },
+		"Patch nil": func() error { _, _, err := client.Engagements.Patch(ctx, 1, nil); return err },
+		"Patch zero target start": func() error {
+			_, _, err := client.Engagements.Patch(ctx, 1, &defectdojo.EngagementPatch{TargetStart: &defectdojo.Date{}})
+			return err
+		},
+		"Patch zero target end": func() error {
+			_, _, err := client.Engagements.Patch(ctx, 1, &defectdojo.EngagementPatch{TargetEnd: &defectdojo.Date{}})
+			return err
+		},
 		"Delete zero ID":        func() error { _, err := client.Engagements.Delete(ctx, 0); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.Engagements.DeletePreview(ctx, 0, nil); return err },
 		"Close zero ID":         func() error { _, err := client.Engagements.Close(ctx, 0); return err },

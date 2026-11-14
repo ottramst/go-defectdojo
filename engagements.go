@@ -50,9 +50,10 @@ type Engagement struct {
 	// engagement to another product.
 	Product int `json:"product"`
 
-	// Name is at most 300 characters and need not be unique. DefectDojo names
-	// an engagement without a name after its TargetStart, such as
-	// "2026-01-05".
+	// Name is at most 300 characters and need not be unique. An engagement
+	// can't be without a name: DefectDojo names it after its TargetStart,
+	// such as "2026-01-05", when it is created or updated with an empty or
+	// null name.
 	Name string `json:"name"`
 
 	// Description and Reason are at most 2000 characters.
@@ -71,13 +72,15 @@ type Engagement struct {
 
 	FirstContacted Date `json:"first_contacted"`
 
-	// Status is one of the EngagementStatus constants. DefectDojo uses
-	// EngagementStatusNotStarted when it is empty. Close and Reopen change
-	// it, and so does DefectDojo's automatic closing of engagements.
+	// Status is one of the EngagementStatus constants. When it is empty,
+	// Create uses EngagementStatusNotStarted and Update keeps the current
+	// status. Close and Reopen change it, and so does DefectDojo's automatic
+	// closing of engagements.
 	Status string `json:"status"`
 
 	// EngagementType is EngagementTypeInteractive or EngagementTypeCICD.
-	// DefectDojo uses EngagementTypeInteractive when it is empty.
+	// When it is empty, Create uses EngagementTypeInteractive and Update
+	// keeps the current type.
 	EngagementType string `json:"engagement_type"`
 
 	// Active is false once the engagement is closed. Only
@@ -229,13 +232,19 @@ func newEngagementRequest(e *Engagement) (*engagementRequest, error) {
 // EngagementPatch is the body of [EngagementsService.Patch]. Only the fields
 // that are set are changed.
 type EngagementPatch struct {
-	Product                   *int             `json:"product,omitempty"`
-	Name                      Nullable[string] `json:"name,omitzero"`
+	Product *int `json:"product,omitempty"`
+
+	// Name can't be cleared: null or "" names the engagement after its
+	// target start.
+	Name Nullable[string] `json:"name,omitzero"`
+
+	// TargetStart and TargetEnd must not point to the zero Date.
+	TargetStart *Date `json:"target_start,omitempty"`
+	TargetEnd   *Date `json:"target_end,omitempty"`
+
 	Description               Nullable[string] `json:"description,omitzero"`
 	Reason                    Nullable[string] `json:"reason,omitzero"`
 	Version                   Nullable[string] `json:"version,omitzero"`
-	TargetStart               *Date            `json:"target_start,omitempty"`
-	TargetEnd                 *Date            `json:"target_end,omitempty"`
 	FirstContacted            Nullable[Date]   `json:"first_contacted,omitzero"`
 	Status                    *string          `json:"status,omitempty"`
 	EngagementType            *string          `json:"engagement_type,omitempty"`
@@ -394,6 +403,10 @@ func (s *EngagementsService) Patch(ctx context.Context, id int, patch *Engagemen
 	}
 	if patch == nil {
 		return nil, nil, errors.New("defectdojo: engagement patch must not be nil")
+	}
+	if patch.TargetStart != nil && patch.TargetStart.IsZero() || patch.TargetEnd != nil && patch.TargetEnd.IsZero() {
+		// A zero Date is sent as null, a 400.
+		return nil, nil, errors.New("defectdojo: engagement patch TargetStart and TargetEnd must not be zero")
 	}
 	// null is a 400 for lists; send [] from a copy, leaving the caller's
 	// patch as is.

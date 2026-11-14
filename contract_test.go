@@ -7,6 +7,7 @@ import (
 	"os"
 	"path/filepath"
 	"reflect"
+	"slices"
 	"strconv"
 	"strings"
 	"testing"
@@ -49,6 +50,10 @@ type contract struct {
 	// since maps properties that newer DefectDojo versions added to the
 	// first version that has them. They are not checked on older versions.
 	since map[string]string
+
+	// nonZero lists request properties that are never sent as null because
+	// the request's constructor rejects their zero value.
+	nonZero []string
 }
 
 // contracts lists every type the client sends or decodes. Add new types here.
@@ -62,7 +67,7 @@ var contracts = []contract{
 	{value: ProductPatch{}, schema: "PatchedProductRequest", request: true},
 	{value: listPage[Product]{}, schema: "PaginatedProductList"},
 	{value: Engagement{}, schema: "Engagement", since: map[string]string{"archived_at": "3.5.0", "archive_batch": "3.5.0"}},
-	{value: engagementRequest{}, schema: "EngagementRequest", request: true},
+	{value: engagementRequest{}, schema: "EngagementRequest", request: true, nonZero: []string{"target_start", "target_end"}},
 	{value: EngagementPatch{}, schema: "PatchedEngagementRequest", request: true},
 	{value: listPage[Engagement]{}, schema: "PaginatedEngagementList"},
 	{value: DeletedObject{}, schema: "DeletePreview"},
@@ -191,7 +196,7 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 		if nullable && !prop.Nullable {
 			t.Errorf("%s.%s: Nullable, but property %q is not nullable in %s", typ.Name(), f.Name, name, c.schema)
 		}
-		if c.request && sendsNull(f) && !prop.Nullable {
+		if c.request && sendsNull(f) && !prop.Nullable && !slices.Contains(c.nonZero, name) {
 			t.Errorf("%s.%s: sent as null when nil, but property %q is not nullable in %s", typ.Name(), f.Name, name, c.schema)
 		}
 		if err := checkType(spec, ft, prop); err != nil {
@@ -207,11 +212,13 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 	}
 }
 
-// sendsNull reports whether a request field is sent as null: a pointer that
-// is not left out when nil.
+// sendsNull reports whether a request field can be sent as null: a pointer,
+// or a Date (whose zero value is null), that is not left out when nil or
+// zero.
 func sendsNull(f reflect.StructField) bool {
 	_, opts, _ := strings.Cut(f.Tag.Get("json"), ",")
-	return f.Type.Kind() == reflect.Pointer && !strings.Contains(opts, "omitempty") && !strings.Contains(opts, "omitzero")
+	return (f.Type.Kind() == reflect.Pointer || f.Type == dateType) &&
+		!strings.Contains(opts, "omitempty") && !strings.Contains(opts, "omitzero")
 }
 
 // compareVersions compares two dotted versions such as "3.5.103". Missing
