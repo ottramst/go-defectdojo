@@ -1,0 +1,22 @@
+{
+  "count": 52,
+  "next": "http://localhost:8080/api/v2/configuration_permissions/?limit=3&offset=4",
+  "previous": "http://localhost:8080/api/v2/configuration_permissions/?limit=3",
+  "results": [
+    {
+      "id": 8,
+      "name": "Can view group",
+      "codename": "view_group"
+    },
+    {
+      "id": 9,
+      "name": "Can add user",
+      "codename": "add_user"
+    },
+    {
+      "id": 10,
+      "name": "Can change user",
+      "codename": "change_user"
+    }
+  ]
+}

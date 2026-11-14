@@ -133,6 +133,30 @@ func ExampleEngagementsService_Create() {
 	fmt.Println(e.ID)
 }
 
+func ExampleUsersService_Create() {
+	var client *defectdojo.Client // from NewClient
+	ctx := context.Background()
+	// Permission IDs differ between DefectDojo installations: look them up
+	// by codename.
+	perm, _, err := client.ConfigurationPermissions.GetByCodename(ctx, "add_product_type")
+	if err != nil {
+		log.Fatal(err)
+	}
+	u, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+		User: defectdojo.User{
+			Username:                 "dependency-track",
+			Email:                    "dependency-track@example.com",
+			IsActive:                 true, // false unless set
+			ConfigurationPermissions: []int{perm.ID},
+		},
+		Password: "Initial-Passw0rd!",
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(u.ID)
+}
+
 func ExampleUserProfileService_Get() {
 	var client *defectdojo.Client // from NewClient
 	profile, _, err := client.UserProfile.Get(context.Background())

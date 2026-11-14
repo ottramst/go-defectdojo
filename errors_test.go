@@ -41,7 +41,12 @@ func TestErrorResponse(t *testing.T) {
 			sentinel: defectdojo.ErrTooManyRequests, wantMessage: "Request was throttled."},
 		{name: "plain text body", status: 502, body: "Bad Gateway\n", wantMessage: "Bad Gateway"},
 		{name: "unexpected field types", status: 400, body: `{"message":{"x":1},"count":3}`, sentinel: defectdojo.ErrBadRequest},
-		{name: "JSON array body", status: 500, body: `["x"]`, wantMessage: `["x"]`},
+		// Some views answer with a bare JSON string or list of strings.
+		{name: "JSON string body", status: 400, body: `"Users may not delete themselves"`, sentinel: defectdojo.ErrBadRequest,
+			wantMessage: "Users may not delete themselves"},
+		{name: "JSON string list body", status: 400, body: `["Resetting your own API token via this endpoint is not allowed.","x"]`,
+			sentinel: defectdojo.ErrBadRequest, wantMessage: "Resetting your own API token via this endpoint is not allowed. x"},
+		{name: "other JSON array body", status: 500, body: `[1]`, wantMessage: `[1]`},
 		{name: "empty body", status: 503},
 	}
 	for _, tt := range tests {

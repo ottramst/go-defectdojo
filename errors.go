@@ -144,12 +144,23 @@ var ignoredErrorFields = map[string]bool{
 }
 
 // parseErrorBody sets the fields of e from a DefectDojo error body. Fields of
-// an unexpected type are skipped. A body that is not a JSON object, such as
-// the error page of a proxy, becomes the message, shortened.
+// an unexpected type are skipped. A JSON string or list of strings, which some
+// views answer with ("Users may not delete themselves"), becomes the message.
+// Any other body that is not a JSON object, such as the error page of a
+// proxy, becomes the message, shortened.
 func parseErrorBody(e *ErrorResponse, data []byte) {
 	var fields map[string]json.RawMessage
 	if json.Unmarshal(data, &fields) != nil {
-		e.Message = truncate(strings.TrimSpace(string(data)), maxTextMessageLength)
+		var msg string
+		var msgs []string
+		switch {
+		case json.Unmarshal(data, &msg) == nil:
+		case json.Unmarshal(data, &msgs) == nil:
+			msg = strings.Join(msgs, " ")
+		default:
+			msg = strings.TrimSpace(string(data))
+		}
+		e.Message = truncate(msg, maxTextMessageLength)
 		return
 	}
 	var message, detail string

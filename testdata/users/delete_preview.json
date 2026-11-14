@@ -1,0 +1,42 @@
+{
+  "count": 7,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "User",
+      "id": 7,
+      "name": "dependency-track"
+    },
+    {
+      "model": "User_user_permissions",
+      "id": 3,
+      "name": "User_user_permissions object (3)"
+    },
+    {
+      "model": "User_user_permissions",
+      "id": 4,
+      "name": "User_user_permissions object (4)"
+    },
+    {
+      "model": "UserContactInfo",
+      "id": 3,
+      "name": "UserContactInfo object (3)"
+    },
+    {
+      "model": "Notifications",
+      "id": 11,
+      "name": "Notifications about all projects for Dependency Track (dependency-track)"
+    },
+    {
+      "model": "Alerts",
+      "id": 665,
+      "name": "Alerts object (665)"
+    },
+    {
+      "model": "Token",
+      "id": null,
+      "name": "<APITokenIsHidden>"
+    }
+  ]
+}

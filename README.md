@@ -42,6 +42,8 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | SLA configurations | CRUD, partial update, list with an iterator, lookup by name, delete preview, detection of the recalculation lock ✅ |
 | Server version | from the served OpenAPI schema ✅ |
 | User profile | the authenticated user and its contact information ✅ |
+| Users | CRUD, partial update, list with an iterator, lookup by username, delete preview, API token reset ✅ |
+| Configuration permissions | list with an iterator, lookup by codename ✅ |
 
 [COVERAGE.md](COVERAGE.md) lists every endpoint of the DefectDojo OpenAPI schemas and the method that
 implements it.

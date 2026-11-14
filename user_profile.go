@@ -41,7 +41,9 @@ type User struct {
 	IsSuperuser bool `json:"is_superuser"`
 
 	// ConfigurationPermissions are the IDs of the configuration permissions
-	// the user has. (The schema allows null items, an artifact of the
+	// the user has; see [ConfigurationPermissionsService]. [UsersService.Create]
+	// and [UsersService.Update] leave an empty list out, which keeps the
+	// user's permissions: remove them with [UsersService.Patch]. (The schema allows null items, an artifact of the
 	// many-to-many field; permission IDs are never null.)
 	ConfigurationPermissions []int `json:"configuration_permissions"`
 
@@ -49,6 +51,14 @@ type User struct {
 
 	// LastLogin is zero for users that never logged in to the UI.
 	LastLogin time.Time `json:"last_login,omitzero"`
+
+	// TokenLastReset is when the user's API token was last reset, and
+	// TokenExpiry when it expires; both are zero when that never happened or
+	// never happens. PasswordLastReset is when the user's password was last
+	// reset. All three are read-only.
+	TokenLastReset    time.Time `json:"token_last_reset,omitzero"`
+	TokenExpiry       time.Time `json:"token_expiry,omitzero"`
+	PasswordLastReset time.Time `json:"password_last_reset,omitzero"`
 }
 
 // UserContactInfo is the contact information and personal settings of a
