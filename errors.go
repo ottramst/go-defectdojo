@@ -20,13 +20,16 @@ import (
 //	}
 //
 // DefectDojo answers a missing or invalid token with 403 Forbidden, not 401,
-// so check for [ErrForbidden] when authentication fails.
+// so check for [ErrForbidden] when authentication fails. [ErrLocked] means the
+// server is in read-only mode (DefectDojo 3.5.100 and later): it rejects every
+// change except to the system settings.
 var (
 	ErrBadRequest      = errors.New("defectdojo: bad request")
 	ErrUnauthorized    = errors.New("defectdojo: unauthorized")
 	ErrForbidden       = errors.New("defectdojo: forbidden")
 	ErrNotFound        = errors.New("defectdojo: not found")
 	ErrConflict        = errors.New("defectdojo: conflict")
+	ErrLocked          = errors.New("defectdojo: locked")
 	ErrTooManyRequests = errors.New("defectdojo: too many requests")
 )
 
@@ -113,6 +116,8 @@ func statusIs(code int, target error) bool {
 		return code == http.StatusNotFound
 	case ErrConflict:
 		return code == http.StatusConflict
+	case ErrLocked:
+		return code == http.StatusLocked
 	case ErrTooManyRequests:
 		return code == http.StatusTooManyRequests
 	}

@@ -37,6 +37,8 @@ func TestErrorResponse(t *testing.T) {
 			sentinel: defectdojo.ErrNotFound, wantMessage: "No Product_Type matches the given query."},
 		{name: "conflict", status: 409, body: `{"message":"Cannot delete: 2 products use this SLA configuration."}`,
 			sentinel: defectdojo.ErrConflict, wantMessage: "Cannot delete: 2 products use this SLA configuration."},
+		{name: "read-only mode", status: 423, body: string(fixture(t, "errors/read_only_mode.json")), sentinel: defectdojo.ErrLocked,
+			wantMessage: "Read-only mode is on. DefectDojo does not accept changes until a superuser turns it off in System Settings."},
 		{name: "too many requests", status: 429, body: `{"detail":"Request was throttled."}`,
 			sentinel: defectdojo.ErrTooManyRequests, wantMessage: "Request was throttled."},
 		{name: "plain text body", status: 502, body: "Bad Gateway\n", wantMessage: "Bad Gateway"},
@@ -79,7 +81,7 @@ func TestErrorResponse(t *testing.T) {
 			if tt.sentinel != nil && !errors.Is(err, tt.sentinel) {
 				t.Errorf("errors.Is(err, %v) = false, want true", tt.sentinel)
 			}
-			for _, other := range []error{defectdojo.ErrBadRequest, defectdojo.ErrUnauthorized, defectdojo.ErrForbidden, defectdojo.ErrNotFound, defectdojo.ErrConflict, defectdojo.ErrTooManyRequests} {
+			for _, other := range []error{defectdojo.ErrBadRequest, defectdojo.ErrUnauthorized, defectdojo.ErrForbidden, defectdojo.ErrNotFound, defectdojo.ErrConflict, defectdojo.ErrLocked, defectdojo.ErrTooManyRequests} {
 				if errors.Is(other, tt.sentinel) {
 					continue
 				}
