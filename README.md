@@ -46,6 +46,8 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Configuration permissions | list with an iterator, lookup by codename ✅ |
 | Notification webhooks | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Notification settings | CRUD, partial update, list with an iterator, lookup by scope (system, template, user, product), delete preview ✅ |
+| System settings | get, partial update ✅ |
+| Jira instances | CRUD, partial update, list with an iterator, lookup by name, delete preview, count of the Jira projects using one ✅ |
 
 [COVERAGE.md](COVERAGE.md) lists every endpoint of the DefectDojo OpenAPI schemas and the method that
 implements it.
@@ -130,7 +132,8 @@ if errors.As(err, &errResp) {
 ```
 
 DefectDojo answers a missing or invalid token with **403 Forbidden** (`ErrForbidden`), not 401, and a
-name that is taken with **400 Bad Request** and a field error, not 409.
+name that is taken with **400 Bad Request** and a field error, not 409. While its read-only mode is on
+(3.5.100 and later), every change except to the system settings is **423 Locked** (`ErrLocked`).
 
 ### Timeouts, retries and custom transports
 
