@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**66 of 404 endpoints implemented.**
+**73 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -33,7 +33,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [jira_finding_mappings](#jira_finding_mappings) | 0 / 7 |
 | [jira_instances](#jira_instances) | 7 / 7 |
 | [jira_product_configurations](#jira_product_configurations) | 0 / 7 |
-| [jira_projects](#jira_projects) | 0 / 7 |
+| [jira_projects](#jira_projects) | 7 / 7 |
 | [language_types](#language_types) | 0 / 7 |
 | [languages](#languages) | 0 / 7 |
 | [location](#location) | 0 / 2 |
@@ -325,25 +325,25 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/jira_product_configurations/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/jira_product_configurations/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_product_configurations/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/jira_product_configurations/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/` (`JiraProjectsService.List`) |
+| POST | `/api/v2/jira_product_configurations/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/` (`JiraProjectsService.Create`) |
+| GET | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/{id}/` (`JiraProjectsService.Get`) |
+| PUT | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/{id}/` (`JiraProjectsService.Update`) |
+| PATCH | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/{id}/` (`JiraProjectsService.Patch`) |
+| DELETE | `/api/v2/jira_product_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/{id}/` (`JiraProjectsService.Delete`) |
+| GET | `/api/v2/jira_product_configurations/{id}/delete_preview/` | ✅ | ✅ |  | alias of `/api/v2/jira_projects/{id}/delete_preview/` (`JiraProjectsService.DeletePreview`) |
 
 ## jira_projects
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/jira_projects/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/jira_projects/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_projects/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/jira_projects/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/jira_projects/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/jira_projects/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_projects/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/jira_projects/` | ✅ | ✅ | `JiraProjectsService.List` |  |
+| POST | `/api/v2/jira_projects/` | ✅ | ✅ | `JiraProjectsService.Create` |  |
+| GET | `/api/v2/jira_projects/{id}/` | ✅ | ✅ | `JiraProjectsService.Get` |  |
+| PUT | `/api/v2/jira_projects/{id}/` | ✅ | ✅ | `JiraProjectsService.Update` |  |
+| PATCH | `/api/v2/jira_projects/{id}/` | ✅ | ✅ | `JiraProjectsService.Patch` |  |
+| DELETE | `/api/v2/jira_projects/{id}/` | ✅ | ✅ | `JiraProjectsService.Delete` |  |
+| GET | `/api/v2/jira_projects/{id}/delete_preview/` | ✅ | ✅ | `JiraProjectsService.DeletePreview` |  |
 
 ## language_types
 

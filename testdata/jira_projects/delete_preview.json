@@ -1,0 +1,12 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "JIRA_Project",
+      "id": 2,
+      "name": "2: SEC (https://jira.example.com)"
+    }
+  ]
+}

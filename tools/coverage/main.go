@@ -276,7 +276,8 @@ type row struct {
 // endpoints to the prefix of the endpoints they repeat. Their rows name the
 // endpoint they repeat, and its method, instead of a method of their own.
 var aliases = map[string]string{
-	"/api/v2/jira_configurations/": "/api/v2/jira_instances/",
+	"/api/v2/jira_configurations/":         "/api/v2/jira_instances/",
+	"/api/v2/jira_product_configurations/": "/api/v2/jira_projects/",
 }
 
 // aliasOf returns the endpoint that ep repeats, if it is an alias.

@@ -1,0 +1,32 @@
+{
+  "id": 2,
+  "project_key": "SEC",
+  "issue_template_dir": null,
+  "component": "web,api",
+  "custom_fields": {
+    "customfield_10122": [
+      {
+        "name": "8.0.1"
+      }
+    ]
+  },
+  "close_transition_fields": {
+    "resolution": {
+      "name": "Won't Fix"
+    }
+  },
+  "reopen_transition_fields": null,
+  "default_assignee": null,
+  "jira_labels": "security defectdojo",
+  "add_vulnerability_id_to_jira_label": false,
+  "push_all_issues": true,
+  "enable_engagement_epic_mapping": false,
+  "epic_issue_type_name": "Epic",
+  "push_notes": false,
+  "product_jira_sla_notification": false,
+  "risk_acceptance_expiration_notification": false,
+  "enabled": true,
+  "jira_instance": 9,
+  "product": 32,
+  "engagement": null
+}
