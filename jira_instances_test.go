@@ -321,3 +321,19 @@ func TestJiraInstancesService_CountJiraProjects(t *testing.T) {
 		t.Errorf("CountJiraProjects(missing) error = %v, want ErrNotFound", err)
 	}
 }
+
+func TestJiraInstancesService_invalidID(t *testing.T) {
+	_, client := setup(t)
+	ctx := context.Background()
+	// The mux has no handler, so a request would fail with a 404.
+	checks := map[string]error{}
+	_, _, checks["Patch"] = client.JiraInstances.Patch(ctx, 0, &defectdojo.JiraInstancePatch{})
+	_, checks["Delete"] = client.JiraInstances.Delete(ctx, 0)
+	_, _, checks["DeletePreview"] = client.JiraInstances.DeletePreview(ctx, 0, nil)
+	_, _, checks["CountJiraProjects"] = client.JiraInstances.CountJiraProjects(ctx, -1)
+	for name, err := range checks {
+		if err == nil || errors.Is(err, defectdojo.ErrNotFound) {
+			t.Errorf("%s(0) error = %v, want an error before sending", name, err)
+		}
+	}
+}
