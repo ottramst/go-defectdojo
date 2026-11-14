@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**33 of 404 endpoints implemented.**
+**43 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -17,7 +17,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [assets](#assets) | 0 / 8 |
 | [celery](#celery) | 0 / 4 |
 | [cicd_infrastructure](#cicd_infrastructure) | 0 / 7 |
-| [configuration_permissions](#configuration_permissions) | 0 / 2 |
+| [configuration_permissions](#configuration_permissions) | 2 / 2 |
 | [development_environments](#development_environments) | 0 / 7 |
 | [endpoint_meta_import](#endpoint_meta_import) | 0 / 1 |
 | [endpoint_status](#endpoint_status) | 0 / 2 |
@@ -71,7 +71,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [url](#url) | 0 / 7 |
 | [user_contact_infos](#user_contact_infos) | 0 / 7 |
 | [user_profile](#user_profile) | 1 / 1 |
-| [users](#users) | 0 / 8 |
+| [users](#users) | 8 / 8 |
 
 ## announcements
 
@@ -147,8 +147,8 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/configuration_permissions/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/configuration_permissions/{id}/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/configuration_permissions/` | ✅ | ✅ | `ConfigurationPermissionsService.List` |  |
+| GET | `/api/v2/configuration_permissions/{id}/` | ✅ | ✅ | `ConfigurationPermissionsService.Get` |  |
 
 ## development_environments
 
@@ -778,11 +778,11 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/users/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/users/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/users/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/users/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/users/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/users/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/users/{id}/delete_preview/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/users/{id}/reset_api_token/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/users/` | ✅ | ✅ | `UsersService.List` |  |
+| POST | `/api/v2/users/` | ✅ | ✅ | `UsersService.Create` |  |
+| GET | `/api/v2/users/{id}/` | ✅ | ✅ | `UsersService.Get` |  |
+| PUT | `/api/v2/users/{id}/` | ✅ | ✅ | `UsersService.Update` |  |
+| PATCH | `/api/v2/users/{id}/` | ✅ | ✅ | `UsersService.Patch` |  |
+| DELETE | `/api/v2/users/{id}/` | ✅ | ✅ | `UsersService.Delete` |  |
+| GET | `/api/v2/users/{id}/delete_preview/` | ✅ | ✅ | `UsersService.DeletePreview` |  |
+| POST | `/api/v2/users/{id}/reset_api_token/` | ✅ | ✅ | `UsersService.ResetAPIToken` |  |

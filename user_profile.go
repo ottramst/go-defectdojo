@@ -49,6 +49,14 @@ type User struct {
 
 	// LastLogin is zero for users that never logged in to the UI.
 	LastLogin time.Time `json:"last_login,omitzero"`
+
+	// TokenLastReset is when the user's API token was last reset, and
+	// TokenExpiry when it expires; both are zero when that never happened or
+	// never happens. PasswordLastReset is when the user's password was last
+	// reset. All three are read-only.
+	TokenLastReset    time.Time `json:"token_last_reset,omitzero"`
+	TokenExpiry       time.Time `json:"token_expiry,omitzero"`
+	PasswordLastReset time.Time `json:"password_last_reset,omitzero"`
 }
 
 // UserContactInfo is the contact information and personal settings of a

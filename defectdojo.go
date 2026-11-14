@@ -58,12 +58,14 @@ type Client struct {
 	common service
 
 	// Services used for talking to different parts of the DefectDojo API.
-	Auth              *AuthService
-	Engagements       *EngagementsService
-	Products          *ProductsService
-	ProductTypes      *ProductTypesService
-	SLAConfigurations *SLAConfigurationsService
-	UserProfile       *UserProfileService
+	Auth                     *AuthService
+	ConfigurationPermissions *ConfigurationPermissionsService
+	Engagements              *EngagementsService
+	Products                 *ProductsService
+	ProductTypes             *ProductTypesService
+	SLAConfigurations        *SLAConfigurationsService
+	UserProfile              *UserProfileService
+	Users                    *UsersService
 }
 
 type service struct {
@@ -166,11 +168,13 @@ func NewClient(baseURL string, opts ...ClientOption) (*Client, error) {
 func (c *Client) initServices() {
 	c.common.client = c
 	c.Auth = (*AuthService)(&c.common)
+	c.ConfigurationPermissions = (*ConfigurationPermissionsService)(&c.common)
 	c.Engagements = (*EngagementsService)(&c.common)
 	c.Products = (*ProductsService)(&c.common)
 	c.ProductTypes = (*ProductTypesService)(&c.common)
 	c.SLAConfigurations = (*SLAConfigurationsService)(&c.common)
 	c.UserProfile = (*UserProfileService)(&c.common)
+	c.Users = (*UsersService)(&c.common)
 }
 
 // BaseURL returns a copy of the DefectDojo URL the client sends requests to.

@@ -1,0 +1,39 @@
+{
+  "count": 3,
+  "next": "http://localhost:8080/api/v2/users/?limit=2&offset=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "username": "admin",
+      "first_name": "Admin",
+      "last_name": "User",
+      "email": "admin@example.com",
+      "date_joined": "2026-11-14T11:57:30.297891Z",
+      "last_login": null,
+      "is_active": true,
+      "is_staff": true,
+      "is_superuser": true,
+      "token_last_reset": null,
+      "token_expiry": null,
+      "password_last_reset": null,
+      "configuration_permissions": []
+    },
+    {
+      "id": 2,
+      "username": "alice",
+      "first_name": "Alice",
+      "last_name": "Smith",
+      "email": "alice@example.com",
+      "date_joined": "2026-11-14T12:07:36.179289Z",
+      "last_login": null,
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "token_last_reset": null,
+      "token_expiry": null,
+      "password_last_reset": null,
+      "configuration_permissions": []
+    }
+  ]
+}

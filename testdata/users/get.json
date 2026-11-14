@@ -1,0 +1,19 @@
+{
+  "id": 7,
+  "username": "dependency-track",
+  "first_name": "Dependency",
+  "last_name": "Track",
+  "email": "dt@example.com",
+  "date_joined": "2026-11-14T14:18:16.110685Z",
+  "last_login": null,
+  "is_active": true,
+  "is_staff": false,
+  "is_superuser": false,
+  "token_last_reset": "2026-11-14T14:18:16.193997Z",
+  "token_expiry": null,
+  "password_last_reset": null,
+  "configuration_permissions": [
+    9,
+    389
+  ]
+}
