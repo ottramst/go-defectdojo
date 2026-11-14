@@ -276,7 +276,10 @@ func TestProductTypesService_CountProducts(t *testing.T) {
 }
 
 func TestProductTypesService_invalidArguments(t *testing.T) {
-	_, client := setup(t)
+	mux, client := setup(t)
+	mux.HandleFunc("/", func(_ http.ResponseWriter, r *http.Request) {
+		t.Errorf("unexpected request %s %s", r.Method, r.URL)
+	})
 	ctx := context.Background()
 	pt := &defectdojo.ProductType{Name: "x"}
 	calls := map[string]func() error{

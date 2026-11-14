@@ -1,0 +1,42 @@
+{
+  "count": 7,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "Product",
+      "id": 1,
+      "name": "Storefront"
+    },
+    {
+      "model": "Product_authorized_users",
+      "id": 1,
+      "name": "Product_authorized_users object (1)"
+    },
+    {
+      "model": "Product_regulations",
+      "id": 1,
+      "name": "Product_regulations object (1)"
+    },
+    {
+      "model": "Product_tags",
+      "id": 1,
+      "name": "Product_tags object (1)"
+    },
+    {
+      "model": "Product_tags",
+      "id": 2,
+      "name": "Product_tags object (2)"
+    },
+    {
+      "model": "DojoMeta",
+      "id": 1,
+      "name": "team: payments"
+    },
+    {
+      "model": "Engagement",
+      "id": 1,
+      "name": "Engagement 1: CI (Nov 01, 2026)"
+    }
+  ]
+}

@@ -1,0 +1,84 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 2,
+      "findings_count": 0,
+      "findings_list": [],
+      "business_criticality": null,
+      "platform": null,
+      "lifecycle": null,
+      "origin": null,
+      "product_meta": [],
+      "created": "2026-11-14T11:35:07.004840Z",
+      "name": "Inventory",
+      "description": "Stock management",
+      "prod_numeric_grade": null,
+      "user_records": null,
+      "revenue": null,
+      "external_audience": false,
+      "internet_accessible": false,
+      "enable_product_tag_inheritance": false,
+      "enable_simple_risk_acceptance": false,
+      "enable_full_risk_acceptance": true,
+      "disable_sla_breach_notifications": false,
+      "archived_at": null,
+      "archive_batch": null,
+      "product_manager": null,
+      "technical_contact": null,
+      "team_manager": null,
+      "prod_type": 2,
+      "sla_configuration": 1,
+      "authorized_users": [],
+      "regulations": [],
+      "tags": []
+    },
+    {
+      "id": 1,
+      "findings_count": 0,
+      "findings_list": [],
+      "business_criticality": "high",
+      "platform": "web",
+      "lifecycle": "production",
+      "origin": "internal",
+      "product_meta": [
+        {
+          "name": "team",
+          "value": "payments"
+        }
+      ],
+      "created": "2026-11-14T11:34:58.920318Z",
+      "name": "Storefront",
+      "description": "The online shop",
+      "prod_numeric_grade": null,
+      "user_records": 250000,
+      "revenue": "1500000.00",
+      "external_audience": true,
+      "internet_accessible": true,
+      "enable_product_tag_inheritance": false,
+      "enable_simple_risk_acceptance": false,
+      "enable_full_risk_acceptance": true,
+      "disable_sla_breach_notifications": false,
+      "archived_at": null,
+      "archive_batch": null,
+      "product_manager": 2,
+      "technical_contact": 2,
+      "team_manager": null,
+      "prod_type": 2,
+      "sla_configuration": 1,
+      "authorized_users": [
+        2
+      ],
+      "regulations": [
+        1
+      ],
+      "tags": [
+        "pci",
+        "shop"
+      ]
+    }
+  ],
+  "prefetch": {}
+}

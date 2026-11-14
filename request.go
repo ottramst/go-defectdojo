@@ -1,6 +1,8 @@
 package defectdojo
 
 import (
+	"context"
+	"errors"
 	"fmt"
 	"net/http"
 	"net/url"
@@ -53,7 +55,7 @@ func addQuery(path string, opt any) (string, error) {
 
 // requirePositive returns an error if a required ID is not positive, so
 // that no request is sent to a list endpoint instead of the object.
-func requirePositive(name string, value int) error { //nolint:unparam // only product types so far
+func requirePositive(name string, value int) error {
 	if value <= 0 {
 		return fmt.Errorf("defectdojo: %s must be positive, got %d", name, value)
 	}
@@ -85,4 +87,49 @@ func validEscapedPath(p string) bool {
 		}
 	}
 	return true
+}
+
+// orNull returns a pointer to v, or nil (sent as null) if v is the zero
+// value. Requests send the zero values of nullable fields as null.
+func orNull[T comparable](v T) *T {
+	var zero T
+	if v == zero {
+		return nil
+	}
+	return &v
+}
+
+// orEmpty returns s, or an empty slice if s is nil. DefectDojo rejects null
+// for lists; an empty list removes all entries.
+func orEmpty[T any](s []T) []T {
+	if s == nil {
+		return []T{}
+	}
+	return s
+}
+
+// orEmptyPtr returns p, or a pointer to an empty slice if p points to a nil
+// slice. It never changes *p.
+func orEmptyPtr[T any](p *[]T) *[]T {
+	if p != nil && *p == nil {
+		return &[]T{}
+	}
+	return p
+}
+
+// count returns the count of a list filtered by the ID of a parent object,
+// read with limit=1. Filters on foreign keys reject IDs that don't exist with
+// a 400 field error on the filter: the error then also matches
+// [ErrNotFound].
+func (c *Client) count(ctx context.Context, path, filter string, opts []RequestOption) (int, *Response, error) {
+	var page listPage[struct{}]
+	resp, err := c.do(ctx, http.MethodGet, path, nil, &page, opts)
+	if err != nil {
+		var errResp *ErrorResponse
+		if errors.As(err, &errResp) && errResp.StatusCode == http.StatusBadRequest && len(errResp.Fields[filter]) > 0 {
+			return 0, resp, fmt.Errorf("%w: %w", ErrNotFound, err)
+		}
+		return 0, resp, err
+	}
+	return page.Count, resp, nil
 }

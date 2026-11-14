@@ -119,17 +119,12 @@ func TestAccProductTypes(t *testing.T) {
 	}
 }
 
-// createProduct creates a product in the product type through the raw API,
-// until the client has a Products service. It is deleted with the product
-// type.
+// createProduct creates a product in the product type. It is deleted with
+// the product type.
 func createProduct(t *testing.T, client *defectdojo.Client, productTypeID int) {
 	t.Helper()
-	body := map[string]any{"name": randName(t, "acc"), "description": "acceptance test", "prod_type": productTypeID}
-	req, err := client.NewRequest(t.Context(), http.MethodPost, "/api/v2/products/", body)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if _, err := client.Do(req, nil); err != nil {
+	p := &defectdojo.Product{Name: randName(t, "acc"), Description: "acceptance test", ProdType: productTypeID}
+	if _, _, err := client.Products.Create(t.Context(), p); err != nil {
 		t.Fatalf("creating product: %v", err)
 	}
 }

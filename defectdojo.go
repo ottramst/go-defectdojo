@@ -59,6 +59,7 @@ type Client struct {
 
 	// Services used for talking to different parts of the DefectDojo API.
 	Auth         *AuthService
+	Products     *ProductsService
 	ProductTypes *ProductTypesService
 }
 
@@ -162,6 +163,7 @@ func NewClient(baseURL string, opts ...ClientOption) (*Client, error) {
 func (c *Client) initServices() {
 	c.common.client = c
 	c.Auth = (*AuthService)(&c.common)
+	c.Products = (*ProductsService)(&c.common)
 	c.ProductTypes = (*ProductTypesService)(&c.common)
 }
 

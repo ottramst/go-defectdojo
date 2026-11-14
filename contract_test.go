@@ -56,6 +56,11 @@ var contracts = []contract{
 	{value: ProductType{}, schema: "ProductType", since: map[string]string{"archived_at": "3.5.0", "archive_batch": "3.5.0"}},
 	{value: productTypeRequest{}, schema: "ProductTypeRequest", request: true},
 	{value: ProductTypePatch{}, schema: "PatchedProductTypeRequest", request: true},
+	{value: Product{}, schema: "Product", since: map[string]string{"archived_at": "3.5.0", "archive_batch": "3.5.0"}},
+	{value: ProductMeta{}, schema: "ProductMeta"},
+	{value: productRequest{}, schema: "ProductRequest", request: true},
+	{value: ProductPatch{}, schema: "PatchedProductRequest", request: true},
+	{value: listPage[Product]{}, schema: "PaginatedProductList"},
 	{value: DeletedObject{}, schema: "DeletePreview"},
 	{value: listPage[ProductType]{}, schema: "PaginatedProductTypeList"},
 	{value: tokenRequest{}, schema: "ForcedResetAuthTokenRequest", request: true},
@@ -181,6 +186,9 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 		if nullable && !prop.Nullable {
 			t.Errorf("%s.%s: Nullable, but property %q is not nullable in %s", typ.Name(), f.Name, name, c.schema)
 		}
+		if c.request && sendsNull(f) && !prop.Nullable {
+			t.Errorf("%s.%s: sent as null when nil, but property %q is not nullable in %s", typ.Name(), f.Name, name, c.schema)
+		}
 		if err := checkType(spec, ft, prop); err != nil {
 			t.Errorf("%s.%s: property %q: %v", typ.Name(), f.Name, name, err)
 		}
@@ -192,6 +200,13 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 			}
 		}
 	}
+}
+
+// sendsNull reports whether a request field is sent as null: a pointer that
+// is not left out when nil.
+func sendsNull(f reflect.StructField) bool {
+	_, opts, _ := strings.Cut(f.Tag.Get("json"), ",")
+	return f.Type.Kind() == reflect.Pointer && !strings.Contains(opts, "omitempty") && !strings.Contains(opts, "omitzero")
 }
 
 // compareVersions compares two dotted versions such as "3.5.103". Missing

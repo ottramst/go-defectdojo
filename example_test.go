@@ -78,3 +78,22 @@ func ExampleProductTypesService_Delete() {
 		log.Fatal(err)
 	}
 }
+
+func ExampleProductsService_Create() {
+	var client *defectdojo.Client // from NewClient
+	// Fields left empty are sent as null; booleans that DefectDojo defaults
+	// to true must be set.
+	p, _, err := client.Products.Create(context.Background(), &defectdojo.Product{
+		Name:                     "Storefront",
+		Description:              "The online shop",
+		ProdType:                 2,
+		Platform:                 "web",
+		BusinessCriticality:      defectdojo.BusinessCriticalityHigh,
+		EnableFullRiskAcceptance: true,
+		Tags:                     []string{"pci"},
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+	fmt.Println(p.ID)
+}
