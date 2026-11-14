@@ -1,0 +1,12 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "JIRA_Instance",
+      "id": 1,
+      "name": "Acme Jira | https://jira.example.com | defectdojo-bot"
+    }
+  ]
+}

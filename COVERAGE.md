@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**59 of 404 endpoints implemented.**
+**66 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -31,7 +31,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [import-scan](#import-scan) | 0 / 1 |
 | [jira_configurations](#jira_configurations) | 0 / 7 |
 | [jira_finding_mappings](#jira_finding_mappings) | 0 / 7 |
-| [jira_instances](#jira_instances) | 0 / 7 |
+| [jira_instances](#jira_instances) | 7 / 7 |
 | [jira_product_configurations](#jira_product_configurations) | 0 / 7 |
 | [jira_projects](#jira_projects) | 0 / 7 |
 | [language_types](#language_types) | 0 / 7 |
@@ -289,13 +289,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/jira_configurations/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/jira_configurations/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_configurations/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/jira_configurations/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/` (`JiraInstancesService.List`) |
+| POST | `/api/v2/jira_configurations/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/` (`JiraInstancesService.Create`) |
+| GET | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/{id}/` (`JiraInstancesService.Get`) |
+| PUT | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/{id}/` (`JiraInstancesService.Update`) |
+| PATCH | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/{id}/` (`JiraInstancesService.Patch`) |
+| DELETE | `/api/v2/jira_configurations/{id}/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/{id}/` (`JiraInstancesService.Delete`) |
+| GET | `/api/v2/jira_configurations/{id}/delete_preview/` | ✅ | ✅ |  | alias of `/api/v2/jira_instances/{id}/delete_preview/` (`JiraInstancesService.DeletePreview`) |
 
 ## jira_finding_mappings
 
@@ -313,13 +313,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/jira_instances/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/jira_instances/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_instances/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/jira_instances/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/jira_instances/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/jira_instances/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/jira_instances/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/jira_instances/` | ✅ | ✅ | `JiraInstancesService.List` |  |
+| POST | `/api/v2/jira_instances/` | ✅ | ✅ | `JiraInstancesService.Create` |  |
+| GET | `/api/v2/jira_instances/{id}/` | ✅ | ✅ | `JiraInstancesService.Get` |  |
+| PUT | `/api/v2/jira_instances/{id}/` | ✅ | ✅ | `JiraInstancesService.Update` |  |
+| PATCH | `/api/v2/jira_instances/{id}/` | ✅ | ✅ | `JiraInstancesService.Patch` |  |
+| DELETE | `/api/v2/jira_instances/{id}/` | ✅ | ✅ | `JiraInstancesService.Delete` |  |
+| GET | `/api/v2/jira_instances/{id}/delete_preview/` | ✅ | ✅ | `JiraInstancesService.DeletePreview` |  |
 
 ## jira_product_configurations
 

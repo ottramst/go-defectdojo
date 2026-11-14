@@ -272,6 +272,28 @@ type row struct {
 	deprecd bool
 }
 
+// aliases maps path prefixes that DefectDojo serves as aliases of other
+// endpoints to the prefix of the endpoints they repeat. Their rows name the
+// endpoint they repeat, and its method, instead of a method of their own.
+var aliases = map[string]string{
+	"/api/v2/jira_configurations/": "/api/v2/jira_instances/",
+}
+
+// aliasOf returns the endpoint that ep repeats, if it is an alias. The
+// longest matching prefix wins, so the result doesn't depend on map order.
+func aliasOf(ep endpoint) (endpoint, bool) {
+	best := ""
+	for prefix := range aliases {
+		if strings.HasPrefix(ep.path, prefix) && len(prefix) > len(best) {
+			best = prefix
+		}
+	}
+	if best == "" {
+		return endpoint{}, false
+	}
+	return endpoint{ep.method, aliases[best] + strings.TrimPrefix(ep.path, best)}, true
+}
+
 func render(w io.Writer, specs []*spec, impl map[endpoint]annotation) error {
 	rows := make(map[endpoint]*row)
 	for i, s := range specs {
@@ -350,18 +372,25 @@ func render(w io.Writer, specs []*spec, impl map[endpoint]annotation) error {
 					avail[i] = "✅"
 				}
 			}
-			impl := ""
+			method := ""
 			if r.implBy != "" {
-				impl = "`" + r.implBy + "`"
+				method = "`" + r.implBy + "`"
 			}
 			var notes []string
+			if target, ok := aliasOf(r.endpoint); ok {
+				note := "alias of `" + target.path + "`"
+				if a, ok := impl[target]; ok {
+					note += " (`" + a.method + "`)"
+				}
+				notes = append(notes, note)
+			}
 			if r.deprecd {
 				notes = append(notes, "deprecated")
 			}
 			if r.op.state != "" {
 				notes = append(notes, r.op.state)
 			}
-			fmt.Fprintf(&b, "| %s | `%s` | %s | %s | %s |\n", r.method, cell(r.path), strings.Join(avail, " | "), impl, cell(strings.Join(notes, "; ")))
+			fmt.Fprintf(&b, "| %s | `%s` | %s | %s | %s |\n", r.method, cell(r.path), strings.Join(avail, " | "), method, cell(strings.Join(notes, "; ")))
 		}
 	}
 	_, err := io.WriteString(w, b.String())

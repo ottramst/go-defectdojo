@@ -3,10 +3,12 @@
 FEATURES:
 
 * New `SystemSettings` service: `Get` and `Patch` (`SystemSettingsPatch`). DefectDojo has no GET by ID, and no `Update`: a PUT keeps the fields it leaves out, like a PATCH ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
+* New `JiraInstances` service: `List`, `ListAll`, `Get`, `GetByName`, `Create` and `Update` (with `JiraInstanceWrite`, which adds the password DefectDojo never returns), `Patch`, `Delete`, `DeletePreview` and `CountJiraProjects` ([#19](https://github.com/ottramst/go-defectdojo/issues/19))
 * `ErrLocked`, which a 423 response matches: DefectDojo 3.5.100 and later answer every change with it while the system setting `read_only_mode` is on ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
 
 NOTES:
 
+* `JiraInstances`: DefectDojo answers a delete of an instance that Jira projects use with a 500, not a 409, and `DeletePreview` doesn't show those projects: check `CountJiraProjects` first. A `Patch` that changes the URL needs the password. `ConfigurationName` isn't unique, so `GetByName` returns an error when several instances have the name ([#19](https://github.com/ottramst/go-defectdojo/issues/19))
 * `SystemSettings` returns `SlackToken`, `MSTeamsURL` and `JiraWebhookSecret` in plain text, as DefectDojo does. `SystemSettings.Patch` rejects password lengths outside 9 to 48, and a minimum above the maximum when both are in the patch, which DefectDojo accepts. `ReadOnlyMode` is nil on servers before 3.5.100, which ignore it in a patch ([#18](https://github.com/ottramst/go-defectdojo/issues/18))
 
 ## v0.2.0
