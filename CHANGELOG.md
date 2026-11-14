@@ -1,3 +1,13 @@
+## Unreleased
+
+FEATURES:
+
+* New `SLAConfigurations` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, and `IsSLARecalculating`, which recognises DefectDojo's 400 for an SLA change made while the SLA dates of an earlier change are still being recalculated ([#13](https://github.com/ottramst/go-defectdojo/issues/13))
+
+NOTES:
+
+* `SLAConfigurations.Create` and `SLAConfigurations.Update` send every writable field, so `EnforceCritical`, `EnforceHigh`, `EnforceMedium` and `EnforceLow`, which DefectDojo defaults to `true`, are `false` unless they are set. Days below 1, which DefectDojo's API accepts but its UI rejects, are refused before sending ([#13](https://github.com/ottramst/go-defectdojo/issues/13))
+
 ## v0.1.0
 
 FEATURES:

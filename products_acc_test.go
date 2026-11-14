@@ -5,7 +5,6 @@ import (
 	"errors"
 	"net/http"
 	"slices"
-	"strconv"
 	"strings"
 	"testing"
 	"time"
@@ -131,8 +130,8 @@ func TestAccProducts(t *testing.T) {
 	if p, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: &slaID}); err != nil || p.SLAConfiguration != slaID {
 		t.Fatalf("Patch(SLA configuration) = %+v, %v; want SLA configuration %d", p, err, slaID)
 	}
-	if _, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: new(1)}); !errors.Is(err, defectdojo.ErrBadRequest) {
-		t.Errorf("Patch(second SLA change) error = %v, want ErrBadRequest", err)
+	if _, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: new(1)}); !defectdojo.IsSLARecalculating(err) {
+		t.Errorf("Patch(second SLA change) error = %v, want IsSLARecalculating", err)
 	}
 
 	found := false
@@ -197,27 +196,6 @@ func createProductType(t *testing.T, client *defectdojo.Client) int {
 	}
 	cleanup(t, func(ctx context.Context) error { _, err := client.ProductTypes.Delete(ctx, pt.ID); return err })
 	return pt.ID
-}
-
-// createSLAConfiguration creates an SLA configuration through the raw API,
-// until the client has an SLA configurations service. It is deleted when the
-// test ends, after the products registered later, which refer to it.
-func createSLAConfiguration(t *testing.T, client *defectdojo.Client) int {
-	t.Helper()
-	body := map[string]any{"name": randName(t, "acc"), "critical": 7, "high": 30, "medium": 90, "low": 120}
-	var sla struct {
-		ID int `json:"id"`
-	}
-	rawRequest(t, client, http.MethodPost, "/api/v2/sla_configurations/", body, &sla)
-	cleanup(t, func(ctx context.Context) error {
-		req, err := client.NewRequest(ctx, http.MethodDelete, "/api/v2/sla_configurations/"+strconv.Itoa(sla.ID)+"/", nil)
-		if err != nil {
-			return err
-		}
-		_, err = client.Do(req, nil)
-		return err
-	})
-	return sla.ID
 }
 
 // createEngagement creates an engagement in the product. It is deleted with

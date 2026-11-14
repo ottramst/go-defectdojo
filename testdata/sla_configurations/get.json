@@ -1,0 +1,14 @@
+{
+  "id": 18,
+  "name": "Strict",
+  "description": "Internet-facing products",
+  "critical": 3,
+  "enforce_critical": true,
+  "high": 14,
+  "enforce_high": true,
+  "medium": 60,
+  "enforce_medium": true,
+  "low": 90,
+  "enforce_low": false,
+  "restart_sla_on_reactivation": true
+}
