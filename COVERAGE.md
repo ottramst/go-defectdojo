@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**43 of 404 endpoints implemented.**
+**50 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -43,7 +43,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [network_locations](#network_locations) | 0 / 7 |
 | [note_type](#note_type) | 0 / 7 |
 | [notes](#notes) | 0 / 4 |
-| [notification_webhooks](#notification_webhooks) | 0 / 7 |
+| [notification_webhooks](#notification_webhooks) | 7 / 7 |
 | [notifications](#notifications) | 0 / 7 |
 | [oa3](#oa3) | 1 / 1 |
 | [organizations](#organizations) | 0 / 8 |
@@ -451,13 +451,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/notification_webhooks/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/notification_webhooks/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/notification_webhooks/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/notification_webhooks/` | ✅ | ✅ | `NotificationWebhooksService.List` |  |
+| POST | `/api/v2/notification_webhooks/` | ✅ | ✅ | `NotificationWebhooksService.Create` |  |
+| GET | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ | `NotificationWebhooksService.Get` |  |
+| PUT | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ | `NotificationWebhooksService.Update` |  |
+| PATCH | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ | `NotificationWebhooksService.Patch` |  |
+| DELETE | `/api/v2/notification_webhooks/{id}/` | ✅ | ✅ | `NotificationWebhooksService.Delete` |  |
+| GET | `/api/v2/notification_webhooks/{id}/delete_preview/` | ✅ | ✅ | `NotificationWebhooksService.DeletePreview` |  |
 
 ## notifications
 

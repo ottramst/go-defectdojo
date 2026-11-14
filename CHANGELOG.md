@@ -5,6 +5,7 @@ FEATURES:
 * New `SLAConfigurations` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, and `IsSLARecalculating`, which recognises DefectDojo's 400 for an SLA change made while the SLA dates of an earlier change are still being recalculated ([#13](https://github.com/ottramst/go-defectdojo/issues/13))
 * New `Users` service: `List`, `ListAll`, `Get`, `GetByUsername`, `Create` (with `UserCreate`, which adds the initial password), `Update`, `Patch`, `Delete`, `DeletePreview` and `ResetAPIToken`. `User` gains `TokenLastReset`, `TokenExpiry` and `PasswordLastReset` ([#14](https://github.com/ottramst/go-defectdojo/issues/14))
 * New `ConfigurationPermissions` service: `List`, `ListAll`, `Get` and `GetByCodename`, to find the IDs of configuration permissions, which differ between DefectDojo installations ([#43](https://github.com/ottramst/go-defectdojo/issues/43))
+* New `NotificationWebhooks` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview` ([#16](https://github.com/ottramst/go-defectdojo/issues/16))
 
 ENHANCEMENTS:
 
