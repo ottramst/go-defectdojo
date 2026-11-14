@@ -70,6 +70,9 @@ var contracts = []contract{
 	{value: engagementRequest{}, schema: "EngagementRequest", request: true, nonZero: []string{"target_start", "target_end"}},
 	{value: EngagementPatch{}, schema: "PatchedEngagementRequest", request: true},
 	{value: listPage[Engagement]{}, schema: "PaginatedEngagementList"},
+	{value: UserProfile{}, schema: "UserProfile"},
+	{value: User{}, schema: "User"},
+	{value: UserContactInfo{}, schema: "UserContactInfo"},
 	{value: DeletedObject{}, schema: "DeletePreview"},
 	{value: listPage[ProductType]{}, schema: "PaginatedProductTypeList"},
 	{value: tokenRequest{}, schema: "ForcedResetAuthTokenRequest", request: true},
@@ -201,6 +204,11 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 		}
 		if err := checkType(spec, ft, prop); err != nil {
 			t.Errorf("%s.%s: property %q: %v", typ.Name(), f.Name, name, err)
+		}
+	}
+	for _, name := range c.nonZero {
+		if !sent[name] {
+			t.Errorf("%s: nonZero lists %q, which is not a field", typ.Name(), name)
 		}
 	}
 	if c.request {

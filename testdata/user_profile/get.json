@@ -1,0 +1,52 @@
+{
+  "user": {
+    "id": 2,
+    "username": "alice",
+    "first_name": "Alice",
+    "last_name": "Smith",
+    "email": "alice@example.com",
+    "date_joined": "2026-11-14T12:07:36.179289Z",
+    "last_login": null,
+    "is_active": true,
+    "is_staff": false,
+    "is_superuser": false,
+    "token_last_reset": null,
+    "token_expiry": null,
+    "password_last_reset": null,
+    "configuration_permissions": []
+  },
+  "user_contact_info": {
+    "id": 1,
+    "user_profile": {
+      "id": 2,
+      "username": "alice",
+      "first_name": "Alice",
+      "last_name": "Smith",
+      "email": "alice@example.com",
+      "date_joined": "2026-11-14T12:07:36.179289Z",
+      "last_login": null,
+      "is_active": true,
+      "is_staff": false,
+      "is_superuser": false,
+      "token_last_reset": null,
+      "token_expiry": null,
+      "password_last_reset": null,
+      "configuration_permissions": []
+    },
+    "title": "AppSec engineer",
+    "phone_number": "+3725551234",
+    "cell_number": "",
+    "twitter_username": null,
+    "github_username": null,
+    "slack_username": "alice",
+    "slack_user_id": null,
+    "block_execution": true,
+    "deduplication_execution_mode": null,
+    "force_password_reset": false,
+    "token_last_reset": null,
+    "token_expiry": null,
+    "password_last_reset": null,
+    "language": "",
+    "user": 2
+  }
+}

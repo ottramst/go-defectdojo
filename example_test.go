@@ -116,3 +116,14 @@ func ExampleEngagementsService_Create() {
 	}
 	fmt.Println(e.ID)
 }
+
+func ExampleUserProfileService_Get() {
+	var client *defectdojo.Client // from NewClient
+	profile, _, err := client.UserProfile.Get(context.Background())
+	if err != nil {
+		log.Fatal(err)
+	}
+	if !profile.User.IsSuperuser {
+		log.Fatalf("%s is not a superuser", profile.User.Username)
+	}
+}

@@ -62,6 +62,7 @@ type Client struct {
 	Engagements  *EngagementsService
 	Products     *ProductsService
 	ProductTypes *ProductTypesService
+	UserProfile  *UserProfileService
 }
 
 type service struct {
@@ -167,6 +168,7 @@ func (c *Client) initServices() {
 	c.Engagements = (*EngagementsService)(&c.common)
 	c.Products = (*ProductsService)(&c.common)
 	c.ProductTypes = (*ProductTypesService)(&c.common)
+	c.UserProfile = (*UserProfileService)(&c.common)
 }
 
 // BaseURL returns a copy of the DefectDojo URL the client sends requests to.
