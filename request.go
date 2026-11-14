@@ -125,11 +125,23 @@ func (c *Client) count(ctx context.Context, path, filter string, opts []RequestO
 	var page listPage[struct{}]
 	resp, err := c.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
-		var errResp *ErrorResponse
-		if errors.As(err, &errResp) && errResp.StatusCode == http.StatusBadRequest && len(errResp.Fields[filter]) > 0 {
-			return 0, resp, fmt.Errorf("%w: %w", ErrNotFound, err)
-		}
-		return 0, resp, err
+		return 0, resp, missingFilterObject(err, filter)
 	}
 	return page.Count, resp, nil
+}
+
+// missingFilterObject returns err, which also matches [ErrNotFound] when it
+// is a 400 field error on one of the list filters: DefectDojo answers a
+// foreign-key filter with an ID that doesn't exist that way.
+func missingFilterObject(err error, filters ...string) error {
+	var errResp *ErrorResponse
+	if !errors.As(err, &errResp) || errResp.StatusCode != http.StatusBadRequest {
+		return err
+	}
+	for _, filter := range filters {
+		if len(errResp.Fields[filter]) > 0 {
+			return fmt.Errorf("%w: %w", ErrNotFound, err)
+		}
+	}
+	return err
 }

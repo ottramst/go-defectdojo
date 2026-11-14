@@ -1,0 +1,12 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "Notifications",
+      "id": 35,
+      "name": "Notifications about fixture-p for Admin User (admin)"
+    }
+  ]
+}

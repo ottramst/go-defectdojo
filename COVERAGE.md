@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**50 of 404 endpoints implemented.**
+**57 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -44,7 +44,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [note_type](#note_type) | 0 / 7 |
 | [notes](#notes) | 0 / 4 |
 | [notification_webhooks](#notification_webhooks) | 7 / 7 |
-| [notifications](#notifications) | 0 / 7 |
+| [notifications](#notifications) | 7 / 7 |
 | [oa3](#oa3) | 1 / 1 |
 | [organizations](#organizations) | 0 / 8 |
 | [product_api_scan_configurations](#product_api_scan_configurations) | 0 / 7 |
@@ -463,13 +463,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/notifications/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/notifications/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/notifications/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/notifications/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/notifications/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/notifications/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/notifications/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/notifications/` | ✅ | ✅ | `NotificationsService.List` |  |
+| POST | `/api/v2/notifications/` | ✅ | ✅ | `NotificationsService.Create` |  |
+| GET | `/api/v2/notifications/{id}/` | ✅ | ✅ | `NotificationsService.Get` |  |
+| PUT | `/api/v2/notifications/{id}/` | ✅ | ✅ | `NotificationsService.Update` |  |
+| PATCH | `/api/v2/notifications/{id}/` | ✅ | ✅ | `NotificationsService.Patch` |  |
+| DELETE | `/api/v2/notifications/{id}/` | ✅ | ✅ | `NotificationsService.Delete` |  |
+| GET | `/api/v2/notifications/{id}/delete_preview/` | ✅ | ✅ | `NotificationsService.DeletePreview` |  |
 
 ## oa3
 

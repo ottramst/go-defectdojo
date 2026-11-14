@@ -61,6 +61,7 @@ type Client struct {
 	Auth                     *AuthService
 	ConfigurationPermissions *ConfigurationPermissionsService
 	Engagements              *EngagementsService
+	Notifications            *NotificationsService
 	NotificationWebhooks     *NotificationWebhooksService
 	Products                 *ProductsService
 	ProductTypes             *ProductTypesService
@@ -171,6 +172,7 @@ func (c *Client) initServices() {
 	c.Auth = (*AuthService)(&c.common)
 	c.ConfigurationPermissions = (*ConfigurationPermissionsService)(&c.common)
 	c.Engagements = (*EngagementsService)(&c.common)
+	c.Notifications = (*NotificationsService)(&c.common)
 	c.NotificationWebhooks = (*NotificationWebhooksService)(&c.common)
 	c.Products = (*ProductsService)(&c.common)
 	c.ProductTypes = (*ProductTypesService)(&c.common)

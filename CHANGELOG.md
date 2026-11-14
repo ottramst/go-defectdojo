@@ -6,6 +6,7 @@ FEATURES:
 * New `Users` service: `List`, `ListAll`, `Get`, `GetByUsername`, `Create` (with `UserCreate`, which adds the initial password), `Update`, `Patch`, `Delete`, `DeletePreview` and `ResetAPIToken`. `User` gains `TokenLastReset`, `TokenExpiry` and `PasswordLastReset` ([#14](https://github.com/ottramst/go-defectdojo/issues/14))
 * New `ConfigurationPermissions` service: `List`, `ListAll`, `Get` and `GetByCodename`, to find the IDs of configuration permissions, which differ between DefectDojo installations ([#43](https://github.com/ottramst/go-defectdojo/issues/43))
 * New `NotificationWebhooks` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, and the `NotificationWebhookStatus*` constants ([#16](https://github.com/ottramst/go-defectdojo/issues/16))
+* New `Notifications` service for notification settings (`NotificationSettings`): `List`, `ListAll`, `Get`, `GetByScope`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, with the `NotificationChannel*` constants and `NotificationChannels` ([#15](https://github.com/ottramst/go-defectdojo/issues/15))
 
 ENHANCEMENTS:
 
@@ -14,6 +15,7 @@ ENHANCEMENTS:
 NOTES:
 
 * `SLAConfigurations.Create` and `SLAConfigurations.Update` send every writable field, so `EnforceCritical`, `EnforceHigh`, `EnforceMedium` and `EnforceLow`, which DefectDojo defaults to `true`, are `false` unless they are set. Days below 1, which DefectDojo's API accepts but its UI rejects, are refused before sending ([#13](https://github.com/ottramst/go-defectdojo/issues/13))
+* `Notifications`: DefectDojo creates the system-wide settings and each user's personal settings itself, so find them with `GetByScope` rather than creating them. `Create` and `Update` leave nil events out, which gives them DefectDojo's default (`alert`); `Update` always sends the scope, which DefectDojo resets otherwise, and can't update the template: use `Patch`. `ScanAddedEmpty` holds at most one channel through the API ([#15](https://github.com/ottramst/go-defectdojo/issues/15))
 * `Users.Create` sends every writable field, so `IsActive`, which DefectDojo defaults to `true`, is `false` unless it is set. `Users.Create` and `Users.Update` leave empty `ConfigurationPermissions` out, which keeps the user's permissions, so that a user read with `Users.Get` can be updated safely: DefectDojo answers an empty list by removing all the user's Django permissions, not only the configuration permissions. Remove them with `Users.Patch`. DefectDojo's API can't change a password once the user exists ([#14](https://github.com/ottramst/go-defectdojo/issues/14))
 
 ## v0.1.0

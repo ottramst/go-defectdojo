@@ -157,6 +157,23 @@ func ExampleUsersService_Create() {
 	fmt.Println(u.ID)
 }
 
+func ExampleNotificationsService_GetByScope() {
+	var client *defectdojo.Client // from NewClient
+	ctx := context.Background()
+	// DefectDojo creates the system-wide settings: find and change them.
+	system, _, err := client.Notifications.GetByScope(ctx, 0, 0, false)
+	if err != nil {
+		log.Fatal(err)
+	}
+	_, _, err = client.Notifications.Patch(ctx, system.ID, &defectdojo.NotificationSettingsPatch{
+		SLABreach:      &[]string{defectdojo.NotificationChannelMail, defectdojo.NotificationChannelAlert},
+		ScanAddedEmpty: new(""), // no channel
+	})
+	if err != nil {
+		log.Fatal(err)
+	}
+}
+
 func ExampleUserProfileService_Get() {
 	var client *defectdojo.Client // from NewClient
 	profile, _, err := client.UserProfile.Get(context.Background())

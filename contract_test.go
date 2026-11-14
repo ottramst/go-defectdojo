@@ -54,6 +54,11 @@ type contract struct {
 	// nonZero lists request properties that are never sent as null because
 	// the request's constructor rejects their zero value.
 	nonZero []string
+
+	// specBug maps properties whose type in the schema is wrong to the
+	// reason. Their type is not checked, and the test fails once the type
+	// matches, so that the exception is removed.
+	specBug map[string]string
 }
 
 // contracts lists every type the client sends or decodes. Add new types here.
@@ -83,6 +88,13 @@ var contracts = []contract{
 	{value: notificationWebhookRequest{}, schema: "NotificationWebhooksRequest", request: true},
 	{value: NotificationWebhookPatch{}, schema: "PatchedNotificationWebhooksRequest", request: true},
 	{value: listPage[NotificationWebhook]{}, schema: "PaginatedNotificationWebhooksList"},
+	{value: NotificationSettings{}, schema: "Notifications", specBug: map[string]string{
+		// A single choice in requests, but a list in responses.
+		"scan_added_empty": "the model's MultiSelectField is serialized as a ChoiceField",
+	}},
+	{value: notificationSettingsRequest{}, schema: "NotificationsRequest", request: true},
+	{value: NotificationSettingsPatch{}, schema: "PatchedNotificationsRequest", request: true},
+	{value: listPage[NotificationSettings]{}, schema: "PaginatedNotificationsList"},
 	{value: UserProfile{}, schema: "UserProfile"},
 	{value: User{}, schema: "User"},
 	{value: UserContactInfo{}, schema: "UserContactInfo"},
@@ -215,8 +227,20 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 		if c.request && sendsNull(f) && !prop.Nullable && !slices.Contains(c.nonZero, name) {
 			t.Errorf("%s.%s: sent as null when nil, but property %q is not nullable in %s", typ.Name(), f.Name, name, c.schema)
 		}
-		if err := checkType(spec, ft, prop); err != nil {
+		err := checkType(spec, ft, prop)
+		if _, bug := c.specBug[name]; bug {
+			if err == nil {
+				t.Errorf("%s.%s: property %q matches the schema; remove it from specBug", typ.Name(), f.Name, name)
+			}
+			continue
+		}
+		if err != nil {
 			t.Errorf("%s.%s: property %q: %v", typ.Name(), f.Name, name, err)
+		}
+	}
+	for name := range c.specBug {
+		if !sent[name] {
+			t.Errorf("%s: specBug lists %q, which is not a field", typ.Name(), name)
 		}
 	}
 	for _, name := range c.nonZero {
