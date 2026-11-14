@@ -180,8 +180,21 @@ edition. DefectDojo Pro features are not tested.
 ## Roadmap
 
 The path to v1.0 is tracked in [milestones](https://github.com/ottramst/go-defectdojo/milestones) and
-on the [DefectDojo roadmap board](https://github.com/users/ottramst/projects). Each epic issue lists
-its work as sub-issues. Contributions are welcome.
+on the [DefectDojo roadmap board](https://github.com/users/ottramst/projects/4), together with
+[terraform-provider-defectdojo](https://github.com/ottramst/terraform-provider-defectdojo). Each epic
+issue lists its services as sub-issues:
+
+| Milestone | Scope |
+| --- | --- |
+| [v0.1.0](https://github.com/ottramst/go-defectdojo/milestone/1) | Foundation: client core, product types, products, engagements, user profile and authentication |
+| [v0.2.0](https://github.com/ottramst/go-defectdojo/milestone/2) | SLA configurations, users, notifications and notification webhooks |
+| [v0.3.0](https://github.com/ottramst/go-defectdojo/milestone/3) | System settings, Jira instances and Jira projects |
+| [v0.4.0](https://github.com/ottramst/go-defectdojo/milestone/4) | Lookup objects: regulations, note types, development environments, announcements, CI/CD infrastructure, product attributes, test types |
+| [v1.0.0](https://github.com/ottramst/go-defectdojo/milestone/5) | API freeze and compatibility guarantees |
+
+Findings, tests and imports, and DefectDojo's experimental API v3, are
+[backlog epics](https://github.com/ottramst/go-defectdojo/issues?q=is%3Aissue+is%3Aopen+label%3Aepic+no%3Amilestone).
+Contributions are welcome.
 
 ## Development
 
