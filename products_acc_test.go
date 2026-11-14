@@ -130,8 +130,8 @@ func TestAccProducts(t *testing.T) {
 	if p, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: &slaID}); err != nil || p.SLAConfiguration != slaID {
 		t.Fatalf("Patch(SLA configuration) = %+v, %v; want SLA configuration %d", p, err, slaID)
 	}
-	if _, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: new(1)}); !errors.Is(err, defectdojo.ErrBadRequest) {
-		t.Errorf("Patch(second SLA change) error = %v, want ErrBadRequest", err)
+	if _, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: new(1)}); !defectdojo.IsSLARecalculating(err) {
+		t.Errorf("Patch(second SLA change) error = %v, want IsSLARecalculating", err)
 	}
 
 	found := false

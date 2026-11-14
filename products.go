@@ -95,7 +95,8 @@ type Product struct {
 	// SLAConfiguration is the ID of the product's SLA configuration. When it
 	// is 0, Create uses DefectDojo's default (1) and Update keeps the current
 	// one. Changing it starts a recalculation of the findings' SLA dates in
-	// the background; until that finishes, another change is a 400.
+	// the background; until that finishes, another change is a 400 (see
+	// [IsSLARecalculating]).
 	SLAConfiguration int `json:"sla_configuration"`
 
 	// AuthorizedUsers are the IDs of the users who may access the product, in
