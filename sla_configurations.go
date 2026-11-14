@@ -258,6 +258,10 @@ func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfigura
 // A change of the days or Enforce fields while DefectDojo recalculates the
 // SLA dates of an earlier change is a 400; see [IsSLARecalculating].
 //
+// Days below 1 are refused before sending, also when they come from
+// DefectDojo, whose API accepts them: change such a configuration with
+// [SLAConfigurationsService.Patch].
+//
 // DefectDojo API: PUT /api/v2/sla_configurations/{id}/
 func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAConfiguration, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
 	if err := requirePositive("SLA configuration ID", id); err != nil {
@@ -337,12 +341,13 @@ func (s *SLAConfigurationsService) DeletePreview(ctx context.Context, id int, op
 // made while the SLA expiration dates of an earlier change are still being
 // recalculated.
 //
-// Changing an SLA configuration's days or Enforce fields, or a product's SLA
-// configuration, marks the SLA configuration and its products as updating
-// and queues a Celery task that recalculates the findings' SLA expiration
-// dates. Until the task finishes, another change of that configuration's days
-// or Enforce fields, or of the SLA configuration of one of its products, is a
-// 400; sending the current values again is fine. The task never clears the
+// Changing an SLA configuration's days or Enforce fields marks it and every
+// product using it as updating; changing a product's SLA configuration marks
+// that product and its new SLA configuration. Either queues a Celery task that
+// recalculates the findings' SLA expiration dates. Until the task finishes,
+// another change of a marked configuration's days or Enforce fields, or of a
+// marked product's SLA configuration, is a 400; sending the current values
+// again is fine. The task never clears the
 // mark when the system setting enable_finding_sla is off, nor without a
 // running Celery worker.
 func IsSLARecalculating(err error) bool {
