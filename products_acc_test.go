@@ -147,6 +147,16 @@ func TestAccProducts(t *testing.T) {
 	if !found {
 		t.Error("ListAll() did not return the product")
 	}
+	// The product type filter is sent: the fixture product type has none of
+	// the test's products.
+	for p, err := range client.Products.ListAll(ctx, &defectdojo.ListProductsOptions{ProdType: 1}) {
+		if err != nil {
+			t.Fatalf("ListAll(product type 1) error = %v", err)
+		}
+		if p.ProdType != 1 || p.ID == created.ID || p.ID == upper.ID {
+			t.Errorf("ListAll(product type 1) returned product %d of product type %d", p.ID, p.ProdType)
+		}
+	}
 
 	// An engagement makes the product's delete cascade.
 	if n, _, err := client.Products.CountEngagements(ctx, created.ID); err != nil || n != 0 {

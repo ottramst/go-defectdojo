@@ -28,8 +28,8 @@ const (
 
 // Product is a DefectDojo product. The same type is used for reads and
 // writes: the read-only fields ID, FindingsCount, FindingsList, ProductMeta,
-// Created, ArchivedAt and ArchiveBatch are ignored when writing, and so are
-// ProdNumericGrade, UserRecords and Revenue (set them with
+// Created, ArchivedAt and ArchiveBatch are ignored when writing, and so is
+// ProdNumericGrade, which DefectDojo calculates (set it with
 // [ProductsService.Patch]).
 //
 // Nullable fields decode as their zero value when they are null, and
@@ -106,8 +106,10 @@ type Product struct {
 	// Regulations are the IDs of the regulations that apply to the product.
 	Regulations []int `json:"regulations"`
 
-	// Tags may not contain spaces, commas or quotes. DefectDojo keeps their
-	// case, but tags that differ only in case are merged into the first.
+	// Tags must not contain spaces or quotes (a 400), and commas split a tag.
+	// DefectDojo keeps a new tag's case, but a tag takes the spelling of an
+	// existing product tag that matches it ignoring case, and tags that differ
+	// only in case are merged into the first.
 	Tags []string `json:"tags"`
 
 	// FindingsCount and FindingsList are the number and IDs of the product's
@@ -134,8 +136,8 @@ type ProductMeta struct {
 
 // productRequest is the body of product create and update requests: the
 // writable fields of a [Product], with zero values of nullable fields sent as
-// null. prod_numeric_grade, user_records and revenue are left out, so that
-// Update keeps them.
+// null. user_records and revenue are left out when nil, so that Update keeps
+// them, and prod_numeric_grade is always left out.
 type productRequest struct {
 	Name                          string   `json:"name"`
 	Description                   string   `json:"description"`
@@ -154,6 +156,8 @@ type productRequest struct {
 	TechnicalContact              *int     `json:"technical_contact"`
 	TeamManager                   *int     `json:"team_manager"`
 	SLAConfiguration              int      `json:"sla_configuration,omitempty"`
+	UserRecords                   *int     `json:"user_records,omitempty"`
+	Revenue                       *string  `json:"revenue,omitempty"`
 	AuthorizedUsers               []int    `json:"authorized_users"`
 	Regulations                   []int    `json:"regulations"`
 	Tags                          []string `json:"tags"`
@@ -189,6 +193,8 @@ func newProductRequest(p *Product) (*productRequest, error) {
 		TechnicalContact:              orNull(p.TechnicalContact),
 		TeamManager:                   orNull(p.TeamManager),
 		SLAConfiguration:              p.SLAConfiguration,
+		UserRecords:                   p.UserRecords,
+		Revenue:                       p.Revenue,
 		// null is a 400 for lists; an empty list removes all entries.
 		AuthorizedUsers: orEmpty(p.AuthorizedUsers),
 		Regulations:     orEmpty(p.Regulations),
@@ -345,9 +351,9 @@ func (s *ProductsService) Create(ctx context.Context, p *Product, opts ...Reques
 }
 
 // Update replaces the writable fields of the product with the given ID.
-// Every writable field is sent except a zero SLAConfiguration and
-// ProdNumericGrade, UserRecords and Revenue, which are kept: empty nullable
-// fields are cleared, and nil AuthorizedUsers, Regulations and Tags remove
+// Every writable field is sent except a zero SLAConfiguration, nil
+// UserRecords and Revenue, and ProdNumericGrade, which are kept: empty
+// nullable fields are cleared, and nil AuthorizedUsers, Regulations and Tags remove
 // all entries. Update a product returned by [ProductsService.Get] to keep its
 // other fields, or use [ProductsService.Patch].
 //

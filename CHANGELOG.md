@@ -6,7 +6,7 @@ FEATURES:
 
 NOTES:
 
-* `Products.Create` and `Products.Update` send every writable field, so `EnableFullRiskAcceptance`, which DefectDojo defaults to `true`, is `false` unless it is set. Zero values of nullable fields (`Platform`, `ProductManager` and the like) are sent as `null`, a zero `SLAConfiguration` is left out (DefectDojo's default on create, the current value on update), and `ProdNumericGrade`, `UserRecords` and `Revenue` are only written by `Products.Patch` ([#9](https://github.com/ottramst/go-defectdojo/issues/9))
+* `Products.Create` and `Products.Update` send every writable field, so `EnableFullRiskAcceptance`, which DefectDojo defaults to `true`, is `false` unless it is set. Zero values of nullable fields (`Platform`, `ProductManager` and the like) are sent as `null`, a zero `SLAConfiguration` and nil `UserRecords` and `Revenue` are left out (DefectDojo's default on create, the current value on update), and `ProdNumericGrade`, which DefectDojo calculates, is only written by `Products.Patch` ([#9](https://github.com/ottramst/go-defectdojo/issues/9))
 * `Products.GetByName` matches names case-sensitively: DefectDojo's `name_exact` filter ignores case, and product names that differ only in case can coexist ([#9](https://github.com/ottramst/go-defectdojo/issues/9))
 
 ## v0.0.1

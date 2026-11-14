@@ -156,9 +156,9 @@ func TestProductsService_Create(t *testing.T) {
 	mux, client := setup(t)
 	mux.HandleFunc("POST /api/v2/products/", func(w http.ResponseWriter, r *http.Request) {
 		testHeader(t, r, "Content-Type", "application/json")
-		// Read-only fields and prod_numeric_grade, user_records and revenue are
-		// not sent; empty nullable fields are null, a zero SLA configuration is
-		// left out, and nil lists are [].
+		// Read-only fields, prod_numeric_grade and a nil revenue are not sent;
+		// empty nullable fields are null, a zero SLA configuration is left out,
+		// and nil lists are [].
 		testJSONBody(t, r, `{
 			"name":"Storefront","description":"The online shop","prod_type":2,
 			"business_criticality":null,"platform":null,"lifecycle":null,"origin":null,
@@ -166,14 +166,14 @@ func TestProductsService_Create(t *testing.T) {
 			"enable_product_tag_inheritance":false,"enable_simple_risk_acceptance":false,
 			"enable_full_risk_acceptance":false,"disable_sla_breach_notifications":false,
 			"product_manager":null,"technical_contact":null,"team_manager":null,
-			"authorized_users":[],"regulations":[],"tags":[]
+			"user_records":5,"authorized_users":[],"regulations":[],"tags":[]
 		}`)
 		writeJSON(t, w, http.StatusCreated, fixture(t, "products/get.json"))
 	})
 
 	in := &defectdojo.Product{
 		ID: 99, Name: "Storefront", Description: "The online shop", ProdType: 2, InternetAccessible: true,
-		UserRecords: new(5), FindingsCount: 3, Created: time.Now(),
+		UserRecords: new(5), ProdNumericGrade: new(80), FindingsCount: 3, Created: time.Now(),
 	}
 	p, resp, err := client.Products.Create(context.Background(), in)
 	if err != nil {
@@ -209,7 +209,7 @@ func TestProductsService_Update(t *testing.T) {
 			"enable_product_tag_inheritance":true,"enable_simple_risk_acceptance":true,
 			"enable_full_risk_acceptance":true,"disable_sla_breach_notifications":true,
 			"product_manager":2,"technical_contact":3,"team_manager":4,"sla_configuration":5,
-			"authorized_users":[2],"regulations":[1,2],"tags":["pci"]
+			"revenue":"1.00","authorized_users":[2],"regulations":[1,2],"tags":["pci"]
 		}`)
 		writeJSON(t, w, http.StatusOK, fixture(t, "products/get.json"))
 	})
@@ -332,7 +332,10 @@ func TestProductsService_CountEngagements(t *testing.T) {
 }
 
 func TestProductsService_invalidArguments(t *testing.T) {
-	_, client := setup(t)
+	mux, client := setup(t)
+	mux.HandleFunc("/", func(_ http.ResponseWriter, r *http.Request) {
+		t.Errorf("unexpected request %s %s", r.Method, r.URL)
+	})
 	ctx := context.Background()
 	p := &defectdojo.Product{Name: "x", Description: "d", ProdType: 1}
 	calls := map[string]func() error{
