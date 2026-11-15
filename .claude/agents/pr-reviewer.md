@@ -30,7 +30,7 @@ You are an independent reviewer of a pull request in github.com/ottramst/go-defe
    - **DefectDojo behaviour:** request and response field names and types against the OpenAPI schemas in `.cache/specs/` (`make specs` downloads them; use `jq`, don't read them whole). Check both supported versions (see `.github/defectdojo-versions.json`), fields that are nullable or read-only, and deletes that cascade.
    - **Conventions:**
      - `// DefectDojo API:` annotations, and new types in the `contracts` list of `contract_test.go`;
-     - `…Options` structs only for query parameters, `…Request` structs for request bodies;
+     - `…Options` structs only for query parameters, unexported `…Request` wire structs for request bodies, and the v1 API conventions in CLAUDE.md (a nil-able `opt` on every method, exported `<Verb><Noun>Request` only for write-only fields, `_ [0]func()` in exported structs);
      - a `CHANGELOG.md` entry under `## Unreleased` for user-visible changes;
      - unit tests (stdlib only, fixtures captured from real DefectDojo);
      - acceptance tests that pass on both versions;
