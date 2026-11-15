@@ -59,6 +59,19 @@ type contract struct {
 	// reason. Their type is not checked, and the test fails once the type
 	// matches, so that the exception is removed.
 	specBug map[string]string
+
+	// undocumented maps properties that DefectDojo sends but its published
+	// schema may leave out to the reason. They are checked when the schema
+	// has them and skipped when it doesn't, so that both the release schemas
+	// and the schema a server serves pass.
+	undocumented map[string]string
+}
+
+// cicdDetailFields are the CI/CD infrastructure fields that the release
+// schemas leave out.
+var cicdDetailFields = map[string]string{
+	"description": "DefectDojo drops it for callers without the view or change permission, and the release schemas are generated without them",
+	"url":         "DefectDojo drops it for callers without the view or change permission, and the release schemas are generated without them",
 }
 
 // contracts lists every type the client sends or decodes. Add new types here.
@@ -95,6 +108,10 @@ var contracts = []contract{
 	{value: announcementRequest{}, schema: "AnnouncementRequest", request: true},
 	{value: AnnouncementPatch{}, schema: "PatchedAnnouncementRequest", request: true},
 	{value: listPage[Announcement]{}, schema: "PaginatedAnnouncementList"},
+	{value: CICDInfrastructure{}, schema: "CICDInfrastructure", undocumented: cicdDetailFields},
+	{value: cicdInfrastructureRequest{}, schema: "CICDInfrastructureRequest", request: true, undocumented: cicdDetailFields},
+	{value: CICDInfrastructurePatch{}, schema: "PatchedCICDInfrastructureRequest", request: true, undocumented: cicdDetailFields},
+	{value: listPage[CICDInfrastructure]{}, schema: "PaginatedCICDInfrastructureList"},
 	{value: SystemSettings{}, schema: "SystemSettings", since: map[string]string{"read_only_mode": "3.5.100"}},
 	{value: SystemSettingsPatch{}, schema: "PatchedSystemSettingsRequest", request: true, since: map[string]string{"read_only_mode": "3.5.100"}},
 	{value: listPage[SystemSettings]{}, schema: "PaginatedSystemSettingsList"},
@@ -216,7 +233,14 @@ var (
 	nullableName = reflect.TypeFor[Nullable[int]]().Name()[:len("Nullable")]
 )
 
-func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) {
+// contractReporter is the part of *testing.T that checkContract reports to,
+// so that the checker itself can be tested.
+type contractReporter interface {
+	Errorf(format string, args ...any)
+	Fatalf(format string, args ...any)
+}
+
+func checkContract(t contractReporter, spec *openAPISpec, c contract, version string) {
 	schema, ok := spec.Components.Schemas[c.schema]
 	if !ok {
 		t.Fatalf("schema %s does not exist", c.schema)
@@ -240,7 +264,9 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 		}
 		prop, ok := schema.Properties[name]
 		if !ok {
-			t.Errorf("%s.%s: property %q is not in %s", typ.Name(), f.Name, name, c.schema)
+			if _, undocumented := c.undocumented[name]; !undocumented {
+				t.Errorf("%s.%s: property %q is not in %s", typ.Name(), f.Name, name, c.schema)
+			}
 			continue
 		}
 		prop = spec.resolve(prop)
@@ -268,6 +294,11 @@ func checkContract(t *testing.T, spec *openAPISpec, c contract, version string) 
 	for name := range c.specBug {
 		if !sent[name] {
 			t.Errorf("%s: specBug lists %q, which is not a field", typ.Name(), name)
+		}
+	}
+	for name := range c.undocumented {
+		if !sent[name] {
+			t.Errorf("%s: undocumented lists %q, which is not a field", typ.Name(), name)
 		}
 	}
 	for _, name := range c.nonZero {

@@ -1,0 +1,9 @@
+{
+  "non_field_errors": [
+    "The fields name, infrastructure_type must make a unique set."
+  ],
+  "message": "The fields name, infrastructure_type must make a unique set.",
+  "pro": [
+    "Pro comes with support. Get Pro from $100/mo or email us at hello@defectdojo.com"
+  ]
+}

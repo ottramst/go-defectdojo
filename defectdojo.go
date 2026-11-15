@@ -60,6 +60,7 @@ type Client struct {
 	// Services used for talking to different parts of the DefectDojo API.
 	Announcements            *AnnouncementsService
 	Auth                     *AuthService
+	CICDInfrastructure       *CICDInfrastructureService
 	ConfigurationPermissions *ConfigurationPermissionsService
 	DevelopmentEnvironments  *DevelopmentEnvironmentsService
 	Engagements              *EngagementsService
@@ -178,6 +179,7 @@ func (c *Client) initServices() {
 	c.common.client = c
 	c.Announcements = (*AnnouncementsService)(&c.common)
 	c.Auth = (*AuthService)(&c.common)
+	c.CICDInfrastructure = (*CICDInfrastructureService)(&c.common)
 	c.ConfigurationPermissions = (*ConfigurationPermissionsService)(&c.common)
 	c.DevelopmentEnvironments = (*DevelopmentEnvironmentsService)(&c.common)
 	c.Engagements = (*EngagementsService)(&c.common)

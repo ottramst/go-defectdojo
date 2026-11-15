@@ -1,0 +1,12 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "CICDInfrastructure",
+      "id": 8,
+      "name": "Jenkins"
+    }
+  ]
+}
