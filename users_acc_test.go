@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"slices"
 	"strconv"
 	"strings"
@@ -211,7 +212,7 @@ func TestAccConfigurationPermissions(t *testing.T) {
 	if err != nil {
 		t.Fatalf("GetByCodename() error = %v", err)
 	}
-	if got, _, err := client.ConfigurationPermissions.Get(ctx, p.ID, nil); err != nil || *got != *p {
+	if got, _, err := client.ConfigurationPermissions.Get(ctx, p.ID, nil); err != nil || !reflect.DeepEqual(*got, *p) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, p)
 	}
 	// Codenames are exact, and permissions that aren't configuration

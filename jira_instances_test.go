@@ -169,7 +169,7 @@ func TestJiraInstancesService_Create(t *testing.T) {
 	if !reflect.DeepEqual(*created, acmeJira) {
 		t.Errorf("Create() = %+v, want %+v", *created, acmeJira)
 	}
-	if in != orig {
+	if !reflect.DeepEqual(in, orig) {
 		t.Errorf("Create() changed its argument to %+v", in)
 	}
 }

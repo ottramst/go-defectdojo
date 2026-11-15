@@ -53,6 +53,8 @@ const (
 //	{"detail": "No Product_Type matches the given query."}
 //	{"name": ["product_ type with this name already exists."], "message": "name: product_ type with this name already exists."}
 type ErrorResponse struct {
+	_ [0]func()
+
 	// Method and URL identify the request. The URL has no credentials.
 	Method string
 	URL    string

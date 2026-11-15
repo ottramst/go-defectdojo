@@ -39,6 +39,8 @@ const (
 // [ProductsService.Create] and [ProductsService.Update] send zero values of
 // nullable fields as null.
 type Product struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is unique across all products, compared case-sensitively, and is at
@@ -134,6 +136,8 @@ type Product struct {
 
 // ProductMeta is a custom field of a product.
 type ProductMeta struct {
+	_ [0]func()
+
 	Name  string `json:"name"`
 	Value string `json:"value"`
 }
@@ -209,6 +213,8 @@ func newProductRequest(p *Product) (*productRequest, error) {
 // ProductPatch is the body of [ProductsService.Patch]. Only the fields that
 // are set are changed.
 type ProductPatch struct {
+	_ [0]func()
+
 	Name                          *string                       `json:"name,omitempty"`
 	Description                   *string                       `json:"description,omitempty"`
 	ProdType                      *int                          `json:"prod_type,omitempty"`
@@ -240,6 +246,8 @@ type ProductPatch struct {
 // ListProductsOptions are the options of [ProductsService.List] and
 // [ProductsService.ListAll].
 type ListProductsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name filters by names that contain it, ignoring case.
@@ -255,6 +263,8 @@ type ListProductsOptions struct {
 
 // ListProductsResult is a page of products.
 type ListProductsResult struct {
+	_ [0]func()
+
 	Results []Product
 
 	// Count is the number of products that match the filters.
@@ -299,7 +309,11 @@ func (s *ProductsService) ListAll(ctx context.Context, opt *ListProductsOptions,
 }
 
 // GetProductOptions are the options of [ProductsService.Get].
-type GetProductOptions struct{}
+type GetProductOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Get returns a product by its ID.
 //
@@ -317,7 +331,11 @@ func (s *ProductsService) Get(ctx context.Context, id int, opt *GetProductOption
 }
 
 // GetProductByNameOptions are the options of [ProductsService.GetByName].
-type GetProductByNameOptions struct{}
+type GetProductByNameOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // GetByName returns the product with exactly the given name, compared
 // case-sensitively. It returns an error matching [ErrNotFound] when there is
@@ -341,7 +359,11 @@ func (s *ProductsService) GetByName(ctx context.Context, name string, opt *GetPr
 }
 
 // CreateProductOptions are the options of [ProductsService.Create].
-type CreateProductOptions struct{}
+type CreateProductOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Create creates a product. Its read-only fields are ignored. A name that is
 // taken is a 400 ([ErrBadRequest]) with a "name" field error.
@@ -365,7 +387,11 @@ func (s *ProductsService) Create(ctx context.Context, p *Product, opt *CreatePro
 }
 
 // UpdateProductOptions are the options of [ProductsService.Update].
-type UpdateProductOptions struct{}
+type UpdateProductOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the product with the given ID.
 // Every writable field is sent except a zero SLAConfiguration, nil
@@ -393,7 +419,11 @@ func (s *ProductsService) Update(ctx context.Context, id int, p *Product, opt *U
 }
 
 // PatchProductOptions are the options of [ProductsService.Patch].
-type PatchProductOptions struct{}
+type PatchProductOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Patch changes the fields of the product that are set in patch.
 //
@@ -420,7 +450,11 @@ func (s *ProductsService) Patch(ctx context.Context, id int, patch *ProductPatch
 }
 
 // DeleteProductOptions are the options of [ProductsService.Delete].
-type DeleteProductOptions struct{}
+type DeleteProductOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Delete deletes a product by its ID.
 //
@@ -442,6 +476,8 @@ func (s *ProductsService) Delete(ctx context.Context, id int, opt *DeleteProduct
 
 // DeletePreviewProductOptions are the options of [ProductsService.DeletePreview].
 type DeletePreviewProductOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
@@ -466,7 +502,11 @@ func (s *ProductsService) DeletePreview(ctx context.Context, id int, opt *Delete
 }
 
 // CountProductEngagementsOptions are the options of [ProductsService.CountEngagements].
-type CountProductEngagementsOptions struct{}
+type CountProductEngagementsOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // CountEngagements returns the number of engagements of the product, which a
 // delete of the product would also delete. It reads the count of the

@@ -39,6 +39,8 @@ const (
 // A Client manages communication with the DefectDojo API. It is safe for
 // concurrent use by multiple goroutines.
 type Client struct {
+	_ [0]func()
+
 	httpClient *http.Client
 
 	// baseURL is the DefectDojo URL, including any path prefix, without a
@@ -317,6 +319,8 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body any, 
 // exchange, such as the TLS connection state, wrap the transport of the
 // [http.Client] passed to [WithHTTPClient].
 type Response struct {
+	_ [0]func()
+
 	// StatusCode is the HTTP status code, such as 200.
 	StatusCode int
 

@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -37,7 +38,7 @@ func TestProductAttributesService_List(t *testing.T) {
 				t.Fatalf("List() = %d of %d, want 6 of 6", len(list.Results), list.Count)
 			}
 			want := defectdojo.ProductAttribute{ID: 1, Value: "web service", Name: "API", Icon: "plug", DisplayOrder: 10}
-			if list.Results[0] != want {
+			if !reflect.DeepEqual(list.Results[0], want) {
 				t.Errorf("first entry = %+v, want %+v", list.Results[0], want)
 			}
 		})
@@ -81,7 +82,7 @@ func TestProductAttributesService_Get(t *testing.T) {
 	})
 	got, _, err := client.ProductPlatforms.Get(context.Background(), 8, nil)
 	want := defectdojo.ProductAttribute{ID: 8, Value: "kiosk", Name: "Kiosk", Icon: "tv", DisplayOrder: 60}
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 	if _, _, err := client.ProductPlatforms.Get(context.Background(), 9, nil); !errors.Is(err, defectdojo.ErrNotFound) {
@@ -237,7 +238,7 @@ func TestProductAttributesService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Product_Platform", ID: 8, Name: "Kiosk"}) {
+	if preview.Count != 1 || !reflect.DeepEqual(preview.Results[0], defectdojo.DeletedObject{Model: "Product_Platform", ID: 8, Name: "Kiosk"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

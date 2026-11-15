@@ -20,6 +20,8 @@ import (
 //
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type ProductAttributesService struct {
+	_ [0]func()
+
 	client *Client
 
 	// path is the collection's path, such as "/api/v2/product_platforms/".
@@ -33,6 +35,8 @@ type ProductAttributesService struct {
 // same type is used for reads and writes: the read-only ID is ignored when
 // writing.
 type ProductAttribute struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Value is the stable machine value that products, imports and
@@ -80,6 +84,8 @@ func (s *ProductAttributesService) newRequest(a *ProductAttribute) (*productAttr
 // the fields that are set are changed; an empty Icon clears it. The value
 // can't change, so it has no field here.
 type ProductAttributePatch struct {
+	_ [0]func()
+
 	Name         *string `json:"name,omitempty"`
 	Icon         *string `json:"icon,omitempty"`
 	DisplayOrder *int    `json:"display_order,omitempty"`
@@ -89,11 +95,15 @@ type ProductAttributePatch struct {
 // and [ProductAttributesService.ListAll]. DefectDojo has no filters for
 // product attributes.
 type ListProductAttributesOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
 // ListProductAttributesResult is a page of entries.
 type ListProductAttributesResult struct {
+	_ [0]func()
+
 	Results []ProductAttribute
 
 	// Count is the number of entries in the table.
@@ -145,7 +155,11 @@ func (s *ProductAttributesService) ListAll(ctx context.Context, opt *ListProduct
 }
 
 // GetProductAttributeOptions are the options of [ProductAttributesService.Get].
-type GetProductAttributeOptions struct{}
+type GetProductAttributeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Get returns an entry by its ID.
 //
@@ -165,7 +179,11 @@ func (s *ProductAttributesService) Get(ctx context.Context, id int, opt *GetProd
 }
 
 // GetProductAttributeByValueOptions are the options of [ProductAttributesService.GetByValue].
-type GetProductAttributeByValueOptions struct{}
+type GetProductAttributeByValueOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // GetByValue returns the entry with exactly the given value, compared
 // case-sensitively. It returns an error matching [ErrNotFound] when there is
@@ -199,7 +217,11 @@ func (s *ProductAttributesService) GetByValue(ctx context.Context, value string,
 }
 
 // CreateProductAttributeOptions are the options of [ProductAttributesService.Create].
-type CreateProductAttributeOptions struct{}
+type CreateProductAttributeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Create creates an entry. Its read-only ID is ignored. A value that is taken
 // is a 400 ([ErrBadRequest]) with a "value" field error.
@@ -221,7 +243,11 @@ func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribu
 }
 
 // UpdateProductAttributeOptions are the options of [ProductAttributesService.Update].
-type UpdateProductAttributeOptions struct{}
+type UpdateProductAttributeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the entry with the given ID: an
 // empty Icon clears it. Value must be set, as DefectDojo requires it, but
@@ -248,7 +274,11 @@ func (s *ProductAttributesService) Update(ctx context.Context, id int, a *Produc
 }
 
 // PatchProductAttributeOptions are the options of [ProductAttributesService.Patch].
-type PatchProductAttributeOptions struct{}
+type PatchProductAttributeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Patch changes the fields of the entry that are set in patch.
 //
@@ -271,7 +301,11 @@ func (s *ProductAttributesService) Patch(ctx context.Context, id int, patch *Pro
 }
 
 // DeleteProductAttributeOptions are the options of [ProductAttributesService.Delete].
-type DeleteProductAttributeOptions struct{}
+type DeleteProductAttributeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Delete deletes an entry by its ID. Deleting an entry that products use is
 // a 409 ([ErrConflict]).
@@ -288,6 +322,8 @@ func (s *ProductAttributesService) Delete(ctx context.Context, id int, opt *Dele
 
 // DeletePreviewProductAttributeOptions are the options of [ProductAttributesService.DeletePreview].
 type DeletePreviewProductAttributeOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

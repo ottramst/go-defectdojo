@@ -19,6 +19,8 @@ type NoteTypesService service
 // NoteType is a DefectDojo note type. The same type is used for reads and
 // writes: the read-only ID is ignored when writing.
 type NoteType struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is unique across all note types, at most 100 characters.
@@ -72,6 +74,8 @@ func newNoteTypeRequest(nt *NoteType) (*noteTypeRequest, error) {
 // NoteTypePatch is the body of [NoteTypesService.Patch]. Only the fields that
 // are set are changed.
 type NoteTypePatch struct {
+	_ [0]func()
+
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
 	IsSingle    *bool   `json:"is_single,omitempty"`
@@ -82,6 +86,8 @@ type NoteTypePatch struct {
 // ListNoteTypesOptions are the options of [NoteTypesService.List] and
 // [NoteTypesService.ListAll].
 type ListNoteTypesOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name filters by exact, case-sensitive name.
@@ -94,6 +100,8 @@ type ListNoteTypesOptions struct {
 
 // ListNoteTypesResult is a page of note types.
 type ListNoteTypesResult struct {
+	_ [0]func()
+
 	Results []NoteType
 
 	// Count is the number of note types that match the filters.
@@ -138,7 +146,11 @@ func (s *NoteTypesService) ListAll(ctx context.Context, opt *ListNoteTypesOption
 }
 
 // GetNoteTypeOptions are the options of [NoteTypesService.Get].
-type GetNoteTypeOptions struct{}
+type GetNoteTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Get returns a note type by its ID.
 //
@@ -156,7 +168,11 @@ func (s *NoteTypesService) Get(ctx context.Context, id int, opt *GetNoteTypeOpti
 }
 
 // GetNoteTypeByNameOptions are the options of [NoteTypesService.GetByName].
-type GetNoteTypeByNameOptions struct{}
+type GetNoteTypeByNameOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // GetByName returns the note type with exactly the given name. It returns an
 // error matching [ErrNotFound] when there is none.
@@ -180,7 +196,11 @@ func (s *NoteTypesService) GetByName(ctx context.Context, name string, opt *GetN
 }
 
 // CreateNoteTypeOptions are the options of [NoteTypesService.Create].
-type CreateNoteTypeOptions struct{}
+type CreateNoteTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Create creates a note type. Its read-only ID is ignored. A name that is
 // taken is a 400 ([ErrBadRequest]) with a "name" field error.
@@ -203,7 +223,11 @@ func (s *NoteTypesService) Create(ctx context.Context, nt *NoteType, opt *Create
 }
 
 // UpdateNoteTypeOptions are the options of [NoteTypesService.Update].
-type UpdateNoteTypeOptions struct{}
+type UpdateNoteTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the note type with the given ID.
 // Every writable field is sent.
@@ -226,7 +250,11 @@ func (s *NoteTypesService) Update(ctx context.Context, id int, nt *NoteType, opt
 }
 
 // PatchNoteTypeOptions are the options of [NoteTypesService.Patch].
-type PatchNoteTypeOptions struct{}
+type PatchNoteTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Patch changes the fields of the note type that are set in patch.
 //
@@ -247,7 +275,11 @@ func (s *NoteTypesService) Patch(ctx context.Context, id int, patch *NoteTypePat
 }
 
 // DeleteNoteTypeOptions are the options of [NoteTypesService.Delete].
-type DeleteNoteTypeOptions struct{}
+type DeleteNoteTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Delete deletes a note type by its ID.
 //
@@ -265,6 +297,8 @@ func (s *NoteTypesService) Delete(ctx context.Context, id int, opt *DeleteNoteTy
 
 // DeletePreviewNoteTypeOptions are the options of [NoteTypesService.DeletePreview].
 type DeletePreviewNoteTypeOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
@@ -292,7 +326,11 @@ func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *Delet
 }
 
 // CountNoteTypeNotesOptions are the options of [NoteTypesService.CountNotes].
-type CountNoteTypeNotesOptions struct{}
+type CountNoteTypeNotesOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // CountNotes returns the number of notes of the note type, which a delete of
 // the note type would also delete.

@@ -20,6 +20,8 @@ type UsersService service
 // CreateUserRequest is the body of [UsersService.Create]: a user and its initial
 // password.
 type CreateUserRequest struct {
+	_ [0]func()
+
 	User
 
 	// Password is the user's initial password. It is checked against
@@ -76,6 +78,8 @@ func newUserRequest(u *User) (*userRequest, error) {
 // UserPatch is the body of [UsersService.Patch]. Only the fields that are set
 // are changed. The names can't be null: set them to "" to clear them.
 type UserPatch struct {
+	_ [0]func()
+
 	Username    *string `json:"username,omitempty"`
 	FirstName   *string `json:"first_name,omitempty"`
 	LastName    *string `json:"last_name,omitempty"`
@@ -93,6 +97,8 @@ type UserPatch struct {
 // ListUsersOptions are the options of [UsersService.List] and
 // [UsersService.ListAll].
 type ListUsersOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Username, Email, FirstName and LastName are case-insensitive contains
@@ -108,6 +114,8 @@ type ListUsersOptions struct {
 
 // ListUsersResult is a page of users.
 type ListUsersResult struct {
+	_ [0]func()
+
 	Results []User
 
 	// Count is the number of users that match the filters.
@@ -152,7 +160,11 @@ func (s *UsersService) ListAll(ctx context.Context, opt *ListUsersOptions, opts 
 }
 
 // GetUserOptions are the options of [UsersService.Get].
-type GetUserOptions struct{}
+type GetUserOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Get returns a user by its ID.
 //
@@ -170,7 +182,11 @@ func (s *UsersService) Get(ctx context.Context, id int, opt *GetUserOptions, opt
 }
 
 // GetUserByUsernameOptions are the options of [UsersService.GetByUsername].
-type GetUserByUsernameOptions struct{}
+type GetUserByUsernameOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // GetByUsername returns the user with exactly the given username, compared
 // case-sensitively: usernames that differ only in case can coexist. It
@@ -203,7 +219,11 @@ func (s *UsersService) GetByUsername(ctx context.Context, username string, opt *
 }
 
 // CreateUserOptions are the options of [UsersService.Create].
-type CreateUserOptions struct{}
+type CreateUserOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Create creates a user with the given initial password. Its read-only
 // fields are ignored.
@@ -234,7 +254,11 @@ func (s *UsersService) Create(ctx context.Context, u *CreateUserRequest, opt *Cr
 }
 
 // UpdateUserOptions are the options of [UsersService.Update].
-type UpdateUserOptions struct{}
+type UpdateUserOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the user with the given ID. Every
 // writable field is sent, except empty ConfigurationPermissions, which keep
@@ -264,7 +288,11 @@ func (s *UsersService) Update(ctx context.Context, id int, u *User, opt *UpdateU
 }
 
 // PatchUserOptions are the options of [UsersService.Patch].
-type PatchUserOptions struct{}
+type PatchUserOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Patch changes the fields of the user that are set in patch.
 //
@@ -291,7 +319,11 @@ func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opt 
 }
 
 // DeleteUserOptions are the options of [UsersService.Delete].
-type DeleteUserOptions struct{}
+type DeleteUserOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Delete deletes a user by its ID, with its notification settings, alerts
 // and the notification webhooks it owns.
@@ -313,6 +345,8 @@ func (s *UsersService) Delete(ctx context.Context, id int, opt *DeleteUserOption
 
 // DeletePreviewUserOptions are the options of [UsersService.DeletePreview].
 type DeletePreviewUserOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
@@ -337,7 +371,11 @@ func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *DeletePre
 }
 
 // ResetUserAPITokenOptions are the options of [UsersService.ResetAPIToken].
-type ResetUserAPITokenOptions struct{}
+type ResetUserAPITokenOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // ResetAPIToken replaces the API token of the user with the given ID with a
 // new one, which the user can see in the UI, and notifies the user. It needs

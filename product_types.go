@@ -21,6 +21,8 @@ type ProductTypesService service
 // and writes: the read-only fields ID, Created, Updated, ArchivedAt and
 // ArchiveBatch are ignored when writing.
 type ProductType struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is unique across all product types, compared case-sensitively.
@@ -85,6 +87,8 @@ func newProductTypeRequest(pt *ProductType) (*productTypeRequest, error) {
 // ProductTypePatch is the body of [ProductTypesService.Patch]. Only the fields
 // that are set are changed.
 type ProductTypePatch struct {
+	_ [0]func()
+
 	Name            *string          `json:"name,omitempty"`
 	Description     Nullable[string] `json:"description,omitzero"`
 	CriticalProduct *bool            `json:"critical_product,omitempty"`
@@ -97,6 +101,8 @@ type ProductTypePatch struct {
 // ListProductTypesOptions are the options of [ProductTypesService.List] and
 // [ProductTypesService.ListAll].
 type ListProductTypesOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name filters by exact, case-sensitive name.
@@ -108,6 +114,8 @@ type ListProductTypesOptions struct {
 
 // ListProductTypesResult is a page of product types.
 type ListProductTypesResult struct {
+	_ [0]func()
+
 	Results []ProductType
 
 	// Count is the number of product types that match the filters.
@@ -152,7 +160,11 @@ func (s *ProductTypesService) ListAll(ctx context.Context, opt *ListProductTypes
 }
 
 // GetProductTypeOptions are the options of [ProductTypesService.Get].
-type GetProductTypeOptions struct{}
+type GetProductTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Get returns a product type by its ID.
 //
@@ -170,7 +182,11 @@ func (s *ProductTypesService) Get(ctx context.Context, id int, opt *GetProductTy
 }
 
 // GetProductTypeByNameOptions are the options of [ProductTypesService.GetByName].
-type GetProductTypeByNameOptions struct{}
+type GetProductTypeByNameOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // GetByName returns the product type with exactly the given name. It returns
 // an error matching [ErrNotFound] when there is none.
@@ -194,7 +210,11 @@ func (s *ProductTypesService) GetByName(ctx context.Context, name string, opt *G
 }
 
 // CreateProductTypeOptions are the options of [ProductTypesService.Create].
-type CreateProductTypeOptions struct{}
+type CreateProductTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Create creates a product type. Its read-only fields are ignored. A name
 // that is taken is a 400 ([ErrBadRequest]) with a "name" field error.
@@ -214,7 +234,11 @@ func (s *ProductTypesService) Create(ctx context.Context, pt *ProductType, opt *
 }
 
 // UpdateProductTypeOptions are the options of [ProductTypesService.Update].
-type UpdateProductTypeOptions struct{}
+type UpdateProductTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the product type with the given ID.
 // Every writable field is sent: an empty Description clears it, and a nil
@@ -240,7 +264,11 @@ func (s *ProductTypesService) Update(ctx context.Context, id int, pt *ProductTyp
 }
 
 // PatchProductTypeOptions are the options of [ProductTypesService.Patch].
-type PatchProductTypeOptions struct{}
+type PatchProductTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Patch changes the fields of the product type that are set in patch.
 //
@@ -267,7 +295,11 @@ func (s *ProductTypesService) Patch(ctx context.Context, id int, patch *ProductT
 }
 
 // DeleteProductTypeOptions are the options of [ProductTypesService.Delete].
-type DeleteProductTypeOptions struct{}
+type DeleteProductTypeOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Delete deletes a product type by its ID.
 //
@@ -290,6 +322,8 @@ func (s *ProductTypesService) Delete(ctx context.Context, id int, opt *DeletePro
 // DeletedObject is an object that a delete would remove, as listed by a
 // delete preview.
 type DeletedObject struct {
+	_ [0]func()
+
 	// Model is the DefectDojo model name, such as "Product_Type", "Product"
 	// or "Finding".
 	Model string `json:"model"`
@@ -302,6 +336,8 @@ type DeletedObject struct {
 
 // DeletePreviewResult is a page of the objects a delete would remove.
 type DeletePreviewResult struct {
+	_ [0]func()
+
 	Results []DeletedObject
 
 	// Count is the number of objects the delete would remove, including the
@@ -311,6 +347,8 @@ type DeletePreviewResult struct {
 
 // DeletePreviewProductTypeOptions are the options of [ProductTypesService.DeletePreview].
 type DeletePreviewProductTypeOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
@@ -338,7 +376,11 @@ func (s *ProductTypesService) DeletePreview(ctx context.Context, id int, opt *De
 }
 
 // CountProductTypeProductsOptions are the options of [ProductTypesService.CountProducts].
-type CountProductTypeProductsOptions struct{}
+type CountProductTypeProductsOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // CountProducts returns the number of products of the product type, which a
 // delete of the product type would also delete. It reads the count of the

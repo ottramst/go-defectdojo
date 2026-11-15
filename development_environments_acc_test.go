@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"strconv"
 	"strings"
 	"testing"
@@ -36,7 +37,7 @@ func TestAccDevelopmentEnvironments(t *testing.T) {
 	}
 
 	got, _, err := client.DevelopmentEnvironments.Get(ctx, created.ID, nil)
-	if err != nil || *got != *created {
+	if err != nil || !reflect.DeepEqual(*got, *created) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, created)
 	}
 	byName, _, err := client.DevelopmentEnvironments.GetByName(ctx, name, nil)

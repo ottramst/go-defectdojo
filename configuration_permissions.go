@@ -28,6 +28,8 @@ type ConfigurationPermissionsService service
 // only with questionnaires enabled. DefectDojo 3.6 removes the tool_type and
 // tool_configuration permissions with their endpoints.
 type ConfigurationPermission struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name describes the permission, such as "Can add user" (DefectDojo
@@ -42,6 +44,8 @@ type ConfigurationPermission struct {
 // [ConfigurationPermissionsService.List] and
 // [ConfigurationPermissionsService.ListAll].
 type ListConfigurationPermissionsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Codename and Name are exact, case-sensitive matches.
@@ -51,6 +55,8 @@ type ListConfigurationPermissionsOptions struct {
 
 // ListConfigurationPermissionsResult is a page of configuration permissions.
 type ListConfigurationPermissionsResult struct {
+	_ [0]func()
+
 	Results []ConfigurationPermission
 
 	// Count is the number of configuration permissions that match the
@@ -96,7 +102,11 @@ func (s *ConfigurationPermissionsService) ListAll(ctx context.Context, opt *List
 }
 
 // GetConfigurationPermissionOptions are the options of [ConfigurationPermissionsService.Get].
-type GetConfigurationPermissionOptions struct{}
+type GetConfigurationPermissionOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // Get returns a configuration permission by its ID.
 //
@@ -114,7 +124,11 @@ func (s *ConfigurationPermissionsService) Get(ctx context.Context, id int, opt *
 }
 
 // GetConfigurationPermissionByCodenameOptions are the options of [ConfigurationPermissionsService.GetByCodename].
-type GetConfigurationPermissionByCodenameOptions struct{}
+type GetConfigurationPermissionByCodenameOptions struct {
+	_ [0]func()
+
+	_ [0]func()
+}
 
 // GetByCodename returns the configuration permission with exactly the given
 // codename, such as "add_product_type". It returns an error matching

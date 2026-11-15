@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strings"
 	"testing"
 
@@ -78,7 +79,7 @@ func TestCICDInfrastructureService_Get(t *testing.T) {
 		ID: 8, Name: "Jenkins", InfrastructureType: defectdojo.CICDInfrastructureTypeBuildServer,
 		Description: "The main build server.", URL: "https://jenkins.example.com",
 	}
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 	if _, _, err := client.CICDInfrastructure.Get(context.Background(), 9, nil); !errors.Is(err, defectdojo.ErrNotFound) {
@@ -232,7 +233,7 @@ func TestCICDInfrastructureService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "CICDInfrastructure", ID: 8, Name: "Jenkins"}) {
+	if preview.Count != 1 || !reflect.DeepEqual(preview.Results[0], defectdojo.DeletedObject{Model: "CICDInfrastructure", ID: 8, Name: "Jenkins"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

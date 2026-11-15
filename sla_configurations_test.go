@@ -289,7 +289,7 @@ func TestSLAConfigurationsService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "SLA_Configuration", ID: 18, Name: "Strict"}) {
+	if preview.Count != 1 || !reflect.DeepEqual(preview.Results[0], defectdojo.DeletedObject{Model: "SLA_Configuration", ID: 18, Name: "Strict"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

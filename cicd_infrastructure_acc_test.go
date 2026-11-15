@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 	"time"
 
@@ -40,7 +41,7 @@ func TestAccCICDInfrastructure(t *testing.T) {
 	want := defectdojo.CICDInfrastructure{
 		ID: scm.ID, Name: name, InfrastructureType: "scm_server", Description: "acceptance test", URL: "https://scm.example.com",
 	}
-	if *scm != want {
+	if !reflect.DeepEqual(*scm, want) {
 		t.Errorf("Create() = %+v, want %+v", scm, want)
 	}
 	// The same name with another type is another object.
@@ -80,7 +81,7 @@ func TestAccCICDInfrastructure(t *testing.T) {
 	}
 
 	got, _, err := client.CICDInfrastructure.Get(ctx, scm.ID, nil)
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 	byName, _, err := client.CICDInfrastructure.GetByName(ctx, name, &defectdojo.GetCICDInfrastructureByNameOptions{InfrastructureType: defectdojo.CICDInfrastructureTypeBuildServer})
@@ -101,7 +102,7 @@ func TestAccCICDInfrastructure(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
-	if *updated != (defectdojo.CICDInfrastructure{ID: scm.ID, Name: name + "-renamed", InfrastructureType: "scm_server"}) {
+	if !reflect.DeepEqual(*updated, defectdojo.CICDInfrastructure{ID: scm.ID, Name: name + "-renamed", InfrastructureType: "scm_server"}) {
 		t.Errorf("Update() = %+v, want the new name, the type kept and the description and URL cleared", updated)
 	}
 	patched, _, err := client.CICDInfrastructure.Patch(ctx, scm.ID, &defectdojo.CICDInfrastructurePatch{Name: new(name), URL: new("https://git.example.com")}, nil)

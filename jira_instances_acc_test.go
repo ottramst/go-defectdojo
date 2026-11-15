@@ -3,6 +3,7 @@ package defectdojo_test
 import (
 	"context"
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -57,7 +58,7 @@ func TestAccJiraInstances(t *testing.T) {
 	}
 
 	got, _, err := client.JiraInstances.Get(ctx, created.ID, nil)
-	if err != nil || *got != *created {
+	if err != nil || !reflect.DeepEqual(*got, *created) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, created)
 	}
 	if byName, _, err := client.JiraInstances.GetByName(ctx, name, nil); err != nil || byName.ID != created.ID {

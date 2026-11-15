@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"strconv"
 	"testing"
 
@@ -81,7 +82,7 @@ func TestRegulationsService_Get(t *testing.T) {
 		ID: 29, Name: "GDPR Test", Acronym: "GDPR-T", Category: defectdojo.RegulationCategoryPrivacy,
 		Jurisdiction: "European Union", Description: "A test regulation.", Reference: "https://example.com/gdpr",
 	}
-	if *got != want {
+	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, want %+v", got, want)
 	}
 	if _, _, err := client.Regulations.Get(context.Background(), 30, nil); !errors.Is(err, defectdojo.ErrNotFound) {
@@ -249,7 +250,7 @@ func TestRegulationsService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Regulation", ID: 29, Name: "GDPR-T (European Union)"}) {
+	if preview.Count != 1 || !reflect.DeepEqual(preview.Results[0], defectdojo.DeletedObject{Model: "Regulation", ID: 29, Name: "GDPR-T (European Union)"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
