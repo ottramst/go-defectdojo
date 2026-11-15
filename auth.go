@@ -23,6 +23,9 @@ type tokenResponse struct {
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type AuthService service
 
+// TokenOptions are the options of [AuthService.Token].
+type TokenOptions struct{}
+
 // Token returns the API v2 token of the user with the given username and
 // password, creating it if the user has none. DefectDojo returns the same
 // token on every call; it does not rotate it.
@@ -33,7 +36,7 @@ type AuthService service
 // [WithAPIToken], or authenticate with [WithBasicAuth] instead.
 //
 // DefectDojo API: POST /api/v2/api-token-auth/
-func (s *AuthService) Token(ctx context.Context, username, password string, opts ...RequestOption) (string, *Response, error) {
+func (s *AuthService) Token(ctx context.Context, username, password string, opt *TokenOptions, opts ...RequestOption) (string, *Response, error) {
 	if username == "" {
 		return "", nil, errors.New("defectdojo: username must not be empty")
 	}

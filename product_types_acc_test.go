@@ -20,12 +20,12 @@ func TestAccProductTypes(t *testing.T) {
 		Description:     "acceptance test",
 		CriticalProduct: true,
 		AuthorizedUsers: []int{1},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.ProductTypes.Delete(ctx, created.ID)
+		_, err := client.ProductTypes.Delete(ctx, created.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -37,13 +37,13 @@ func TestAccProductTypes(t *testing.T) {
 	}
 
 	// Names are unique: a duplicate is a 400 with a field error, not a 409.
-	_, _, err = client.ProductTypes.Create(ctx, &defectdojo.ProductType{Name: name})
+	_, _, err = client.ProductTypes.Create(ctx, &defectdojo.ProductType{Name: name}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["name"]) == 0 {
 		t.Errorf("Create(same name) error = %v, want a 400 with a name field error", err)
 	}
 
-	got, _, err := client.ProductTypes.Get(ctx, created.ID)
+	got, _, err := client.ProductTypes.Get(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -51,18 +51,18 @@ func TestAccProductTypes(t *testing.T) {
 		t.Errorf("Get() = %+v, want %+v", got, created)
 	}
 
-	byName, _, err := client.ProductTypes.GetByName(ctx, name)
+	byName, _, err := client.ProductTypes.GetByName(ctx, name, nil)
 	if err != nil || byName.ID != created.ID {
 		t.Errorf("GetByName() = %+v, %v; want ID %d", byName, err, created.ID)
 	}
-	if _, _, err := client.ProductTypes.GetByName(ctx, name[:len(name)-1]); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.ProductTypes.GetByName(ctx, name[:len(name)-1], nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(prefix) error = %v, want ErrNotFound", err)
 	}
 
 	// Read, modify, write: the other fields are kept.
 	got.Name = name + "-renamed"
 	got.AuthorizedUsers = nil
-	updated, _, err := client.ProductTypes.Update(ctx, got.ID, got)
+	updated, _, err := client.ProductTypes.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -73,7 +73,7 @@ func TestAccProductTypes(t *testing.T) {
 	patched, _, err := client.ProductTypes.Patch(ctx, got.ID, &defectdojo.ProductTypePatch{
 		Description: defectdojo.Null[string](),
 		KeyProduct:  new(true),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -93,28 +93,28 @@ func TestAccProductTypes(t *testing.T) {
 	}
 
 	// A product makes the product type's delete cascade.
-	if n, _, err := client.ProductTypes.CountProducts(ctx, created.ID); err != nil || n != 0 {
+	if n, _, err := client.ProductTypes.CountProducts(ctx, created.ID, nil); err != nil || n != 0 {
 		t.Errorf("CountProducts() = %d, %v; want 0", n, err)
 	}
 	createProduct(t, client, created.ID)
-	if n, _, err := client.ProductTypes.CountProducts(ctx, created.ID); err != nil || n != 1 {
+	if n, _, err := client.ProductTypes.CountProducts(ctx, created.ID, nil); err != nil || n != 1 {
 		t.Errorf("CountProducts() = %d, %v; want 1", n, err)
 	}
 	preview, _, err := client.ProductTypes.DeletePreview(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Objects, func(o *defectdojo.DeletedObject) bool { return o.Model == "Product" }) {
-		t.Errorf("DeletePreview() = %+v, want the product", preview.Objects)
+	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Product" }) {
+		t.Errorf("DeletePreview() = %+v, want the product", preview.Results)
 	}
 
-	if _, err := client.ProductTypes.Delete(ctx, created.ID); err != nil {
+	if _, err := client.ProductTypes.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.ProductTypes.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.ProductTypes.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
-	if n, _, err := client.ProductTypes.CountProducts(ctx, created.ID); err != nil || n != 0 {
+	if n, _, err := client.ProductTypes.CountProducts(ctx, created.ID, nil); err != nil || n != 0 {
 		t.Errorf("CountProducts(deleted) = %d, %v; want 0 (the product was deleted too)", n, err)
 	}
 }
@@ -124,7 +124,7 @@ func TestAccProductTypes(t *testing.T) {
 func createProduct(t *testing.T, client *defectdojo.Client, productTypeID int) {
 	t.Helper()
 	p := &defectdojo.Product{Name: randName(t, "acc"), Description: "acceptance test", ProdType: productTypeID}
-	if _, _, err := client.Products.Create(t.Context(), p); err != nil {
+	if _, _, err := client.Products.Create(t.Context(), p, nil); err != nil {
 		t.Fatalf("creating product: %v", err)
 	}
 }

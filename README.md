@@ -84,7 +84,9 @@ if err != nil {
 productTypes, _, err := client.ProductTypes.List(ctx, nil)
 ```
 
-Methods return the decoded result, the `*defectdojo.Response` (its status and headers) and an
+Every method that calls DefectDojo takes a nil-able options struct, named after the method
+(`ListProductTypesOptions`, `GetProductOptions`), before the variadic request options: pass `nil` unless
+you need an option. Methods return the decoded result, the `*defectdojo.Response` (its status and headers) and an
 error. Methods for endpoints without a response body, such as `Delete`, return only the
 `*defectdojo.Response` and the error.
 
@@ -95,7 +97,7 @@ error. Methods for endpoints without a response body, such as `Delete`, return o
 | `defectdojo.WithAPIToken(token)` | `Authorization: Token <token>`, the API v2 key of a user |
 | `defectdojo.WithBasicAuth(user, password)` | `Authorization: Basic ...`; works also when API tokens are disabled on the server |
 
-`client.Auth.Token(ctx, user, password)` returns the API token of a user. DefectDojo returns the same
+`client.Auth.Token(ctx, user, password, nil)` returns the API token of a user. DefectDojo returns the same
 token every time, and may rate limit the endpoint, so fetch it once.
 
 Most configuration endpoints need a superuser, and `system_settings`, `notifications` and
@@ -108,18 +110,18 @@ pt, _, err := client.ProductTypes.Create(ctx, &defectdojo.ProductType{
 	Name:            "Web Applications",
 	Description:     "Customer-facing web applications",
 	CriticalProduct: true,
-})
+}, nil)
 
 // Update replaces every writable field: read it, change it, write it back.
-pt, _, err = client.ProductTypes.Get(ctx, pt.ID)
+pt, _, err = client.ProductTypes.Get(ctx, pt.ID, nil)
 pt.KeyProduct = true
-pt, _, err = client.ProductTypes.Update(ctx, pt.ID, pt)
+pt, _, err = client.ProductTypes.Update(ctx, pt.ID, pt, nil)
 
 // Patch changes only the fields that are set, and can set them to null.
 pt, _, err = client.ProductTypes.Patch(ctx, pt.ID, &defectdojo.ProductTypePatch{
 	Description: defectdojo.Null[string](),
 	KeyProduct:  new(false),
-})
+}, nil)
 ```
 
 Deleting a product type also deletes its products, with their engagements, tests and findings.
@@ -128,7 +130,7 @@ Deleting a product type also deletes its products, with their engagements, tests
 ### Errors
 
 ```go
-_, _, err := client.ProductTypes.Get(ctx, 42)
+_, _, err := client.ProductTypes.Get(ctx, 42, nil)
 if errors.Is(err, defectdojo.ErrNotFound) {
 	// the product type does not exist
 }

@@ -44,9 +44,9 @@ type ListTestTypesOptions struct {
 	Name string `url:"name,omitempty"`
 }
 
-// TestTypeList is a page of test types.
-type TestTypeList struct {
-	TestTypes []*TestType
+// ListTestTypesResult is a page of test types.
+type ListTestTypesResult struct {
+	Results []*TestType
 
 	// Count is the number of test types that match the filters.
 	Count int
@@ -55,7 +55,7 @@ type TestTypeList struct {
 // List returns a page of test types, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/test_types/
-func (s *TestTypesService) List(ctx context.Context, opt *ListTestTypesOptions, opts ...RequestOption) (*TestTypeList, *Response, error) {
+func (s *TestTypesService) List(ctx context.Context, opt *ListTestTypesOptions, opts ...RequestOption) (*ListTestTypesResult, *Response, error) {
 	path, err := addQuery("/api/v2/test_types/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -65,7 +65,7 @@ func (s *TestTypesService) List(ctx context.Context, opt *ListTestTypesOptions, 
 	if err != nil {
 		return nil, resp, err
 	}
-	return &TestTypeList{TestTypes: page.Results, Count: page.Count}, resp, nil
+	return &ListTestTypesResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the test types, starting at opt.Offset.
@@ -85,14 +85,17 @@ func (s *TestTypesService) ListAll(ctx context.Context, opt *ListTestTypesOption
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.TestTypes, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetTestTypeOptions are the options of [TestTypesService.Get].
+type GetTestTypeOptions struct{}
 
 // Get returns a test type by its ID.
 //
 // DefectDojo API: GET /api/v2/test_types/{id}/
-func (s *TestTypesService) Get(ctx context.Context, id int, opts ...RequestOption) (*TestType, *Response, error) {
+func (s *TestTypesService) Get(ctx context.Context, id int, opt *GetTestTypeOptions, opts ...RequestOption) (*TestType, *Response, error) {
 	if err := requirePositive("test type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -104,9 +107,12 @@ func (s *TestTypesService) Get(ctx context.Context, id int, opts ...RequestOptio
 	return tt, resp, nil
 }
 
+// GetTestTypeByNameOptions are the options of [TestTypesService.GetByName].
+type GetTestTypeByNameOptions struct{}
+
 // GetByName returns the test type with exactly the given name, such as
 // "Trivy Scan". It returns an error matching [ErrNotFound] when there is none.
-func (s *TestTypesService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*TestType, *Response, error) {
+func (s *TestTypesService) GetByName(ctx context.Context, name string, opt *GetTestTypeByNameOptions, opts ...RequestOption) (*TestType, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: test type name must not be empty")
 	}
@@ -116,7 +122,7 @@ func (s *TestTypesService) GetByName(ctx context.Context, name string, opts ...R
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, tt := range list.TestTypes {
+	for _, tt := range list.Results {
 		if tt.Name == name {
 			return tt, resp, nil
 		}

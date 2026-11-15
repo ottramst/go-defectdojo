@@ -12,7 +12,7 @@ func TestAccSystemSettings(t *testing.T) {
 	client := accClient(t)
 	ctx := t.Context()
 
-	before, _, err := client.SystemSettings.Get(ctx)
+	before, _, err := client.SystemSettings.Get(ctx, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -26,7 +26,7 @@ func TestAccSystemSettings(t *testing.T) {
 			EngagementAutoCloseDays: new(before.EngagementAutoCloseDays),
 			MaxDupes:                nullableInt(before.MaxDupes),
 			JiraLabels:              nullableString(before.JiraLabels),
-		})
+		}, nil)
 		return err
 	})
 
@@ -49,7 +49,7 @@ func TestAccSystemSettings(t *testing.T) {
 		EngagementAutoCloseDays: new(before.EngagementAutoCloseDays + 1),
 		MaxDupes:                defectdojo.Null[int](),
 		JiraLabels:              defectdojo.Value("security acc"),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -63,7 +63,7 @@ func TestAccSystemSettings(t *testing.T) {
 		t.Errorf("Patch() changed fields it didn't send: %+v", patched)
 	}
 
-	got, _, err := client.SystemSettings.Get(ctx)
+	got, _, err := client.SystemSettings.Get(ctx, nil)
 	if err != nil || got.TeamName != "acceptance" || got.MaxDupes != nil {
 		t.Errorf("Get() = %+v, %v; want the patched values", got, err)
 	}
@@ -73,7 +73,7 @@ func TestAccSystemSettings(t *testing.T) {
 		TeamName:   new(""),
 		MaxDupes:   defectdojo.Value(0),
 		JiraLabels: defectdojo.Null[string](),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch(clear) error = %v", err)
 	}
@@ -83,12 +83,12 @@ func TestAccSystemSettings(t *testing.T) {
 
 	// DefectDojo checks the password lengths, but not that the minimum
 	// doesn't exceed the maximum; the client checks both before sending.
-	_, _, err = client.SystemSettings.Patch(ctx, before.ID, &defectdojo.SystemSettingsPatch{MinimumPasswordLength: new(8)})
+	_, _, err = client.SystemSettings.Patch(ctx, before.ID, &defectdojo.SystemSettingsPatch{MinimumPasswordLength: new(8)}, nil)
 	if err == nil || errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Patch(minimum 8) error = %v, want a client-side error", err)
 	}
 	// The Jira webhook secret is nullable, but can't be blank.
-	_, _, err = client.SystemSettings.Patch(ctx, before.ID, &defectdojo.SystemSettingsPatch{JiraWebhookSecret: defectdojo.Value("")})
+	_, _, err = client.SystemSettings.Patch(ctx, before.ID, &defectdojo.SystemSettingsPatch{JiraWebhookSecret: defectdojo.Value("")}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["jira_webhook_secret"]) == 0 {
 		t.Errorf("Patch(empty Jira webhook secret) error = %v, want a 400 on jira_webhook_secret", err)

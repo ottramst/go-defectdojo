@@ -26,10 +26,10 @@ func TestCICDInfrastructureService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 2 || len(list.CICDInfrastructure) != 2 {
-		t.Fatalf("List() = %d of %d, want 2 of 2", len(list.CICDInfrastructure), list.Count)
+	if list.Count != 2 || len(list.Results) != 2 {
+		t.Fatalf("List() = %d of %d, want 2 of 2", len(list.Results), list.Count)
 	}
-	if scm := list.CICDInfrastructure[0]; scm.Name != "GitHub" || scm.InfrastructureType != "scm_server" || scm.Description != "" || scm.URL != "" {
+	if scm := list.Results[0]; scm.Name != "GitHub" || scm.InfrastructureType != "scm_server" || scm.Description != "" || scm.URL != "" {
 		t.Errorf("first object = %+v, want the GitHub fixture", scm)
 	}
 }
@@ -73,7 +73,7 @@ func TestCICDInfrastructureService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "cicd_infrastructure/get.json"))
 	})
 
-	got, _, err := client.CICDInfrastructure.Get(context.Background(), 8)
+	got, _, err := client.CICDInfrastructure.Get(context.Background(), 8, nil)
 	want := defectdojo.CICDInfrastructure{
 		ID: 8, Name: "Jenkins", InfrastructureType: defectdojo.CICDInfrastructureTypeBuildServer,
 		Description: "The main build server.", URL: "https://jenkins.example.com",
@@ -81,7 +81,7 @@ func TestCICDInfrastructureService_Get(t *testing.T) {
 	if err != nil || *got != want {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
-	if _, _, err := client.CICDInfrastructure.Get(context.Background(), 9); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.CICDInfrastructure.Get(context.Background(), 9, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -104,15 +104,15 @@ func TestCICDInfrastructureService_GetByName(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(fmt.Sprintf(`{"count":%d,"results":[%s]}`, len(results), strings.Join(results, ","))))
 	})
 
-	ci, _, err := client.CICDInfrastructure.GetByName(context.Background(), "Shared", defectdojo.CICDInfrastructureTypeBuildServer)
+	ci, _, err := client.CICDInfrastructure.GetByName(context.Background(), "Shared", &defectdojo.GetCICDInfrastructureByNameOptions{InfrastructureType: defectdojo.CICDInfrastructureTypeBuildServer})
 	if err != nil || ci.ID != 2 {
 		t.Errorf("GetByName(build server) = %v, %v; want ID 2", ci, err)
 	}
-	_, _, err = client.CICDInfrastructure.GetByName(context.Background(), "Shared", "")
+	_, _, err = client.CICDInfrastructure.GetByName(context.Background(), "Shared", nil)
 	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[1 2]") {
 		t.Errorf("GetByName(any type) error = %v, want an error naming IDs 1 and 2", err)
 	}
-	if _, _, err := client.CICDInfrastructure.GetByName(context.Background(), "Shared", defectdojo.CICDInfrastructureTypeOrchestration); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.CICDInfrastructure.GetByName(context.Background(), "Shared", &defectdojo.GetCICDInfrastructureByNameOptions{InfrastructureType: defectdojo.CICDInfrastructureTypeOrchestration}); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(other case) error = %v, want ErrNotFound", err)
 	}
 }
@@ -123,7 +123,7 @@ func TestCICDInfrastructureService_GetByName_query(t *testing.T) {
 		testQuery(t, r, "infrastructure_type=scm_server&limit=100&name=GitHub")
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":1,"results":[{"id":7,"name":"GitHub","infrastructure_type":"scm_server"}]}`))
 	})
-	if ci, _, err := client.CICDInfrastructure.GetByName(context.Background(), "GitHub", "scm_server"); err != nil || ci.ID != 7 {
+	if ci, _, err := client.CICDInfrastructure.GetByName(context.Background(), "GitHub", &defectdojo.GetCICDInfrastructureByNameOptions{InfrastructureType: "scm_server"}); err != nil || ci.ID != 7 {
 		t.Errorf("GetByName() = %v, %v; want ID 7", ci, err)
 	}
 }
@@ -138,7 +138,7 @@ func TestCICDInfrastructureService_Create(t *testing.T) {
 	})
 
 	in := &defectdojo.CICDInfrastructure{ID: 99, Name: "Jenkins", InfrastructureType: "build_server"}
-	ci, resp, err := client.CICDInfrastructure.Create(context.Background(), in)
+	ci, resp, err := client.CICDInfrastructure.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -155,7 +155,7 @@ func TestCICDInfrastructureService_Create_duplicate(t *testing.T) {
 	mux.HandleFunc("POST /api/v2/cicd_infrastructure/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusBadRequest, fixture(t, "errors/cicd_infrastructure_duplicate.json"))
 	})
-	_, _, err := client.CICDInfrastructure.Create(context.Background(), &defectdojo.CICDInfrastructure{Name: "Spike SCM", InfrastructureType: "scm_server"})
+	_, _, err := client.CICDInfrastructure.Create(context.Background(), &defectdojo.CICDInfrastructure{Name: "Spike SCM", InfrastructureType: "scm_server"}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["non_field_errors"]) != 1 {
 		t.Errorf("Create() error = %v, want a 400 with a non_field_errors error", err)
@@ -170,7 +170,7 @@ func TestCICDInfrastructureService_Update(t *testing.T) {
 	})
 	_, _, err := client.CICDInfrastructure.Update(context.Background(), 8, &defectdojo.CICDInfrastructure{
 		Name: "N", InfrastructureType: "build_server", Description: "d", URL: "https://ci.example.com",
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -193,7 +193,7 @@ func TestCICDInfrastructureService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "cicd_infrastructure/get.json"))
 			})
-			if _, _, err := client.CICDInfrastructure.Patch(context.Background(), 8, tt.patch); err != nil {
+			if _, _, err := client.CICDInfrastructure.Patch(context.Background(), 8, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -205,7 +205,7 @@ func TestCICDInfrastructureService_Patch_conflict(t *testing.T) {
 	mux.HandleFunc("PATCH /api/v2/cicd_infrastructure/8/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusConflict, fixture(t, "errors/cicd_infrastructure_conflict.json"))
 	})
-	_, _, err := client.CICDInfrastructure.Patch(context.Background(), 8, &defectdojo.CICDInfrastructurePatch{Name: new("Taken")})
+	_, _, err := client.CICDInfrastructure.Patch(context.Background(), 8, &defectdojo.CICDInfrastructurePatch{Name: new("Taken")}, nil)
 	if !errors.Is(err, defectdojo.ErrConflict) {
 		t.Errorf("Patch() error = %v, want ErrConflict", err)
 	}
@@ -216,7 +216,7 @@ func TestCICDInfrastructureService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/cicd_infrastructure/8/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.CICDInfrastructure.Delete(context.Background(), 8)
+	resp, err := client.CICDInfrastructure.Delete(context.Background(), 8, nil)
 	if err != nil || resp.StatusCode != http.StatusNoContent {
 		t.Errorf("Delete() = %v, %v; want 204", resp, err)
 	}
@@ -228,12 +228,12 @@ func TestCICDInfrastructureService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=10")
 		writeJSON(t, w, http.StatusOK, fixture(t, "cicd_infrastructure/delete_preview.json"))
 	})
-	preview, _, err := client.CICDInfrastructure.DeletePreview(context.Background(), 8, &defectdojo.ListOptions{Limit: 10})
+	preview, _, err := client.CICDInfrastructure.DeletePreview(context.Background(), 8, &defectdojo.DeletePreviewCICDInfrastructureOptions{ListOptions: defectdojo.ListOptions{Limit: 10}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Objects[0] != (defectdojo.DeletedObject{Model: "CICDInfrastructure", ID: 8, Name: "Jenkins"}) {
-		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Objects)
+	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "CICDInfrastructure", ID: 8, Name: "Jenkins"}) {
+		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
 
@@ -246,22 +246,25 @@ func TestCICDInfrastructureService_invalidArguments(t *testing.T) {
 	svc := client.CICDInfrastructure
 	valid := defectdojo.CICDInfrastructure{Name: "N", InfrastructureType: "scm_server"}
 	calls := map[string]func() error{
-		"Get zero ID":     func() error { _, _, err := svc.Get(ctx, 0); return err },
-		"GetByName empty": func() error { _, _, err := svc.GetByName(ctx, "", "scm_server"); return err },
-		"Create nil":      func() error { _, _, err := svc.Create(ctx, nil); return err },
+		"Get zero ID": func() error { _, _, err := svc.Get(ctx, 0, nil); return err },
+		"GetByName empty": func() error {
+			_, _, err := svc.GetByName(ctx, "", &defectdojo.GetCICDInfrastructureByNameOptions{InfrastructureType: "scm_server"})
+			return err
+		},
+		"Create nil": func() error { _, _, err := svc.Create(ctx, nil, nil); return err },
 		"Create empty name": func() error {
-			_, _, err := svc.Create(ctx, &defectdojo.CICDInfrastructure{InfrastructureType: "scm_server"})
+			_, _, err := svc.Create(ctx, &defectdojo.CICDInfrastructure{InfrastructureType: "scm_server"}, nil)
 			return err
 		},
-		"Create empty type": func() error { _, _, err := svc.Create(ctx, &defectdojo.CICDInfrastructure{Name: "N"}); return err },
-		"Update zero ID":    func() error { _, _, err := svc.Update(ctx, 0, &valid); return err },
+		"Create empty type": func() error { _, _, err := svc.Create(ctx, &defectdojo.CICDInfrastructure{Name: "N"}, nil); return err },
+		"Update zero ID":    func() error { _, _, err := svc.Update(ctx, 0, &valid, nil); return err },
 		"Update empty type": func() error {
-			_, _, err := svc.Update(ctx, 1, &defectdojo.CICDInfrastructure{Name: "N"})
+			_, _, err := svc.Update(ctx, 1, &defectdojo.CICDInfrastructure{Name: "N"}, nil)
 			return err
 		},
-		"Patch zero ID":         func() error { _, _, err := svc.Patch(ctx, 0, &defectdojo.CICDInfrastructurePatch{}); return err },
-		"Patch nil":             func() error { _, _, err := svc.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := svc.Delete(ctx, 0); return err },
+		"Patch zero ID":         func() error { _, _, err := svc.Patch(ctx, 0, &defectdojo.CICDInfrastructurePatch{}, nil); return err },
+		"Patch nil":             func() error { _, _, err := svc.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := svc.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := svc.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

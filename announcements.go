@@ -73,9 +73,24 @@ type AnnouncementPatch struct {
 	Dismissable *bool   `json:"dismissable,omitempty"`
 }
 
-// AnnouncementList is a page of announcements: the announcement, or none.
-type AnnouncementList struct {
-	Announcements []*Announcement
+// ListAnnouncementsOptions are the options of [AnnouncementsService.List] and
+// [AnnouncementsService.ListAll].
+type ListAnnouncementsOptions struct {
+	ListOptions
+
+	// Message filters by exact message.
+	Message string `url:"message,omitempty"`
+
+	// Style filters by style, one of the AnnouncementStyle constants.
+	Style string `url:"style,omitempty"`
+
+	// Dismissable filters by whether users can dismiss the announcement.
+	Dismissable *bool `url:"dismissable,omitempty"`
+}
+
+// ListAnnouncementsResult is a page of announcements: the announcement, or none.
+type ListAnnouncementsResult struct {
+	Results []*Announcement
 
 	// Count is the number of announcements, 0 or 1.
 	Count int
@@ -85,7 +100,7 @@ type AnnouncementList struct {
 // [AnnouncementsService.Current] is usually simpler.
 //
 // DefectDojo API: GET /api/v2/announcements/
-func (s *AnnouncementsService) List(ctx context.Context, opt *ListOptions, opts ...RequestOption) (*AnnouncementList, *Response, error) {
+func (s *AnnouncementsService) List(ctx context.Context, opt *ListAnnouncementsOptions, opts ...RequestOption) (*ListAnnouncementsResult, *Response, error) {
 	path, err := addQuery("/api/v2/announcements/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -95,15 +110,15 @@ func (s *AnnouncementsService) List(ctx context.Context, opt *ListOptions, opts 
 	if err != nil {
 		return nil, resp, err
 	}
-	return &AnnouncementList{Announcements: page.Results, Count: page.Count}, resp, nil
+	return &ListAnnouncementsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the announcements, starting at opt.Offset.
 //
 // Ranging over the iterator again starts over. On an error, the iterator
 // yields it once and stops.
-func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListOptions, opts ...RequestOption) iter.Seq2[*Announcement, error] {
-	base := ListOptions{}
+func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListAnnouncementsOptions, opts ...RequestOption) iter.Seq2[*Announcement, error] {
+	base := ListAnnouncementsOptions{}
 	if opt != nil {
 		base = *opt
 	}
@@ -114,27 +129,33 @@ func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListOptions, op
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Announcements, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
 
+// GetCurrentAnnouncementOptions are the options of [AnnouncementsService.Current].
+type GetCurrentAnnouncementOptions struct{}
+
 // Current returns the announcement. It returns an error matching
 // [ErrNotFound] when there is none.
-func (s *AnnouncementsService) Current(ctx context.Context, opts ...RequestOption) (*Announcement, *Response, error) {
+func (s *AnnouncementsService) Current(ctx context.Context, opt *GetCurrentAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
 	list, resp, err := s.List(ctx, nil, opts...)
 	if err != nil {
 		return nil, resp, err
 	}
-	if len(list.Announcements) == 0 {
+	if len(list.Results) == 0 {
 		return nil, resp, fmt.Errorf("defectdojo: announcement: %w", ErrNotFound)
 	}
-	return list.Announcements[0], resp, nil
+	return list.Results[0], resp, nil
 }
+
+// GetAnnouncementOptions are the options of [AnnouncementsService.Get].
+type GetAnnouncementOptions struct{}
 
 // Get returns an announcement by its ID, which is always 1.
 //
 // DefectDojo API: GET /api/v2/announcements/{id}/
-func (s *AnnouncementsService) Get(ctx context.Context, id int, opts ...RequestOption) (*Announcement, *Response, error) {
+func (s *AnnouncementsService) Get(ctx context.Context, id int, opt *GetAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
 	if err := requirePositive("announcement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -146,6 +167,9 @@ func (s *AnnouncementsService) Get(ctx context.Context, id int, opts ...RequestO
 	return a, resp, nil
 }
 
+// CreateAnnouncementOptions are the options of [AnnouncementsService.Create].
+type CreateAnnouncementOptions struct{}
+
 // Create creates the announcement, which gets the ID 1 and is shown to every
 // user. Its read-only ID is ignored. When an announcement exists, DefectDojo
 // answers with a 400 ([ErrBadRequest]), "No more than one Announcement is
@@ -154,7 +178,7 @@ func (s *AnnouncementsService) Get(ctx context.Context, id int, opts ...RequestO
 // An empty Style gets DefectDojo's default, AnnouncementStyleInfo.
 //
 // DefectDojo API: POST /api/v2/announcements/
-func (s *AnnouncementsService) Create(ctx context.Context, a *Announcement, opts ...RequestOption) (*Announcement, *Response, error) {
+func (s *AnnouncementsService) Create(ctx context.Context, a *Announcement, opt *CreateAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
 	body, err := newAnnouncementRequest(a)
 	if err != nil {
 		return nil, nil, err
@@ -167,6 +191,9 @@ func (s *AnnouncementsService) Create(ctx context.Context, a *Announcement, opts
 	return created, resp, nil
 }
 
+// UpdateAnnouncementOptions are the options of [AnnouncementsService.Update].
+type UpdateAnnouncementOptions struct{}
+
 // Update replaces the writable fields of the announcement with the given ID.
 // An empty Style keeps the current one.
 //
@@ -175,7 +202,7 @@ func (s *AnnouncementsService) Create(ctx context.Context, a *Announcement, opts
 // user, delete the announcement and create a new one.
 //
 // DefectDojo API: PUT /api/v2/announcements/{id}/
-func (s *AnnouncementsService) Update(ctx context.Context, id int, a *Announcement, opts ...RequestOption) (*Announcement, *Response, error) {
+func (s *AnnouncementsService) Update(ctx context.Context, id int, a *Announcement, opt *UpdateAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
 	if err := requirePositive("announcement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -191,6 +218,9 @@ func (s *AnnouncementsService) Update(ctx context.Context, id int, a *Announceme
 	return updated, resp, nil
 }
 
+// PatchAnnouncementOptions are the options of [AnnouncementsService.Patch].
+type PatchAnnouncementOptions struct{}
+
 // Patch changes the fields of the announcement that are set in patch. An
 // empty Message is a 400.
 //
@@ -198,7 +228,7 @@ func (s *AnnouncementsService) Update(ctx context.Context, id int, a *Announceme
 // don't see the change.
 //
 // DefectDojo API: PATCH /api/v2/announcements/{id}/
-func (s *AnnouncementsService) Patch(ctx context.Context, id int, patch *AnnouncementPatch, opts ...RequestOption) (*Announcement, *Response, error) {
+func (s *AnnouncementsService) Patch(ctx context.Context, id int, patch *AnnouncementPatch, opt *PatchAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
 	if err := requirePositive("announcement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -213,15 +243,23 @@ func (s *AnnouncementsService) Patch(ctx context.Context, id int, patch *Announc
 	return updated, resp, nil
 }
 
+// DeleteAnnouncementOptions are the options of [AnnouncementsService.Delete].
+type DeleteAnnouncementOptions struct{}
+
 // Delete deletes an announcement by its ID, removing the banner for every
 // user.
 //
 // DefectDojo API: DELETE /api/v2/announcements/{id}/
-func (s *AnnouncementsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *AnnouncementsService) Delete(ctx context.Context, id int, opt *DeleteAnnouncementOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("announcement ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, announcementPath(id), nil, nil, opts)
+}
+
+// DeletePreviewAnnouncementOptions are the options of [AnnouncementsService.DeletePreview].
+type DeletePreviewAnnouncementOptions struct {
+	ListOptions
 }
 
 // DeletePreview returns a page of the objects that deleting the announcement
@@ -229,7 +267,7 @@ func (s *AnnouncementsService) Delete(ctx context.Context, id int, opts ...Reque
 // dismissed it ("UserAnnouncement").
 //
 // DefectDojo API: GET /api/v2/announcements/{id}/delete_preview/
-func (s *AnnouncementsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *AnnouncementsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewAnnouncementOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("announcement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -242,7 +280,7 @@ func (s *AnnouncementsService) DeletePreview(ctx context.Context, id int, opt *L
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func announcementPath(id int) string {

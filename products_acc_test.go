@@ -30,12 +30,12 @@ func TestAccProducts(t *testing.T) {
 		AuthorizedUsers:     []int{1},
 		Regulations:         []int{1},
 		Tags:                []string{tag, "a,b"},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.Products.Delete(ctx, created.ID)
+		_, err := client.Products.Delete(ctx, created.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -56,34 +56,34 @@ func TestAccProducts(t *testing.T) {
 	// ignoring case.
 	other, _, err := client.Products.Create(ctx, &defectdojo.Product{
 		Name: randName(t, "acc"), Description: "d", ProdType: ptID, Tags: []string{strings.ToLower(tag)},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create(lower-case tag) error = %v", err)
 	}
-	cleanup(t, func(ctx context.Context) error { _, err := client.Products.Delete(ctx, other.ID); return err })
+	cleanup(t, func(ctx context.Context) error { _, err := client.Products.Delete(ctx, other.ID, nil); return err })
 	if !slices.Equal(other.Tags, []string{tag}) {
 		t.Errorf("Tags = %v, want [%s] (the existing spelling)", other.Tags, tag)
 	}
 
 	// Names are unique: a duplicate is a 400 with a field error. Names that
 	// differ only in case are different products.
-	_, _, err = client.Products.Create(ctx, &defectdojo.Product{Name: name, Description: "d", ProdType: ptID})
+	_, _, err = client.Products.Create(ctx, &defectdojo.Product{Name: name, Description: "d", ProdType: ptID}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["name"]) == 0 {
 		t.Errorf("Create(same name) error = %v, want a 400 with a name field error", err)
 	}
-	upper, _, err := client.Products.Create(ctx, &defectdojo.Product{Name: strings.ToUpper(name), Description: "d", ProdType: ptID})
+	upper, _, err := client.Products.Create(ctx, &defectdojo.Product{Name: strings.ToUpper(name), Description: "d", ProdType: ptID}, nil)
 	if err != nil {
 		t.Fatalf("Create(upper-case name) error = %v", err)
 	}
-	cleanup(t, func(ctx context.Context) error { _, err := client.Products.Delete(ctx, upper.ID); return err })
+	cleanup(t, func(ctx context.Context) error { _, err := client.Products.Delete(ctx, upper.ID, nil); return err })
 
 	for n, id := range map[string]int{name: created.ID, strings.ToUpper(name): upper.ID} {
-		if p, _, err := client.Products.GetByName(ctx, n); err != nil || p.ID != id {
+		if p, _, err := client.Products.GetByName(ctx, n, nil); err != nil || p.ID != id {
 			t.Errorf("GetByName(%q) = %+v, %v; want ID %d", n, p, err, id)
 		}
 	}
-	if _, _, err := client.Products.GetByName(ctx, name[:len(name)-1]); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Products.GetByName(ctx, name[:len(name)-1], nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(prefix) error = %v, want ErrNotFound", err)
 	}
 
@@ -93,7 +93,7 @@ func TestAccProducts(t *testing.T) {
 		Revenue:                  defectdojo.Value("1000.50"),
 		Platform:                 defectdojo.Null[string](),
 		EnableFullRiskAcceptance: new(true),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -104,7 +104,7 @@ func TestAccProducts(t *testing.T) {
 
 	// Read, modify, write: empty nullable fields and lists are cleared, and
 	// the fields Update doesn't send are kept.
-	got, _, err := client.Products.Get(ctx, created.ID)
+	got, _, err := client.Products.Get(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -114,7 +114,7 @@ func TestAccProducts(t *testing.T) {
 	got.Tags = nil
 	got.Regulations = nil
 	got.SLAConfiguration = 0
-	updated, _, err := client.Products.Update(ctx, got.ID, got)
+	updated, _, err := client.Products.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -127,10 +127,10 @@ func TestAccProducts(t *testing.T) {
 	// Changing the SLA configuration starts a recalculation in the
 	// background; until it finishes, another change is a 400. The test stack
 	// has no Celery worker, so it never finishes there.
-	if p, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: &slaID}); err != nil || p.SLAConfiguration != slaID {
+	if p, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: &slaID}, nil); err != nil || p.SLAConfiguration != slaID {
 		t.Fatalf("Patch(SLA configuration) = %+v, %v; want SLA configuration %d", p, err, slaID)
 	}
-	if _, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: new(1)}); !defectdojo.IsSLARecalculating(err) {
+	if _, _, err := client.Products.Patch(ctx, created.ID, &defectdojo.ProductPatch{SLAConfiguration: new(1)}, nil); !defectdojo.IsSLARecalculating(err) {
 		t.Errorf("Patch(second SLA change) error = %v, want IsSLARecalculating", err)
 	}
 
@@ -159,29 +159,29 @@ func TestAccProducts(t *testing.T) {
 	}
 
 	// An engagement makes the product's delete cascade.
-	if n, _, err := client.Products.CountEngagements(ctx, created.ID); err != nil || n != 0 {
+	if n, _, err := client.Products.CountEngagements(ctx, created.ID, nil); err != nil || n != 0 {
 		t.Errorf("CountEngagements() = %d, %v; want 0", n, err)
 	}
 	createEngagement(t, client, created.ID)
-	if n, _, err := client.Products.CountEngagements(ctx, created.ID); err != nil || n != 1 {
+	if n, _, err := client.Products.CountEngagements(ctx, created.ID, nil); err != nil || n != 1 {
 		t.Errorf("CountEngagements() = %d, %v; want 1", n, err)
 	}
 	preview, _, err := client.Products.DeletePreview(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Objects, func(o *defectdojo.DeletedObject) bool { return o.Model == "Engagement" }) {
-		t.Errorf("DeletePreview() = %+v, want the engagement", preview.Objects)
+	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Engagement" }) {
+		t.Errorf("DeletePreview() = %+v, want the engagement", preview.Results)
 	}
 
-	if _, err := client.Products.Delete(ctx, created.ID); err != nil {
+	if _, err := client.Products.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.Products.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Products.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 	// The engagements filter rejects products that don't exist.
-	if _, _, err := client.Products.CountEngagements(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Products.CountEngagements(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("CountEngagements(deleted) error = %v, want ErrNotFound", err)
 	}
 }
@@ -190,11 +190,11 @@ func TestAccProducts(t *testing.T) {
 // everything in it, when the test ends.
 func createProductType(t *testing.T, client *defectdojo.Client) int {
 	t.Helper()
-	pt, _, err := client.ProductTypes.Create(t.Context(), &defectdojo.ProductType{Name: randName(t, "acc")})
+	pt, _, err := client.ProductTypes.Create(t.Context(), &defectdojo.ProductType{Name: randName(t, "acc")}, nil)
 	if err != nil {
 		t.Fatalf("creating product type: %v", err)
 	}
-	cleanup(t, func(ctx context.Context) error { _, err := client.ProductTypes.Delete(ctx, pt.ID); return err })
+	cleanup(t, func(ctx context.Context) error { _, err := client.ProductTypes.Delete(ctx, pt.ID, nil); return err })
 	return pt.ID
 }
 
@@ -204,7 +204,7 @@ func createEngagement(t *testing.T, client *defectdojo.Client, productID int) {
 	t.Helper()
 	day := defectdojo.Date{Year: 2026, Month: time.January, Day: 1}
 	e := &defectdojo.Engagement{Name: randName(t, "acc"), Product: productID, TargetStart: day, TargetEnd: day}
-	if _, _, err := client.Engagements.Create(t.Context(), e); err != nil {
+	if _, _, err := client.Engagements.Create(t.Context(), e, nil); err != nil {
 		t.Fatalf("creating engagement: %v", err)
 	}
 }

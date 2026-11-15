@@ -27,19 +27,19 @@ func TestProductsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 2 || len(list.Products) != 2 {
-		t.Fatalf("List() = %d of %d, want 2 of 2", len(list.Products), list.Count)
+	if list.Count != 2 || len(list.Results) != 2 {
+		t.Fatalf("List() = %d of %d, want 2 of 2", len(list.Results), list.Count)
 	}
 
 	// A product created with only the required fields: null fields decode as
 	// zero values.
-	inv := list.Products[0]
+	inv := list.Results[0]
 	if inv.Name != "Inventory" || inv.Platform != "" || inv.BusinessCriticality != "" || inv.ProductManager != 0 ||
 		inv.UserRecords != nil || inv.Revenue != nil || inv.SLAConfiguration != 1 || !inv.EnableFullRiskAcceptance {
 		t.Errorf("first product = %+v, want Inventory with DefectDojo's defaults", inv)
 	}
-	if list.Products[1].Name != "Storefront" {
-		t.Errorf("second product = %q, want Storefront", list.Products[1].Name)
+	if list.Results[1].Name != "Storefront" {
+		t.Errorf("second product = %q, want Storefront", list.Results[1].Name)
 	}
 }
 
@@ -83,7 +83,7 @@ func TestProductsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "products/get.json"))
 	})
 
-	p, _, err := client.Products.Get(context.Background(), 1)
+	p, _, err := client.Products.Get(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -118,7 +118,7 @@ func TestProductsService_Get(t *testing.T) {
 		t.Errorf("Created = %v", p.Created)
 	}
 
-	if _, _, err := client.Products.Get(context.Background(), 5); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Products.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -137,17 +137,17 @@ func TestProductsService_GetByName(t *testing.T) {
 	})
 
 	for name, id := range map[string]int{"Storefront": 1, "storefront": 3} {
-		p, _, err := client.Products.GetByName(context.Background(), name)
+		p, _, err := client.Products.GetByName(context.Background(), name, nil)
 		if err != nil || p.ID != id {
 			t.Errorf("GetByName(%q) = %v, %v; want ID %d", name, p, err, id)
 		}
 	}
 	for _, name := range []string{"STOREFRONT", "missing"} {
-		if _, _, err := client.Products.GetByName(context.Background(), name); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.Products.GetByName(context.Background(), name, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByName(%q) error = %v, want ErrNotFound", name, err)
 		}
 	}
-	if _, _, err := client.Products.GetByName(context.Background(), ""); err == nil {
+	if _, _, err := client.Products.GetByName(context.Background(), "", nil); err == nil {
 		t.Error("GetByName(\"\") error = nil, want error")
 	}
 }
@@ -175,7 +175,7 @@ func TestProductsService_Create(t *testing.T) {
 		ID: 99, Name: "Storefront", Description: "The online shop", ProdType: 2, InternetAccessible: true,
 		UserRecords: new(5), ProdNumericGrade: new(80), FindingsCount: 3, Created: time.Now(),
 	}
-	p, resp, err := client.Products.Create(context.Background(), in)
+	p, resp, err := client.Products.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -192,7 +192,7 @@ func TestProductsService_Create_duplicate(t *testing.T) {
 	mux.HandleFunc("POST /api/v2/products/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusBadRequest, fixture(t, "products/duplicate.json"))
 	})
-	_, _, err := client.Products.Create(context.Background(), &defectdojo.Product{Name: "Storefront", Description: "d", ProdType: 2})
+	_, _, err := client.Products.Create(context.Background(), &defectdojo.Product{Name: "Storefront", Description: "d", ProdType: 2}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["name"]) != 1 {
 		t.Errorf("Create(duplicate) error = %v, want a 400 with a name field error", err)
@@ -222,7 +222,7 @@ func TestProductsService_Update(t *testing.T) {
 		ProductManager: 2, TechnicalContact: 3, TeamManager: 4, SLAConfiguration: 5,
 		AuthorizedUsers: []int{2}, Regulations: []int{1, 2}, Tags: []string{"pci"},
 		ProdNumericGrade: new(80), Revenue: new("1.00"),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -259,7 +259,7 @@ func TestProductsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "products/get.json"))
 			})
-			if _, _, err := client.Products.Patch(context.Background(), 1, tt.patch); err != nil {
+			if _, _, err := client.Products.Patch(context.Background(), 1, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -276,7 +276,7 @@ func TestProductsService_Patch_nilLists(t *testing.T) {
 	var users, regulations []int
 	var tags []string
 	patch := &defectdojo.ProductPatch{AuthorizedUsers: &users, Regulations: &regulations, Tags: &tags}
-	if _, _, err := client.Products.Patch(context.Background(), 1, patch); err != nil {
+	if _, _, err := client.Products.Patch(context.Background(), 1, patch, nil); err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
 	if patch.AuthorizedUsers != &users || patch.Regulations != &regulations || patch.Tags != &tags || users != nil || tags != nil {
@@ -289,7 +289,7 @@ func TestProductsService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/products/1/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.Products.Delete(context.Background(), 1)
+	resp, err := client.Products.Delete(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
@@ -304,14 +304,14 @@ func TestProductsService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=50")
 		writeJSON(t, w, http.StatusOK, fixture(t, "products/delete_preview.json"))
 	})
-	preview, _, err := client.Products.DeletePreview(context.Background(), 1, &defectdojo.ListOptions{Limit: 50})
+	preview, _, err := client.Products.DeletePreview(context.Background(), 1, &defectdojo.DeletePreviewProductOptions{ListOptions: defectdojo.ListOptions{Limit: 50}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 7 || len(preview.Objects) != 7 {
-		t.Fatalf("DeletePreview() = %d of %d, want 7 of 7", len(preview.Objects), preview.Count)
+	if preview.Count != 7 || len(preview.Results) != 7 {
+		t.Fatalf("DeletePreview() = %d of %d, want 7 of 7", len(preview.Results), preview.Count)
 	}
-	if got := *preview.Objects[6]; got.Model != "Engagement" || got.ID != 1 {
+	if got := *preview.Results[6]; got.Model != "Engagement" || got.ID != 1 {
 		t.Errorf("Objects[6] = %+v, want the engagement", got)
 	}
 }
@@ -322,7 +322,7 @@ func TestProductsService_CountEngagements(t *testing.T) {
 		testQuery(t, r, "limit=1&product=1")
 		writeJSON(t, w, http.StatusOK, fixture(t, "products/count_engagements.json"))
 	})
-	n, _, err := client.Products.CountEngagements(context.Background(), 1)
+	n, _, err := client.Products.CountEngagements(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("CountEngagements() error = %v", err)
 	}
@@ -339,30 +339,30 @@ func TestProductsService_invalidArguments(t *testing.T) {
 	ctx := context.Background()
 	p := &defectdojo.Product{Name: "x", Description: "d", ProdType: 1}
 	calls := map[string]func() error{
-		"Get zero ID":        func() error { _, _, err := client.Products.Get(ctx, 0); return err },
-		"Update negative ID": func() error { _, _, err := client.Products.Update(ctx, -1, p); return err },
-		"Update nil":         func() error { _, _, err := client.Products.Update(ctx, 1, nil); return err },
-		"Create nil":         func() error { _, _, err := client.Products.Create(ctx, nil); return err },
+		"Get zero ID":        func() error { _, _, err := client.Products.Get(ctx, 0, nil); return err },
+		"Update negative ID": func() error { _, _, err := client.Products.Update(ctx, -1, p, nil); return err },
+		"Update nil":         func() error { _, _, err := client.Products.Update(ctx, 1, nil, nil); return err },
+		"Create nil":         func() error { _, _, err := client.Products.Create(ctx, nil, nil); return err },
 		"Create empty name": func() error {
-			_, _, err := client.Products.Create(ctx, &defectdojo.Product{Description: "d", ProdType: 1})
+			_, _, err := client.Products.Create(ctx, &defectdojo.Product{Description: "d", ProdType: 1}, nil)
 			return err
 		},
 		"Create empty description": func() error {
-			_, _, err := client.Products.Create(ctx, &defectdojo.Product{Name: "x", ProdType: 1})
+			_, _, err := client.Products.Create(ctx, &defectdojo.Product{Name: "x", ProdType: 1}, nil)
 			return err
 		},
 		"Create zero product type": func() error {
-			_, _, err := client.Products.Create(ctx, &defectdojo.Product{Name: "x", Description: "d"})
+			_, _, err := client.Products.Create(ctx, &defectdojo.Product{Name: "x", Description: "d"}, nil)
 			return err
 		},
 		"Patch zero ID": func() error {
-			_, _, err := client.Products.Patch(ctx, 0, &defectdojo.ProductPatch{})
+			_, _, err := client.Products.Patch(ctx, 0, &defectdojo.ProductPatch{}, nil)
 			return err
 		},
-		"Patch nil":                func() error { _, _, err := client.Products.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":           func() error { _, err := client.Products.Delete(ctx, 0); return err },
+		"Patch nil":                func() error { _, _, err := client.Products.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":           func() error { _, err := client.Products.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID":    func() error { _, _, err := client.Products.DeletePreview(ctx, 0, nil); return err },
-		"CountEngagements zero ID": func() error { _, _, err := client.Products.CountEngagements(ctx, 0); return err },
+		"CountEngagements zero ID": func() error { _, _, err := client.Products.CountEngagements(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {
 		t.Run(name, func(t *testing.T) {
@@ -379,7 +379,7 @@ func TestProductsService_CountEngagements_missingProduct(t *testing.T) {
 		// The product filter rejects IDs that don't exist.
 		writeJSON(t, w, http.StatusBadRequest, fixture(t, "products/count_engagements_missing.json"))
 	})
-	_, _, err := client.Products.CountEngagements(context.Background(), 99999)
+	_, _, err := client.Products.CountEngagements(context.Background(), 99999, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.Is(err, defectdojo.ErrNotFound) || !errors.As(err, &errResp) || errResp.StatusCode != http.StatusBadRequest {
 		t.Errorf("CountEngagements(missing) error = %v, want ErrNotFound wrapping the 400", err)

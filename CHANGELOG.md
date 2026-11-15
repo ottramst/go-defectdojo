@@ -6,9 +6,16 @@ BREAKING CHANGES:
 * `ErrorResponse` no longer has a `Response` field, whose request held the API token: it has `Method`, `URL` (without credentials) and `Header` instead. The format of `Error()` is not part of the API ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `CheckResponse` is no longer exported; `Client.Do` returns the `*ErrorResponse` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `Client.ServerVersion` takes a nil-able `*ServerVersionOptions` and also returns the `*Response`, nil when the version is cached ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* Every service method takes a nil-able options struct before the request options, so that options can be added without breaking callers: pass `nil`. The new types are named after the method, such as `GetProductOptions`, `CreateEngagementOptions` or `CountProductTypeProductsOptions`; `DeletePreview` takes `DeletePreview<Noun>Options`, which embeds `ListOptions`, and iterators share the options of `List` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* Pages are `List<Nouns>Result` with a `Results` field: `ProductTypeList.ProductTypes` is `ListProductTypesResult.Results`, `CICDInfrastructureList.CICDInfrastructure` is `ListCICDInfrastructureResult.Results`, and so on. `DeletePreviewList.Objects` is `DeletePreviewResult.Results` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `UserCreate` is `CreateUserRequest`, and `JiraInstanceWrite` is `CreateJiraInstanceRequest` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `Announcements.List` and `ListAll` take `ListAnnouncementsOptions`, and the product attribute services' take `ListProductAttributesOptions`, instead of `ListOptions` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `Notifications.GetByScope` takes a `NotificationScope{User, Product, Template}` instead of three values ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `CICDInfrastructure.GetByName` takes the infrastructure type in `GetCICDInfrastructureByNameOptions.InfrastructureType` instead of a third argument ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 
 FEATURES:
 
+* `ListAnnouncementsOptions` filters announcements by `Message`, `Style` and `Dismissable` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `ErrAmbiguous`, which the errors of `CICDInfrastructure.GetByName`, `DevelopmentEnvironments.GetByName`, `JiraInstances.GetByName` and `Notifications.GetByScope` match when several objects have the value ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 
 ## v0.4.0

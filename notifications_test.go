@@ -48,10 +48,10 @@ func TestNotificationsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 2 || list.NotificationSettings[0].Product != 0 || list.NotificationSettings[1].Product != 284 {
-		t.Errorf("List() = %d %+v", list.Count, list.NotificationSettings)
+	if list.Count != 2 || list.Results[0].Product != 0 || list.Results[1].Product != 284 {
+		t.Errorf("List() = %d %+v", list.Count, list.Results)
 	}
-	if got := list.NotificationSettings[1].ScanAddedEmpty; !reflect.DeepEqual(got, defectdojo.NotificationChannels{"mail"}) {
+	if got := list.Results[1].ScanAddedEmpty; !reflect.DeepEqual(got, defectdojo.NotificationChannels{"mail"}) {
 		t.Errorf("ScanAddedEmpty = %#v, want [mail]", got)
 	}
 }
@@ -92,7 +92,7 @@ func TestNotificationsService_Get(t *testing.T) {
 		}
 		writeJSON(t, w, http.StatusOK, fixture(t, "notifications/get.json"))
 	})
-	n, _, err := client.Notifications.Get(context.Background(), 2)
+	n, _, err := client.Notifications.Get(context.Background(), 2, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -103,7 +103,7 @@ func TestNotificationsService_Get(t *testing.T) {
 		!reflect.DeepEqual(n.ScanAddedEmpty, defectdojo.NotificationChannels{}) {
 		t.Errorf("Get() = %+v", n)
 	}
-	if _, _, err := client.Notifications.Get(context.Background(), 5); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Notifications.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -150,13 +150,13 @@ func TestNotificationsService_GetByScope(t *testing.T) {
 		{template: true, want: 200},
 	}
 	for _, tt := range tests {
-		n, _, err := client.Notifications.GetByScope(ctx, tt.user, tt.product, tt.template)
+		n, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: tt.user, Product: tt.product, Template: tt.template}, nil)
 		if err != nil || n.ID != tt.want {
 			t.Errorf("GetByScope(%d, %d, %t) = %+v, %v; want ID %d", tt.user, tt.product, tt.template, n, err, tt.want)
 		}
 	}
 	for _, scope := range [][2]int{{2, 7}, {99, 0}} {
-		if _, _, err := client.Notifications.GetByScope(ctx, scope[0], scope[1], false); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: scope[0], Product: scope[1], Template: false}, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByScope(%v) error = %v, want ErrNotFound", scope, err)
 		}
 	}
@@ -167,7 +167,7 @@ func TestNotificationsService_GetByScope_several(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/notifications/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":2,"results":[{"id":2,"user":null},{"id":9,"user":null}]}`))
 	})
-	_, _, err := client.Notifications.GetByScope(context.Background(), 0, 0, false)
+	_, _, err := client.Notifications.GetByScope(context.Background(), defectdojo.NotificationScope{User: 0, Product: 0, Template: false}, nil)
 	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByScope() error = %v, want an error naming the rows", err)
 	}
@@ -187,7 +187,7 @@ func TestNotificationsService_Create(t *testing.T) {
 		ProductAdded:   []string{"mail", "alert"},
 		SLABreach:      []string{},
 		ScanAddedEmpty: defectdojo.NotificationChannels{"mail"},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -221,7 +221,7 @@ func TestNotificationsService_Update(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "notifications/get.json"))
 			})
-			if _, _, err := client.Notifications.Update(context.Background(), 2, tt.in); err != nil {
+			if _, _, err := client.Notifications.Update(context.Background(), 2, tt.in, nil); err != nil {
 				t.Fatalf("Update() error = %v", err)
 			}
 		})
@@ -252,7 +252,7 @@ func TestNotificationsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "notifications/get.json"))
 			})
-			if _, _, err := client.Notifications.Patch(context.Background(), 2, tt.patch); err != nil {
+			if _, _, err := client.Notifications.Patch(context.Background(), 2, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -267,7 +267,7 @@ func TestNotificationsService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/notifications/35/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	if resp, err := client.Notifications.Delete(context.Background(), 35); err != nil || resp.StatusCode != http.StatusNoContent {
+	if resp, err := client.Notifications.Delete(context.Background(), 35, nil); err != nil || resp.StatusCode != http.StatusNoContent {
 		t.Errorf("Delete() = %v, %v; want 204", resp, err)
 	}
 }
@@ -278,7 +278,7 @@ func TestNotificationsService_DeletePreview(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "notifications/delete_preview.json"))
 	})
 	preview, _, err := client.Notifications.DeletePreview(context.Background(), 35, nil)
-	if err != nil || preview.Count != 1 || preview.Objects[0].Model != "Notifications" {
+	if err != nil || preview.Count != 1 || preview.Results[0].Model != "Notifications" {
 		t.Errorf("DeletePreview() = %+v, %v", preview, err)
 	}
 }
@@ -291,32 +291,32 @@ func TestNotificationsService_invalidArguments(t *testing.T) {
 	ctx := context.Background()
 	n := &defectdojo.NotificationSettings{}
 	calls := map[string]func() error{
-		"Get zero ID": func() error { _, _, err := client.Notifications.Get(ctx, 0); return err },
+		"Get zero ID": func() error { _, _, err := client.Notifications.Get(ctx, 0, nil); return err },
 		"GetByScope negative user": func() error {
-			_, _, err := client.Notifications.GetByScope(ctx, -1, 0, false)
+			_, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: -1, Product: 0, Template: false}, nil)
 			return err
 		},
 		"GetByScope template with user": func() error {
-			_, _, err := client.Notifications.GetByScope(ctx, 1, 0, true)
+			_, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: 1, Product: 0, Template: true}, nil)
 			return err
 		},
-		"Create nil": func() error { _, _, err := client.Notifications.Create(ctx, nil); return err },
+		"Create nil": func() error { _, _, err := client.Notifications.Create(ctx, nil, nil); return err },
 		"Create template with product": func() error {
-			_, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{Template: true, Product: 1})
+			_, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{Template: true, Product: 1}, nil)
 			return err
 		},
 		"Create two scan_added_empty channels": func() error {
-			_, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{ScanAddedEmpty: defectdojo.NotificationChannels{"mail", "alert"}})
+			_, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{ScanAddedEmpty: defectdojo.NotificationChannels{"mail", "alert"}}, nil)
 			return err
 		},
-		"Update zero ID": func() error { _, _, err := client.Notifications.Update(ctx, 0, n); return err },
-		"Update nil":     func() error { _, _, err := client.Notifications.Update(ctx, 1, nil); return err },
+		"Update zero ID": func() error { _, _, err := client.Notifications.Update(ctx, 0, n, nil); return err },
+		"Update nil":     func() error { _, _, err := client.Notifications.Update(ctx, 1, nil, nil); return err },
 		"Patch zero ID": func() error {
-			_, _, err := client.Notifications.Patch(ctx, 0, &defectdojo.NotificationSettingsPatch{})
+			_, _, err := client.Notifications.Patch(ctx, 0, &defectdojo.NotificationSettingsPatch{}, nil)
 			return err
 		},
-		"Patch nil":             func() error { _, _, err := client.Notifications.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := client.Notifications.Delete(ctx, 0); return err },
+		"Patch nil":             func() error { _, _, err := client.Notifications.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := client.Notifications.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.Notifications.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

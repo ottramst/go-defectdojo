@@ -92,7 +92,7 @@ func TestAccAuthToken(t *testing.T) {
 	if os.Getenv("DEFECTDOJO_API_TOKEN") != "" {
 		t.Skip("needs basic auth credentials")
 	}
-	token, _, err := client.Auth.Token(t.Context(), envOr("DEFECTDOJO_USERNAME", "admin"), envOr("DEFECTDOJO_PASSWORD", "DefectDojoAcc1!"))
+	token, _, err := client.Auth.Token(t.Context(), envOr("DEFECTDOJO_USERNAME", "admin"), envOr("DEFECTDOJO_PASSWORD", "DefectDojoAcc1!"), nil)
 	if err != nil {
 		t.Fatalf("Token() error = %v", err)
 	}

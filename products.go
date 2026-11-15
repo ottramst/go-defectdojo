@@ -250,9 +250,9 @@ type ListProductsOptions struct {
 	ProdType int `url:"prod_type,omitempty"`
 }
 
-// ProductList is a page of products.
-type ProductList struct {
-	Products []*Product
+// ListProductsResult is a page of products.
+type ListProductsResult struct {
+	Results []*Product
 
 	// Count is the number of products that match the filters.
 	Count int
@@ -261,7 +261,7 @@ type ProductList struct {
 // List returns a page of products.
 //
 // DefectDojo API: GET /api/v2/products/
-func (s *ProductsService) List(ctx context.Context, opt *ListProductsOptions, opts ...RequestOption) (*ProductList, *Response, error) {
+func (s *ProductsService) List(ctx context.Context, opt *ListProductsOptions, opts ...RequestOption) (*ListProductsResult, *Response, error) {
 	path, err := addQuery("/api/v2/products/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -271,7 +271,7 @@ func (s *ProductsService) List(ctx context.Context, opt *ListProductsOptions, op
 	if err != nil {
 		return nil, resp, err
 	}
-	return &ProductList{Products: page.Results, Count: page.Count}, resp, nil
+	return &ListProductsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the products, starting at opt.Offset. It
@@ -291,14 +291,17 @@ func (s *ProductsService) ListAll(ctx context.Context, opt *ListProductsOptions,
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Products, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetProductOptions are the options of [ProductsService.Get].
+type GetProductOptions struct{}
 
 // Get returns a product by its ID.
 //
 // DefectDojo API: GET /api/v2/products/{id}/
-func (s *ProductsService) Get(ctx context.Context, id int, opts ...RequestOption) (*Product, *Response, error) {
+func (s *ProductsService) Get(ctx context.Context, id int, opt *GetProductOptions, opts ...RequestOption) (*Product, *Response, error) {
 	if err := requirePositive("product ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -310,10 +313,13 @@ func (s *ProductsService) Get(ctx context.Context, id int, opts ...RequestOption
 	return p, resp, nil
 }
 
+// GetProductByNameOptions are the options of [ProductsService.GetByName].
+type GetProductByNameOptions struct{}
+
 // GetByName returns the product with exactly the given name, compared
 // case-sensitively. It returns an error matching [ErrNotFound] when there is
 // none.
-func (s *ProductsService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*Product, *Response, error) {
+func (s *ProductsService) GetByName(ctx context.Context, name string, opt *GetProductByNameOptions, opts ...RequestOption) (*Product, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: product name must not be empty")
 	}
@@ -322,13 +328,16 @@ func (s *ProductsService) GetByName(ctx context.Context, name string, opts ...Re
 	if err != nil {
 		return nil, resp, err
 	}
-	for _, p := range list.Products {
+	for _, p := range list.Results {
 		if p.Name == name {
 			return p, resp, nil
 		}
 	}
 	return nil, resp, fmt.Errorf("defectdojo: product %q: %w", name, ErrNotFound)
 }
+
+// CreateProductOptions are the options of [ProductsService.Create].
+type CreateProductOptions struct{}
 
 // Create creates a product. Its read-only fields are ignored. A name that is
 // taken is a 400 ([ErrBadRequest]) with a "name" field error.
@@ -338,7 +347,7 @@ func (s *ProductsService) GetByName(ctx context.Context, name string, opts ...Re
 // set. A zero SLAConfiguration uses DefectDojo's default.
 //
 // DefectDojo API: POST /api/v2/products/
-func (s *ProductsService) Create(ctx context.Context, p *Product, opts ...RequestOption) (*Product, *Response, error) {
+func (s *ProductsService) Create(ctx context.Context, p *Product, opt *CreateProductOptions, opts ...RequestOption) (*Product, *Response, error) {
 	body, err := newProductRequest(p)
 	if err != nil {
 		return nil, nil, err
@@ -351,6 +360,9 @@ func (s *ProductsService) Create(ctx context.Context, p *Product, opts ...Reques
 	return created, resp, nil
 }
 
+// UpdateProductOptions are the options of [ProductsService.Update].
+type UpdateProductOptions struct{}
+
 // Update replaces the writable fields of the product with the given ID.
 // Every writable field is sent except a zero SLAConfiguration, nil
 // UserRecords and Revenue, and ProdNumericGrade, which are kept: empty
@@ -360,7 +372,7 @@ func (s *ProductsService) Create(ctx context.Context, p *Product, opts ...Reques
 // other fields, or use [ProductsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/products/{id}/
-func (s *ProductsService) Update(ctx context.Context, id int, p *Product, opts ...RequestOption) (*Product, *Response, error) {
+func (s *ProductsService) Update(ctx context.Context, id int, p *Product, opt *UpdateProductOptions, opts ...RequestOption) (*Product, *Response, error) {
 	if err := requirePositive("product ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -376,10 +388,13 @@ func (s *ProductsService) Update(ctx context.Context, id int, p *Product, opts .
 	return updated, resp, nil
 }
 
+// PatchProductOptions are the options of [ProductsService.Patch].
+type PatchProductOptions struct{}
+
 // Patch changes the fields of the product that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/products/{id}/
-func (s *ProductsService) Patch(ctx context.Context, id int, patch *ProductPatch, opts ...RequestOption) (*Product, *Response, error) {
+func (s *ProductsService) Patch(ctx context.Context, id int, patch *ProductPatch, opt *PatchProductOptions, opts ...RequestOption) (*Product, *Response, error) {
 	if err := requirePositive("product ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -400,6 +415,9 @@ func (s *ProductsService) Patch(ctx context.Context, id int, patch *ProductPatch
 	return updated, resp, nil
 }
 
+// DeleteProductOptions are the options of [ProductsService.Delete].
+type DeleteProductOptions struct{}
+
 // Delete deletes a product by its ID.
 //
 // Deleting a product also deletes its engagements, with their tests and
@@ -411,18 +429,23 @@ func (s *ProductsService) Patch(ctx context.Context, id int, patch *ProductPatch
 // until it returns [ErrNotFound].
 //
 // DefectDojo API: DELETE /api/v2/products/{id}/
-func (s *ProductsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *ProductsService) Delete(ctx context.Context, id int, opt *DeleteProductOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("product ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, productPath(id), nil, nil, opts)
 }
 
+// DeletePreviewProductOptions are the options of [ProductsService.DeletePreview].
+type DeletePreviewProductOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the product
 // would remove, the product itself included.
 //
 // DefectDojo API: GET /api/v2/products/{id}/delete_preview/
-func (s *ProductsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *ProductsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewProductOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("product ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -435,15 +458,18 @@ func (s *ProductsService) DeletePreview(ctx context.Context, id int, opt *ListOp
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
+
+// CountProductEngagementsOptions are the options of [ProductsService.CountEngagements].
+type CountProductEngagementsOptions struct{}
 
 // CountEngagements returns the number of engagements of the product, which a
 // delete of the product would also delete. It reads the count of the
 // engagements list (GET /api/v2/engagements/?product={id}), whose filter
 // rejects products that don't exist: the error then also matches
 // [ErrNotFound].
-func (s *ProductsService) CountEngagements(ctx context.Context, id int, opts ...RequestOption) (int, *Response, error) {
+func (s *ProductsService) CountEngagements(ctx context.Context, id int, opt *CountProductEngagementsOptions, opts ...RequestOption) (int, *Response, error) {
 	if err := requirePositive("product ID", id); err != nil {
 		return 0, nil, err
 	}

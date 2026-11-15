@@ -59,7 +59,7 @@ func TestErrorResponse(t *testing.T) {
 				writeJSON(t, w, tt.status, []byte(tt.body))
 			})
 
-			_, resp, err := client.ProductTypes.Get(context.Background(), 7)
+			_, resp, err := client.ProductTypes.Get(context.Background(), 7, nil)
 			var errResp *defectdojo.ErrorResponse
 			if !errors.As(err, &errResp) {
 				t.Fatalf("error = %v (%T), want *defectdojo.ErrorResponse", err, err)
@@ -128,7 +128,7 @@ func TestErrorResponse_redactsUserInfo(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, err = client.ProductTypes.Get(context.Background(), 1)
+	_, _, err = client.ProductTypes.Get(context.Background(), 1, nil)
 	if err == nil || strings.Contains(err.Error(), "secret") {
 		t.Errorf("Error() = %v, want an error without the password", err)
 	}
@@ -153,7 +153,7 @@ func TestErrorResponse_holdsNoCredentials(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	_, _, err = client.ProductTypes.Get(context.Background(), 1)
+	_, _, err = client.ProductTypes.Get(context.Background(), 1, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) {
 		t.Fatalf("error = %v, want an *ErrorResponse", err)
@@ -173,7 +173,7 @@ func TestErrorResponse_longTextIsTruncated(t *testing.T) {
 		w.WriteHeader(http.StatusBadGateway)
 		_, _ = w.Write([]byte(body))
 	})
-	_, _, err := client.ProductTypes.Get(context.Background(), 1)
+	_, _, err := client.ProductTypes.Get(context.Background(), 1, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) {
 		t.Fatalf("error = %v, want *ErrorResponse", err)

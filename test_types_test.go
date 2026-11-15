@@ -21,11 +21,11 @@ func TestTestTypesService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 394 || len(list.TestTypes) != 3 {
-		t.Fatalf("List() = %d of %d, want 3 of 394", len(list.TestTypes), list.Count)
+	if list.Count != 394 || len(list.Results) != 3 {
+		t.Fatalf("List() = %d of %d, want 3 of 394", len(list.Results), list.Count)
 	}
-	if want := (defectdojo.TestType{ID: 3, Name: "Pen Test", Active: true}); *list.TestTypes[2] != want {
-		t.Errorf("third test type = %+v, want %+v", list.TestTypes[2], want)
+	if want := (defectdojo.TestType{ID: 3, Name: "Pen Test", Active: true}); *list.Results[2] != want {
+		t.Errorf("third test type = %+v, want %+v", list.Results[2], want)
 	}
 }
 
@@ -66,11 +66,11 @@ func TestTestTypesService_Get(t *testing.T) {
 		}
 		writeJSON(t, w, http.StatusOK, fixture(t, "test_types/get.json"))
 	})
-	got, _, err := client.TestTypes.Get(context.Background(), 1)
+	got, _, err := client.TestTypes.Get(context.Background(), 1, nil)
 	if err != nil || *got != (defectdojo.TestType{ID: 1, Name: "API Test", Active: true}) {
 		t.Errorf("Get() = %+v, %v; want API Test", got, err)
 	}
-	if _, _, err := client.TestTypes.Get(context.Background(), 2); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.TestTypes.Get(context.Background(), 2, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -86,11 +86,11 @@ func TestTestTypesService_GetByName(t *testing.T) {
 			writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"results":[]}`))
 		}
 	})
-	tt, _, err := client.TestTypes.GetByName(context.Background(), "Trivy Scan")
+	tt, _, err := client.TestTypes.GetByName(context.Background(), "Trivy Scan", nil)
 	if err != nil || tt.ID != 6 {
 		t.Errorf("GetByName() = %v, %v; want ID 6", tt, err)
 	}
-	if _, _, err := client.TestTypes.GetByName(context.Background(), "Nope"); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.TestTypes.GetByName(context.Background(), "Nope", nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -100,10 +100,10 @@ func TestTestTypesService_invalidArguments(t *testing.T) {
 	mux.HandleFunc("/", func(_ http.ResponseWriter, r *http.Request) {
 		t.Errorf("unexpected request %s %s", r.Method, r.URL)
 	})
-	if _, _, err := client.TestTypes.Get(context.Background(), 0); err == nil {
+	if _, _, err := client.TestTypes.Get(context.Background(), 0, nil); err == nil {
 		t.Error("Get(0) error = nil, want an argument error")
 	}
-	if _, _, err := client.TestTypes.GetByName(context.Background(), ""); err == nil {
+	if _, _, err := client.TestTypes.GetByName(context.Background(), "", nil); err == nil {
 		t.Error("GetByName(\"\") error = nil, want an argument error")
 	}
 }

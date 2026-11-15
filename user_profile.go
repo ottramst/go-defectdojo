@@ -92,10 +92,13 @@ type UserContactInfo struct {
 	Language string `json:"language"`
 }
 
+// GetUserProfileOptions are the options of [UserProfileService.Get].
+type GetUserProfileOptions struct{}
+
 // Get returns the user the client authenticates as.
 //
 // DefectDojo API: GET /api/v2/user_profile/
-func (s *UserProfileService) Get(ctx context.Context, opts ...RequestOption) (*UserProfile, *Response, error) {
+func (s *UserProfileService) Get(ctx context.Context, opt *GetUserProfileOptions, opts ...RequestOption) (*UserProfile, *Response, error) {
 	profile := new(UserProfile)
 	resp, err := s.client.do(ctx, http.MethodGet, "/api/v2/user_profile/", nil, profile, opts)
 	if err != nil {

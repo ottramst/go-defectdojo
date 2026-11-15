@@ -46,7 +46,7 @@ func TestJiraInstancesService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 1 || len(list.JiraInstances) != 1 || !reflect.DeepEqual(*list.JiraInstances[0], acmeJira) {
+	if list.Count != 1 || len(list.Results) != 1 || !reflect.DeepEqual(*list.Results[0], acmeJira) {
 		t.Errorf("List() = %+v, want the Acme Jira fixture", list)
 	}
 }
@@ -86,17 +86,17 @@ func TestJiraInstancesService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "jira_instances/get.json"))
 	})
 
-	ji, _, err := client.JiraInstances.Get(context.Background(), 1)
+	ji, _, err := client.JiraInstances.Get(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
 	if !reflect.DeepEqual(*ji, acmeJira) {
 		t.Errorf("Get() = %+v, want %+v", *ji, acmeJira)
 	}
-	if _, _, err := client.JiraInstances.Get(context.Background(), 2); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.JiraInstances.Get(context.Background(), 2, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
-	if _, _, err := client.JiraInstances.Get(context.Background(), 0); err == nil {
+	if _, _, err := client.JiraInstances.Get(context.Background(), 0, nil); err == nil {
 		t.Error("Get(0) error = nil, want an error")
 	}
 }
@@ -117,17 +117,17 @@ func TestJiraInstancesService_GetByName(t *testing.T) {
 	})
 	ctx := context.Background()
 
-	if ji, _, err := client.JiraInstances.GetByName(ctx, "Other"); err != nil || ji.ID != 4 {
+	if ji, _, err := client.JiraInstances.GetByName(ctx, "Other", nil); err != nil || ji.ID != 4 {
 		t.Errorf("GetByName(Other) = %v, %v; want ID 4 from the second page", ji, err)
 	}
-	if _, _, err := client.JiraInstances.GetByName(ctx, "acme"); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.JiraInstances.GetByName(ctx, "acme", nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(acme) error = %v, want ErrNotFound", err)
 	}
-	_, _, err := client.JiraInstances.GetByName(ctx, "twice")
+	_, _, err := client.JiraInstances.GetByName(ctx, "twice", nil)
 	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[2 3]") {
 		t.Errorf("GetByName(twice) error = %v, want an error naming IDs 2 and 3", err)
 	}
-	if _, _, err := client.JiraInstances.GetByName(ctx, ""); err == nil {
+	if _, _, err := client.JiraInstances.GetByName(ctx, "", nil); err == nil {
 		t.Error("GetByName(\"\") error = nil, want an error")
 	}
 }
@@ -159,10 +159,10 @@ func TestJiraInstancesService_Create(t *testing.T) {
 		writeJSON(t, w, http.StatusCreated, fixture(t, "jira_instances/create.json"))
 	})
 
-	in := defectdojo.JiraInstanceWrite{JiraInstance: acmeJira, Password: "fake-token"}
+	in := defectdojo.CreateJiraInstanceRequest{JiraInstance: acmeJira, Password: "fake-token"}
 	in.ID = 99 // read-only, not sent
 	orig := in
-	created, _, err := client.JiraInstances.Create(context.Background(), &in)
+	created, _, err := client.JiraInstances.Create(context.Background(), &in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -190,13 +190,13 @@ func TestJiraInstancesService_Create_defaults(t *testing.T) {
 		writeJSON(t, w, http.StatusCreated, []byte(`{"id":2}`))
 	})
 
-	_, _, err := client.JiraInstances.Create(context.Background(), &defectdojo.JiraInstanceWrite{
+	_, _, err := client.JiraInstances.Create(context.Background(), &defectdojo.CreateJiraInstanceRequest{
 		JiraInstance: defectdojo.JiraInstance{
 			URL: "https://jira.example.com", Username: "bot",
 			InfoMappingSeverity: "a", LowMappingSeverity: "a", MediumMappingSeverity: "a", HighMappingSeverity: "a", CriticalMappingSeverity: "a",
 		},
 		Password: "x",
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -204,23 +204,23 @@ func TestJiraInstancesService_Create_defaults(t *testing.T) {
 
 func TestJiraInstancesService_Create_invalid(t *testing.T) {
 	_, client := setup(t)
-	valid := defectdojo.JiraInstanceWrite{JiraInstance: acmeJira, Password: "x"}
-	tests := map[string]func(*defectdojo.JiraInstanceWrite){
-		"no URL":              func(ji *defectdojo.JiraInstanceWrite) { ji.URL = "" },
-		"no username":         func(ji *defectdojo.JiraInstanceWrite) { ji.Username = "" },
-		"no password":         func(ji *defectdojo.JiraInstanceWrite) { ji.Password = "" },
-		"no critical mapping": func(ji *defectdojo.JiraInstanceWrite) { ji.CriticalMappingSeverity = "" },
-		"no info mapping":     func(ji *defectdojo.JiraInstanceWrite) { ji.InfoMappingSeverity = "" },
+	valid := defectdojo.CreateJiraInstanceRequest{JiraInstance: acmeJira, Password: "x"}
+	tests := map[string]func(*defectdojo.CreateJiraInstanceRequest){
+		"no URL":              func(ji *defectdojo.CreateJiraInstanceRequest) { ji.URL = "" },
+		"no username":         func(ji *defectdojo.CreateJiraInstanceRequest) { ji.Username = "" },
+		"no password":         func(ji *defectdojo.CreateJiraInstanceRequest) { ji.Password = "" },
+		"no critical mapping": func(ji *defectdojo.CreateJiraInstanceRequest) { ji.CriticalMappingSeverity = "" },
+		"no info mapping":     func(ji *defectdojo.CreateJiraInstanceRequest) { ji.InfoMappingSeverity = "" },
 	}
 	for name, mutate := range tests {
 		ji := valid
 		mutate(&ji)
 		// The mux has no handler, so a request would fail with a 404.
-		if _, _, err := client.JiraInstances.Create(context.Background(), &ji); err == nil || errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.JiraInstances.Create(context.Background(), &ji, nil); err == nil || errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("Create(%s) error = %v, want an error before sending", name, err)
 		}
 	}
-	if _, _, err := client.JiraInstances.Create(context.Background(), nil); err == nil {
+	if _, _, err := client.JiraInstances.Create(context.Background(), nil, nil); err == nil {
 		t.Error("Create(nil) error = nil, want an error")
 	}
 }
@@ -238,10 +238,10 @@ func TestJiraInstancesService_Update(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "jira_instances/get.json"))
 	})
 
-	if _, _, err := client.JiraInstances.Update(context.Background(), 1, &defectdojo.JiraInstanceWrite{JiraInstance: acmeJira, Password: "new-token"}); err != nil {
+	if _, _, err := client.JiraInstances.Update(context.Background(), 1, &defectdojo.CreateJiraInstanceRequest{JiraInstance: acmeJira, Password: "new-token"}, nil); err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
-	if _, _, err := client.JiraInstances.Update(context.Background(), 0, &defectdojo.JiraInstanceWrite{JiraInstance: acmeJira, Password: "x"}); err == nil {
+	if _, _, err := client.JiraInstances.Update(context.Background(), 0, &defectdojo.CreateJiraInstanceRequest{JiraInstance: acmeJira, Password: "x"}, nil); err == nil {
 		t.Error("Update(0) error = nil, want an error")
 	}
 }
@@ -257,12 +257,12 @@ func TestJiraInstancesService_Patch(t *testing.T) {
 	_, _, err := client.JiraInstances.Patch(context.Background(), 1, &defectdojo.JiraInstancePatch{
 		URL:         new("https://jira2.example.com"),
 		FindingText: defectdojo.Null[string](),
-	})
+	}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || len(errResp.Fields["password"]) == 0 {
 		t.Errorf("Patch(URL) error = %v, want a 400 on password", err)
 	}
-	if _, _, err := client.JiraInstances.Patch(context.Background(), 1, nil); err == nil {
+	if _, _, err := client.JiraInstances.Patch(context.Background(), 1, nil, nil); err == nil {
 		t.Error("Patch(nil) error = nil, want an error")
 	}
 }
@@ -278,11 +278,11 @@ func TestJiraInstancesService_Delete(t *testing.T) {
 		w.WriteHeader(http.StatusNoContent)
 	})
 
-	if _, err := client.JiraInstances.Delete(context.Background(), 2); err != nil {
+	if _, err := client.JiraInstances.Delete(context.Background(), 2, nil); err != nil {
 		t.Errorf("Delete() error = %v", err)
 	}
 	var errResp *defectdojo.ErrorResponse
-	if _, err := client.JiraInstances.Delete(context.Background(), 1); !errors.As(err, &errResp) || errResp.StatusCode != http.StatusInternalServerError {
+	if _, err := client.JiraInstances.Delete(context.Background(), 1, nil); !errors.As(err, &errResp) || errResp.StatusCode != http.StatusInternalServerError {
 		t.Errorf("Delete(in use) error = %v, want a 500", err)
 	}
 }
@@ -297,7 +297,7 @@ func TestJiraInstancesService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || preview.Objects[0].Model != "JIRA_Instance" {
+	if preview.Count != 1 || preview.Results[0].Model != "JIRA_Instance" {
 		t.Errorf("DeletePreview() = %+v, want the instance only", preview)
 	}
 }
@@ -314,10 +314,10 @@ func TestJiraInstancesService_CountJiraProjects(t *testing.T) {
 		}
 	})
 
-	if n, _, err := client.JiraInstances.CountJiraProjects(context.Background(), 1); err != nil || n != 2 {
+	if n, _, err := client.JiraInstances.CountJiraProjects(context.Background(), 1, nil); err != nil || n != 2 {
 		t.Errorf("CountJiraProjects() = %d, %v; want 2", n, err)
 	}
-	if _, _, err := client.JiraInstances.CountJiraProjects(context.Background(), 9); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.JiraInstances.CountJiraProjects(context.Background(), 9, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("CountJiraProjects(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -327,10 +327,10 @@ func TestJiraInstancesService_invalidID(t *testing.T) {
 	ctx := context.Background()
 	// The mux has no handler, so a request would fail with a 404.
 	checks := map[string]error{}
-	_, _, checks["Patch"] = client.JiraInstances.Patch(ctx, 0, &defectdojo.JiraInstancePatch{})
-	_, checks["Delete"] = client.JiraInstances.Delete(ctx, 0)
+	_, _, checks["Patch"] = client.JiraInstances.Patch(ctx, 0, &defectdojo.JiraInstancePatch{}, nil)
+	_, checks["Delete"] = client.JiraInstances.Delete(ctx, 0, nil)
 	_, _, checks["DeletePreview"] = client.JiraInstances.DeletePreview(ctx, 0, nil)
-	_, _, checks["CountJiraProjects"] = client.JiraInstances.CountJiraProjects(ctx, -1)
+	_, _, checks["CountJiraProjects"] = client.JiraInstances.CountJiraProjects(ctx, -1, nil)
 	for name, err := range checks {
 		if err == nil || errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("%s(0) error = %v, want an error before sending", name, err)

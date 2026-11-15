@@ -254,9 +254,9 @@ type ListJiraProjectsOptions struct {
 	PushNotes                   *bool  `url:"push_notes,omitempty"`
 }
 
-// JiraProjectList is a page of Jira projects.
-type JiraProjectList struct {
-	JiraProjects []*JiraProject
+// ListJiraProjectsResult is a page of Jira projects.
+type ListJiraProjectsResult struct {
+	Results []*JiraProject
 
 	// Count is the number of Jira projects that match the filters.
 	Count int
@@ -265,7 +265,7 @@ type JiraProjectList struct {
 // List returns a page of the Jira projects the caller may view.
 //
 // DefectDojo API: GET /api/v2/jira_projects/
-func (s *JiraProjectsService) List(ctx context.Context, opt *ListJiraProjectsOptions, opts ...RequestOption) (*JiraProjectList, *Response, error) {
+func (s *JiraProjectsService) List(ctx context.Context, opt *ListJiraProjectsOptions, opts ...RequestOption) (*ListJiraProjectsResult, *Response, error) {
 	path, err := addQuery("/api/v2/jira_projects/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -275,7 +275,7 @@ func (s *JiraProjectsService) List(ctx context.Context, opt *ListJiraProjectsOpt
 	if err != nil {
 		return nil, resp, err
 	}
-	return &JiraProjectList{JiraProjects: page.Results, Count: page.Count}, resp, nil
+	return &ListJiraProjectsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the Jira projects the caller may view,
@@ -296,14 +296,17 @@ func (s *JiraProjectsService) ListAll(ctx context.Context, opt *ListJiraProjects
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.JiraProjects, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetJiraProjectOptions are the options of [JiraProjectsService.Get].
+type GetJiraProjectOptions struct{}
 
 // Get returns a Jira project by its ID.
 //
 // DefectDojo API: GET /api/v2/jira_projects/{id}/
-func (s *JiraProjectsService) Get(ctx context.Context, id int, opts ...RequestOption) (*JiraProject, *Response, error) {
+func (s *JiraProjectsService) Get(ctx context.Context, id int, opt *GetJiraProjectOptions, opts ...RequestOption) (*JiraProject, *Response, error) {
 	if err := requirePositive("Jira project ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -314,6 +317,9 @@ func (s *JiraProjectsService) Get(ctx context.Context, id int, opts ...RequestOp
 	}
 	return p, resp, nil
 }
+
+// CreateJiraProjectOptions are the options of [JiraProjectsService.Create].
+type CreateJiraProjectOptions struct{}
 
 // Create creates a Jira project configuration for a product or an engagement.
 //
@@ -327,7 +333,7 @@ func (s *JiraProjectsService) Get(ctx context.Context, id int, opts ...RequestOp
 // SuppressSLANotificationComments are left out.
 //
 // DefectDojo API: POST /api/v2/jira_projects/
-func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opts ...RequestOption) (*JiraProject, *Response, error) {
+func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opt *CreateJiraProjectOptions, opts ...RequestOption) (*JiraProject, *Response, error) {
 	body, err := newJiraProjectRequest(p)
 	if err != nil {
 		return nil, nil, err
@@ -340,6 +346,9 @@ func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opts .
 	return created, resp, nil
 }
 
+// UpdateJiraProjectOptions are the options of [JiraProjectsService.Update].
+type UpdateJiraProjectOptions struct{}
+
 // Update replaces the writable fields of the Jira project with the given ID.
 // Every writable field is sent, except an empty EpicIssueTypeName and a nil
 // SuppressSLANotificationComments, which keep their values.
@@ -349,7 +358,7 @@ func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opts .
 // [JiraProjectsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/jira_projects/{id}/
-func (s *JiraProjectsService) Update(ctx context.Context, id int, p *JiraProject, opts ...RequestOption) (*JiraProject, *Response, error) {
+func (s *JiraProjectsService) Update(ctx context.Context, id int, p *JiraProject, opt *UpdateJiraProjectOptions, opts ...RequestOption) (*JiraProject, *Response, error) {
 	if err := requirePositive("Jira project ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -365,12 +374,15 @@ func (s *JiraProjectsService) Update(ctx context.Context, id int, p *JiraProject
 	return updated, resp, nil
 }
 
+// PatchJiraProjectOptions are the options of [JiraProjectsService.Patch].
+type PatchJiraProjectOptions struct{}
+
 // Patch changes the fields of the Jira project that are set in patch.
 // DefectDojo checks the result: it must still have either a product or an
 // engagement, and not both SLA notification settings.
 //
 // DefectDojo API: PATCH /api/v2/jira_projects/{id}/
-func (s *JiraProjectsService) Patch(ctx context.Context, id int, patch *JiraProjectPatch, opts ...RequestOption) (*JiraProject, *Response, error) {
+func (s *JiraProjectsService) Patch(ctx context.Context, id int, patch *JiraProjectPatch, opt *PatchJiraProjectOptions, opts ...RequestOption) (*JiraProject, *Response, error) {
 	if err := requirePositive("Jira project ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -394,22 +406,30 @@ func (s *JiraProjectsService) Patch(ctx context.Context, id int, patch *JiraProj
 	return updated, resp, nil
 }
 
+// DeleteJiraProjectOptions are the options of [JiraProjectsService.Delete].
+type DeleteJiraProjectOptions struct{}
+
 // Delete deletes a Jira project configuration by its ID. It also deletes the
 // links between findings and Jira issues made through it.
 //
 // DefectDojo API: DELETE /api/v2/jira_projects/{id}/
-func (s *JiraProjectsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *JiraProjectsService) Delete(ctx context.Context, id int, opt *DeleteJiraProjectOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("Jira project ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, jiraProjectPath(id), nil, nil, opts)
 }
 
+// DeletePreviewJiraProjectOptions are the options of [JiraProjectsService.DeletePreview].
+type DeletePreviewJiraProjectOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the Jira project
 // would remove: the configuration and its links to Jira issues.
 //
 // DefectDojo API: GET /api/v2/jira_projects/{id}/delete_preview/
-func (s *JiraProjectsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *JiraProjectsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewJiraProjectOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("Jira project ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -422,7 +442,7 @@ func (s *JiraProjectsService) DeletePreview(ctx context.Context, id int, opt *Li
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func jiraProjectPath(id int) string {

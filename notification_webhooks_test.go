@@ -26,8 +26,8 @@ func TestNotificationWebhooksService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 1 || list.NotificationWebhooks[0].Name != "Chat relay" {
-		t.Errorf("List() = %d %+v", list.Count, list.NotificationWebhooks)
+	if list.Count != 1 || list.Results[0].Name != "Chat relay" {
+		t.Errorf("List() = %d %+v", list.Count, list.Results)
 	}
 }
 
@@ -68,7 +68,7 @@ func TestNotificationWebhooksService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "notification_webhooks/get.json"))
 	})
 
-	wh, _, err := client.NotificationWebhooks.Get(context.Background(), 4)
+	wh, _, err := client.NotificationWebhooks.Get(context.Background(), 4, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -83,7 +83,7 @@ func TestNotificationWebhooksService_Get(t *testing.T) {
 	if !reflect.DeepEqual(wh, want) {
 		t.Errorf("Get() = %+v, want %+v", wh, want)
 	}
-	if _, _, err := client.NotificationWebhooks.Get(context.Background(), 5); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.NotificationWebhooks.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -99,12 +99,12 @@ func TestNotificationWebhooksService_GetByName(t *testing.T) {
 			writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"results":[]}`))
 		}
 	})
-	wh, _, err := client.NotificationWebhooks.GetByName(context.Background(), "Chat relay")
+	wh, _, err := client.NotificationWebhooks.GetByName(context.Background(), "Chat relay", nil)
 	if err != nil || wh.ID != 4 {
 		t.Errorf("GetByName() = %+v, %v; want ID 4", wh, err)
 	}
 	for _, name := range []string{"Chat", "missing"} {
-		if _, _, err := client.NotificationWebhooks.GetByName(context.Background(), name); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.NotificationWebhooks.GetByName(context.Background(), name, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByName(%q) error = %v, want ErrNotFound", name, err)
 		}
 	}
@@ -120,7 +120,7 @@ func TestNotificationWebhooksService_Create(t *testing.T) {
 	in := &defectdojo.NotificationWebhook{
 		ID: 99, Name: "Chat relay", URL: "https://hooks.example.com/defectdojo", Status: defectdojo.NotificationWebhookStatusInactivePermanent, Note: "x",
 	}
-	wh, resp, err := client.NotificationWebhooks.Create(context.Background(), in)
+	wh, resp, err := client.NotificationWebhooks.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -137,7 +137,7 @@ func TestNotificationWebhooksService_Update(t *testing.T) {
 	})
 	_, _, err := client.NotificationWebhooks.Update(context.Background(), 4, &defectdojo.NotificationWebhook{
 		Name: "n", URL: "https://x.example", HeaderName: "Authorization", HeaderValue: "Bearer t", Owner: 3,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -168,7 +168,7 @@ func TestNotificationWebhooksService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "notification_webhooks/get.json"))
 			})
-			if _, _, err := client.NotificationWebhooks.Patch(context.Background(), 4, tt.patch); err != nil {
+			if _, _, err := client.NotificationWebhooks.Patch(context.Background(), 4, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -180,7 +180,7 @@ func TestNotificationWebhooksService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/notification_webhooks/4/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	if resp, err := client.NotificationWebhooks.Delete(context.Background(), 4); err != nil || resp.StatusCode != http.StatusNoContent {
+	if resp, err := client.NotificationWebhooks.Delete(context.Background(), 4, nil); err != nil || resp.StatusCode != http.StatusNoContent {
 		t.Errorf("Delete() = %v, %v; want 204", resp, err)
 	}
 }
@@ -191,7 +191,7 @@ func TestNotificationWebhooksService_DeletePreview(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "notification_webhooks/delete_preview.json"))
 	})
 	preview, _, err := client.NotificationWebhooks.DeletePreview(context.Background(), 4, nil)
-	if err != nil || preview.Count != 1 || preview.Objects[0].Model != "Notification_Webhooks" {
+	if err != nil || preview.Count != 1 || preview.Results[0].Model != "Notification_Webhooks" {
 		t.Errorf("DeletePreview() = %+v, %v", preview, err)
 	}
 }
@@ -204,25 +204,25 @@ func TestNotificationWebhooksService_invalidArguments(t *testing.T) {
 	ctx := context.Background()
 	wh := &defectdojo.NotificationWebhook{Name: "x", URL: "https://x.example"}
 	calls := map[string]func() error{
-		"Get zero ID":     func() error { _, _, err := client.NotificationWebhooks.Get(ctx, 0); return err },
-		"GetByName empty": func() error { _, _, err := client.NotificationWebhooks.GetByName(ctx, ""); return err },
-		"Create nil":      func() error { _, _, err := client.NotificationWebhooks.Create(ctx, nil); return err },
+		"Get zero ID":     func() error { _, _, err := client.NotificationWebhooks.Get(ctx, 0, nil); return err },
+		"GetByName empty": func() error { _, _, err := client.NotificationWebhooks.GetByName(ctx, "", nil); return err },
+		"Create nil":      func() error { _, _, err := client.NotificationWebhooks.Create(ctx, nil, nil); return err },
 		"Create empty name": func() error {
-			_, _, err := client.NotificationWebhooks.Create(ctx, &defectdojo.NotificationWebhook{URL: "https://x.example"})
+			_, _, err := client.NotificationWebhooks.Create(ctx, &defectdojo.NotificationWebhook{URL: "https://x.example"}, nil)
 			return err
 		},
 		"Create empty URL": func() error {
-			_, _, err := client.NotificationWebhooks.Create(ctx, &defectdojo.NotificationWebhook{Name: "x"})
+			_, _, err := client.NotificationWebhooks.Create(ctx, &defectdojo.NotificationWebhook{Name: "x"}, nil)
 			return err
 		},
-		"Update zero ID": func() error { _, _, err := client.NotificationWebhooks.Update(ctx, 0, wh); return err },
-		"Update nil":     func() error { _, _, err := client.NotificationWebhooks.Update(ctx, 1, nil); return err },
+		"Update zero ID": func() error { _, _, err := client.NotificationWebhooks.Update(ctx, 0, wh, nil); return err },
+		"Update nil":     func() error { _, _, err := client.NotificationWebhooks.Update(ctx, 1, nil, nil); return err },
 		"Patch zero ID": func() error {
-			_, _, err := client.NotificationWebhooks.Patch(ctx, 0, &defectdojo.NotificationWebhookPatch{})
+			_, _, err := client.NotificationWebhooks.Patch(ctx, 0, &defectdojo.NotificationWebhookPatch{}, nil)
 			return err
 		},
-		"Patch nil":             func() error { _, _, err := client.NotificationWebhooks.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := client.NotificationWebhooks.Delete(ctx, 0); return err },
+		"Patch nil":             func() error { _, _, err := client.NotificationWebhooks.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := client.NotificationWebhooks.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.NotificationWebhooks.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

@@ -24,12 +24,12 @@ func TestAccSLAConfigurations(t *testing.T) {
 		EnforceHigh:     true,
 		Medium:          60,
 		Low:             90,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.SLAConfigurations.Delete(ctx, created.ID)
+		_, err := client.SLAConfigurations.Delete(ctx, created.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -44,22 +44,22 @@ func TestAccSLAConfigurations(t *testing.T) {
 	}
 
 	// Names are unique: a duplicate is a 400 with a field error.
-	_, _, err = client.SLAConfigurations.Create(ctx, &defectdojo.SLAConfiguration{Name: name, Critical: 1, High: 1, Medium: 1, Low: 1})
+	_, _, err = client.SLAConfigurations.Create(ctx, &defectdojo.SLAConfiguration{Name: name, Critical: 1, High: 1, Medium: 1, Low: 1}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["name"]) == 0 {
 		t.Errorf("Create(same name) error = %v, want a 400 with a name field error", err)
 	}
 
-	got, _, err := client.SLAConfigurations.Get(ctx, created.ID)
+	got, _, err := client.SLAConfigurations.Get(ctx, created.ID, nil)
 	if err != nil || *got != want {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 
-	byName, _, err := client.SLAConfigurations.GetByName(ctx, name)
+	byName, _, err := client.SLAConfigurations.GetByName(ctx, name, nil)
 	if err != nil || byName.ID != created.ID {
 		t.Errorf("GetByName() = %+v, %v; want ID %d", byName, err, created.ID)
 	}
-	if _, _, err := client.SLAConfigurations.GetByName(ctx, name[:len(name)-1]); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.SLAConfigurations.GetByName(ctx, name[:len(name)-1], nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(prefix) error = %v, want ErrNotFound", err)
 	}
 
@@ -67,7 +67,7 @@ func TestAccSLAConfigurations(t *testing.T) {
 	got.Name = name + "-renamed"
 	got.Description = ""
 	got.RestartSLAOnReactivation = true
-	updated, _, err := client.SLAConfigurations.Update(ctx, got.ID, got)
+	updated, _, err := client.SLAConfigurations.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -80,21 +80,21 @@ func TestAccSLAConfigurations(t *testing.T) {
 	patched, _, err := client.SLAConfigurations.Patch(ctx, got.ID, &defectdojo.SLAConfigurationPatch{
 		Critical:    new(2),
 		Description: defectdojo.Value("patched"),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
 	if patched.Critical != 2 || patched.Description != "patched" || patched.Name != got.Name {
 		t.Errorf("Patch() = %+v, want critical 2 and the new description", patched)
 	}
-	_, _, err = client.SLAConfigurations.Patch(ctx, got.ID, &defectdojo.SLAConfigurationPatch{Critical: new(1)})
+	_, _, err = client.SLAConfigurations.Patch(ctx, got.ID, &defectdojo.SLAConfigurationPatch{Critical: new(1)}, nil)
 	if !defectdojo.IsSLARecalculating(err) {
 		t.Errorf("Patch(days again) error = %v, want IsSLARecalculating", err)
 	}
 	// The current days and the fields the lock doesn't cover can still change.
 	if _, _, err := client.SLAConfigurations.Patch(ctx, got.ID, &defectdojo.SLAConfigurationPatch{
 		Critical: new(2), RestartSLAOnReactivation: new(false),
-	}); err != nil {
+	}, nil); err != nil {
 		t.Errorf("Patch(unlocked fields) error = %v", err)
 	}
 
@@ -113,15 +113,15 @@ func TestAccSLAConfigurations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Objects, func(o *defectdojo.DeletedObject) bool { return o.Model == "SLA_Configuration" }) {
-		t.Errorf("DeletePreview() = %+v, want the SLA configuration", preview.Objects)
+	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "SLA_Configuration" }) {
+		t.Errorf("DeletePreview() = %+v, want the SLA configuration", preview.Results)
 	}
 
 	// The lock doesn't keep the configuration from being deleted.
-	if _, err := client.SLAConfigurations.Delete(ctx, created.ID); err != nil {
+	if _, err := client.SLAConfigurations.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.SLAConfigurations.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.SLAConfigurations.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 }
@@ -131,11 +131,11 @@ func TestAccSLAConfigurations_deleteRefused(t *testing.T) {
 	ctx := t.Context()
 
 	// "Default" can't be deleted.
-	_, err := client.SLAConfigurations.Delete(ctx, 1)
+	_, err := client.SLAConfigurations.Delete(ctx, 1, nil)
 	if !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Delete(Default) error = %v, want ErrBadRequest", err)
 	}
-	if _, _, err := client.SLAConfigurations.Get(ctx, 1); err != nil {
+	if _, _, err := client.SLAConfigurations.Get(ctx, 1, nil); err != nil {
 		t.Errorf("Get(Default) error = %v, want it still there", err)
 	}
 
@@ -144,18 +144,18 @@ func TestAccSLAConfigurations_deleteRefused(t *testing.T) {
 	slaID := createSLAConfiguration(t, client)
 	product, _, err := client.Products.Create(ctx, &defectdojo.Product{
 		Name: randName(t, "acc"), Description: "acceptance test", ProdType: createProductType(t, client), SLAConfiguration: slaID,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("creating product: %v", err)
 	}
-	if _, err := client.SLAConfigurations.Delete(ctx, slaID); !errors.Is(err, defectdojo.ErrConflict) {
+	if _, err := client.SLAConfigurations.Delete(ctx, slaID, nil); !errors.Is(err, defectdojo.ErrConflict) {
 		t.Errorf("Delete(in use) error = %v, want ErrConflict", err)
 	}
-	if _, _, err := client.SLAConfigurations.Patch(ctx, slaID, &defectdojo.SLAConfigurationPatch{High: new(10)}); err != nil {
+	if _, _, err := client.SLAConfigurations.Patch(ctx, slaID, &defectdojo.SLAConfigurationPatch{High: new(10)}, nil); err != nil {
 		t.Errorf("Patch(days of a configuration a new product uses) error = %v, want no lock", err)
 	}
 	// That change locked the product's SLA configuration too.
-	_, _, err = client.Products.Patch(ctx, product.ID, &defectdojo.ProductPatch{SLAConfiguration: new(createSLAConfiguration(t, client))})
+	_, _, err = client.Products.Patch(ctx, product.ID, &defectdojo.ProductPatch{SLAConfiguration: new(createSLAConfiguration(t, client))}, nil)
 	if !defectdojo.IsSLARecalculating(err) {
 		t.Errorf("Products.Patch(SLA configuration) error = %v, want IsSLARecalculating", err)
 	}
@@ -169,10 +169,13 @@ func createSLAConfiguration(t *testing.T, client *defectdojo.Client) int {
 	sla, _, err := client.SLAConfigurations.Create(t.Context(), &defectdojo.SLAConfiguration{
 		Name: randName(t, "acc"), Critical: 7, High: 30, Medium: 90, Low: 120,
 		EnforceCritical: true, EnforceHigh: true, EnforceMedium: true, EnforceLow: true,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("creating SLA configuration: %v", err)
 	}
-	cleanup(t, func(ctx context.Context) error { _, err := client.SLAConfigurations.Delete(ctx, sla.ID); return err })
+	cleanup(t, func(ctx context.Context) error {
+		_, err := client.SLAConfigurations.Delete(ctx, sla.ID, nil)
+		return err
+	})
 	return sla.ID
 }

@@ -18,12 +18,12 @@ func TestAccNoteTypes(t *testing.T) {
 
 	// Created inactive: an active mandatory note type would keep the UI from
 	// closing findings on the shared stack.
-	created, resp, err := client.NoteTypes.Create(ctx, &defectdojo.NoteType{Name: name, Description: "acceptance test", IsSingle: true})
+	created, resp, err := client.NoteTypes.Create(ctx, &defectdojo.NoteType{Name: name, Description: "acceptance test", IsSingle: true}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.NoteTypes.Delete(ctx, created.ID)
+		_, err := client.NoteTypes.Delete(ctx, created.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -35,17 +35,17 @@ func TestAccNoteTypes(t *testing.T) {
 	}
 
 	// Names are unique: a duplicate is a 400 with a field error.
-	_, _, err = client.NoteTypes.Create(ctx, &defectdojo.NoteType{Name: name, Description: "d"})
+	_, _, err = client.NoteTypes.Create(ctx, &defectdojo.NoteType{Name: name, Description: "d"}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["name"]) == 0 {
 		t.Errorf("Create(same name) error = %v, want a 400 with a name field error", err)
 	}
 
-	got, _, err := client.NoteTypes.Get(ctx, created.ID)
+	got, _, err := client.NoteTypes.Get(ctx, created.ID, nil)
 	if err != nil || *got != want {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
-	byName, _, err := client.NoteTypes.GetByName(ctx, name)
+	byName, _, err := client.NoteTypes.GetByName(ctx, name, nil)
 	if err != nil || byName.ID != created.ID {
 		t.Errorf("GetByName() = %+v, %v; want ID %d", byName, err, created.ID)
 	}
@@ -57,14 +57,14 @@ func TestAccNoteTypes(t *testing.T) {
 	got.Name = name + "-renamed"
 	got.IsSingle = false
 	got.IsMandatory = true
-	updated, _, err := client.NoteTypes.Update(ctx, got.ID, got)
+	updated, _, err := client.NoteTypes.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
 	if *updated != *got {
 		t.Errorf("Update() = %+v, want %+v", updated, got)
 	}
-	patched, _, err := client.NoteTypes.Patch(ctx, got.ID, &defectdojo.NoteTypePatch{Description: new("patched"), IsMandatory: new(false)})
+	patched, _, err := client.NoteTypes.Patch(ctx, got.ID, &defectdojo.NoteTypePatch{Description: new("patched"), IsMandatory: new(false)}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -73,13 +73,13 @@ func TestAccNoteTypes(t *testing.T) {
 	}
 
 	// Notes of the type, on a test; the notes API takes an inactive type.
-	if n, _, err := client.NoteTypes.CountNotes(ctx, created.ID); err != nil || n != 0 {
+	if n, _, err := client.NoteTypes.CountNotes(ctx, created.ID, nil); err != nil || n != 0 {
 		t.Errorf("CountNotes(unused) = %d, %v; want 0", n, err)
 	}
 	productType := createProductType(t, client)
 	product := createProductIn(t, client, productType, false)
 	day := defectdojo.Date{Year: 2026, Month: time.January, Day: 1}
-	engagement, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: product, TargetStart: day, TargetEnd: day})
+	engagement, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: product, TargetStart: day, TargetEnd: day}, nil)
 	if err != nil {
 		t.Fatalf("creating engagement: %v", err)
 	}
@@ -88,19 +88,19 @@ func TestAccNoteTypes(t *testing.T) {
 		rawRequest(t, client, http.MethodPost, "/api/v2/tests/"+strconv.Itoa(test)+"/notes/",
 			map[string]any{"entry": entry, "note_type": created.ID}, nil)
 	}
-	if n, _, err := client.NoteTypes.CountNotes(ctx, created.ID); err != nil || n != 2 {
+	if n, _, err := client.NoteTypes.CountNotes(ctx, created.ID, nil); err != nil || n != 2 {
 		t.Errorf("CountNotes() = %d, %v; want 2", n, err)
 	}
 	preview, _, err := client.NoteTypes.DeletePreview(ctx, created.ID, nil)
-	if err != nil || preview.Count <= 3 || preview.Objects[0].Model != "Note_Type" {
+	if err != nil || preview.Count <= 3 || preview.Results[0].Model != "Note_Type" {
 		t.Errorf("DeletePreview() = %+v, %v; want the note type, its notes and their links", preview, err)
 	}
 
 	// Deleting the note type deletes its notes.
-	if _, err := client.NoteTypes.Delete(ctx, created.ID); err != nil {
+	if _, err := client.NoteTypes.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.NoteTypes.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.NoteTypes.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 	var notes struct {
@@ -110,7 +110,7 @@ func TestAccNoteTypes(t *testing.T) {
 	if notes.Count != 0 {
 		t.Errorf("notes of the test after the delete = %d, want 0", notes.Count)
 	}
-	if _, _, err := client.NoteTypes.CountNotes(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.NoteTypes.CountNotes(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("CountNotes(deleted) error = %v, want ErrNotFound", err)
 	}
 }

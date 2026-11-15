@@ -136,9 +136,9 @@ type ListNotificationWebhooksOptions struct {
 	Owner int `url:"owner,omitempty"`
 }
 
-// NotificationWebhookList is a page of notification webhooks.
-type NotificationWebhookList struct {
-	NotificationWebhooks []*NotificationWebhook
+// ListNotificationWebhooksResult is a page of notification webhooks.
+type ListNotificationWebhooksResult struct {
+	Results []*NotificationWebhook
 
 	// Count is the number of notification webhooks that match the filters.
 	Count int
@@ -147,7 +147,7 @@ type NotificationWebhookList struct {
 // List returns a page of notification webhooks.
 //
 // DefectDojo API: GET /api/v2/notification_webhooks/
-func (s *NotificationWebhooksService) List(ctx context.Context, opt *ListNotificationWebhooksOptions, opts ...RequestOption) (*NotificationWebhookList, *Response, error) {
+func (s *NotificationWebhooksService) List(ctx context.Context, opt *ListNotificationWebhooksOptions, opts ...RequestOption) (*ListNotificationWebhooksResult, *Response, error) {
 	path, err := addQuery("/api/v2/notification_webhooks/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -157,7 +157,7 @@ func (s *NotificationWebhooksService) List(ctx context.Context, opt *ListNotific
 	if err != nil {
 		return nil, resp, err
 	}
-	return &NotificationWebhookList{NotificationWebhooks: page.Results, Count: page.Count}, resp, nil
+	return &ListNotificationWebhooksResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the notification webhooks, starting at
@@ -180,14 +180,17 @@ func (s *NotificationWebhooksService) ListAll(ctx context.Context, opt *ListNoti
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.NotificationWebhooks, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetNotificationWebhookOptions are the options of [NotificationWebhooksService.Get].
+type GetNotificationWebhookOptions struct{}
 
 // Get returns a notification webhook by its ID.
 //
 // DefectDojo API: GET /api/v2/notification_webhooks/{id}/
-func (s *NotificationWebhooksService) Get(ctx context.Context, id int, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
+func (s *NotificationWebhooksService) Get(ctx context.Context, id int, opt *GetNotificationWebhookOptions, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
 	if err := requirePositive("notification webhook ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -199,9 +202,12 @@ func (s *NotificationWebhooksService) Get(ctx context.Context, id int, opts ...R
 	return w, resp, nil
 }
 
+// GetNotificationWebhookByNameOptions are the options of [NotificationWebhooksService.GetByName].
+type GetNotificationWebhookByNameOptions struct{}
+
 // GetByName returns the notification webhook with exactly the given name. It
 // returns an error matching [ErrNotFound] when there is none.
-func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
+func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string, opt *GetNotificationWebhookByNameOptions, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: notification webhook name must not be empty")
 	}
@@ -211,7 +217,7 @@ func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, w := range list.NotificationWebhooks {
+	for _, w := range list.Results {
 		if w.Name == name {
 			return w, resp, nil
 		}
@@ -219,12 +225,15 @@ func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string
 	return nil, resp, fmt.Errorf("defectdojo: notification webhook %q: %w", name, ErrNotFound)
 }
 
+// CreateNotificationWebhookOptions are the options of [NotificationWebhooksService.Create].
+type CreateNotificationWebhookOptions struct{}
+
 // Create creates a notification webhook. Its read-only fields are ignored. A
 // name that is taken is a 400 ([ErrBadRequest]) with a "name" field error.
 // DefectDojo doesn't test the URL.
 //
 // DefectDojo API: POST /api/v2/notification_webhooks/
-func (s *NotificationWebhooksService) Create(ctx context.Context, w *NotificationWebhook, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
+func (s *NotificationWebhooksService) Create(ctx context.Context, w *NotificationWebhook, opt *CreateNotificationWebhookOptions, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
 	body, err := newNotificationWebhookRequest(w)
 	if err != nil {
 		return nil, nil, err
@@ -237,6 +246,9 @@ func (s *NotificationWebhooksService) Create(ctx context.Context, w *Notificatio
 	return created, resp, nil
 }
 
+// UpdateNotificationWebhookOptions are the options of [NotificationWebhooksService.Update].
+type UpdateNotificationWebhookOptions struct{}
+
 // Update replaces the writable fields of the notification webhook with the
 // given ID. Every writable field is sent: an empty HeaderName or HeaderValue
 // clears it, and a zero Owner makes it a system webhook. Update a webhook
@@ -244,7 +256,7 @@ func (s *NotificationWebhooksService) Create(ctx context.Context, w *Notificatio
 // use [NotificationWebhooksService.Patch].
 //
 // DefectDojo API: PUT /api/v2/notification_webhooks/{id}/
-func (s *NotificationWebhooksService) Update(ctx context.Context, id int, w *NotificationWebhook, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
+func (s *NotificationWebhooksService) Update(ctx context.Context, id int, w *NotificationWebhook, opt *UpdateNotificationWebhookOptions, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
 	if err := requirePositive("notification webhook ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -260,11 +272,14 @@ func (s *NotificationWebhooksService) Update(ctx context.Context, id int, w *Not
 	return updated, resp, nil
 }
 
+// PatchNotificationWebhookOptions are the options of [NotificationWebhooksService.Patch].
+type PatchNotificationWebhookOptions struct{}
+
 // Patch changes the fields of the notification webhook that are set in
 // patch.
 //
 // DefectDojo API: PATCH /api/v2/notification_webhooks/{id}/
-func (s *NotificationWebhooksService) Patch(ctx context.Context, id int, patch *NotificationWebhookPatch, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
+func (s *NotificationWebhooksService) Patch(ctx context.Context, id int, patch *NotificationWebhookPatch, opt *PatchNotificationWebhookOptions, opts ...RequestOption) (*NotificationWebhook, *Response, error) {
 	if err := requirePositive("notification webhook ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -279,21 +294,29 @@ func (s *NotificationWebhooksService) Patch(ctx context.Context, id int, patch *
 	return updated, resp, nil
 }
 
+// DeleteNotificationWebhookOptions are the options of [NotificationWebhooksService.Delete].
+type DeleteNotificationWebhookOptions struct{}
+
 // Delete deletes a notification webhook by its ID.
 //
 // DefectDojo API: DELETE /api/v2/notification_webhooks/{id}/
-func (s *NotificationWebhooksService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *NotificationWebhooksService) Delete(ctx context.Context, id int, opt *DeleteNotificationWebhookOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("notification webhook ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, notificationWebhookPath(id), nil, nil, opts)
 }
 
+// DeletePreviewNotificationWebhookOptions are the options of [NotificationWebhooksService.DeletePreview].
+type DeletePreviewNotificationWebhookOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the notification
 // webhook would remove, the webhook itself included.
 //
 // DefectDojo API: GET /api/v2/notification_webhooks/{id}/delete_preview/
-func (s *NotificationWebhooksService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *NotificationWebhooksService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewNotificationWebhookOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("notification webhook ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -306,7 +329,7 @@ func (s *NotificationWebhooksService) DeletePreview(ctx context.Context, id int,
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func notificationWebhookPath(id int) string {

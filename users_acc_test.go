@@ -20,10 +20,10 @@ func TestAccUsers(t *testing.T) {
 	ctx := t.Context()
 	username := randName(t, "acc")
 
-	created, resp, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	created, resp, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User:     defectdojo.User{Username: username, Email: username + "@example.com", FirstName: " Acc ", IsActive: true},
 		Password: accPassword,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -34,49 +34,49 @@ func TestAccUsers(t *testing.T) {
 	}
 
 	// The password works.
-	if _, _, err := client.Auth.Token(ctx, username, accPassword); err != nil {
+	if _, _, err := client.Auth.Token(ctx, username, accPassword, nil); err != nil {
 		t.Errorf("Auth.Token() with the new user's password error = %v", err)
 	}
 
 	// Usernames are unique, but only case-sensitively, and a password is
 	// required by default.
-	_, _, err = client.Users.Create(ctx, &defectdojo.UserCreate{
+	_, _, err = client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: username, Email: "x@example.com"}, Password: accPassword,
-	})
+	}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["username"]) == 0 {
 		t.Errorf("Create(same username) error = %v, want a 400 with a username field error", err)
 	}
-	if _, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	if _, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: randName(t, "acc"), Email: "x@example.com"},
-	}); !errors.Is(err, defectdojo.ErrBadRequest) {
+	}, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Create(without password) error = %v, want ErrBadRequest", err)
 	}
-	upper, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	upper, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: strings.ToUpper(username), Email: username + "@example.com"}, Password: accPassword,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create(case variant) error = %v", err)
 	}
 	cleanupUser(t, client, upper.ID)
 
-	got, _, err := client.Users.Get(ctx, created.ID)
+	got, _, err := client.Users.Get(ctx, created.ID, nil)
 	if err != nil || got.Username != username || got.Email != username+"@example.com" {
 		t.Errorf("Get() = %+v, %v", got, err)
 	}
 	for name, want := range map[string]int{username: created.ID, strings.ToUpper(username): upper.ID} {
-		if u, _, err := client.Users.GetByUsername(ctx, name); err != nil || u.ID != want {
+		if u, _, err := client.Users.GetByUsername(ctx, name, nil); err != nil || u.ID != want {
 			t.Errorf("GetByUsername(%q) = %+v, %v; want ID %d", name, u, err, want)
 		}
 	}
-	if _, _, err := client.Users.GetByUsername(ctx, username[:len(username)-1]); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Users.GetByUsername(ctx, username[:len(username)-1], nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByUsername(prefix) error = %v, want ErrNotFound", err)
 	}
 
 	// Configuration permissions are set by ID, looked up by codename.
 	var permissions []int
 	for _, codename := range []string{"add_user", "change_sla_configuration"} {
-		p, _, err := client.ConfigurationPermissions.GetByCodename(ctx, codename)
+		p, _, err := client.ConfigurationPermissions.GetByCodename(ctx, codename, nil)
 		if err != nil {
 			t.Fatalf("GetByCodename(%q) error = %v", codename, err)
 		}
@@ -87,7 +87,7 @@ func TestAccUsers(t *testing.T) {
 	got.LastName = "Test"
 	got.IsStaff = true
 	got.ConfigurationPermissions = permissions
-	updated, _, err := client.Users.Update(ctx, got.ID, got)
+	updated, _, err := client.Users.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -97,10 +97,10 @@ func TestAccUsers(t *testing.T) {
 
 	// Empty permissions keep them; names are cleared with "".
 	updated.ConfigurationPermissions = []int{}
-	if kept, _, err := client.Users.Update(ctx, got.ID, updated); err != nil || !sameInts(kept.ConfigurationPermissions, permissions) {
+	if kept, _, err := client.Users.Update(ctx, got.ID, updated, nil); err != nil || !sameInts(kept.ConfigurationPermissions, permissions) {
 		t.Errorf("Update(empty permissions) = %+v, %v; want the permissions kept", kept, err)
 	}
-	patched, _, err := client.Users.Patch(ctx, got.ID, &defectdojo.UserPatch{FirstName: new(""), ConfigurationPermissions: new([]int{})})
+	patched, _, err := client.Users.Patch(ctx, got.ID, &defectdojo.UserPatch{FirstName: new(""), ConfigurationPermissions: new([]int{})}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -108,10 +108,10 @@ func TestAccUsers(t *testing.T) {
 		t.Errorf("Patch() = %+v, want no first name and no permissions", patched)
 	}
 
-	if _, err := client.Users.ResetAPIToken(ctx, created.ID); err != nil {
+	if _, err := client.Users.ResetAPIToken(ctx, created.ID, nil); err != nil {
 		t.Errorf("ResetAPIToken() error = %v", err)
 	}
-	if reset, _, err := client.Users.Get(ctx, created.ID); err != nil || reset.TokenLastReset.IsZero() {
+	if reset, _, err := client.Users.Get(ctx, created.ID, nil); err != nil || reset.TokenLastReset.IsZero() {
 		t.Errorf("Get() after ResetAPIToken() = %+v, %v; want TokenLastReset", reset, err)
 	}
 
@@ -130,14 +130,14 @@ func TestAccUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Objects, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
-		t.Errorf("DeletePreview() = %+v, want the user's notification settings", preview.Objects)
+	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
+		t.Errorf("DeletePreview() = %+v, want the user's notification settings", preview.Results)
 	}
 
-	if _, err := client.Users.Delete(ctx, created.ID); err != nil {
+	if _, err := client.Users.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.Users.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Users.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 }
@@ -146,7 +146,7 @@ func TestAccUsers_refused(t *testing.T) {
 	client := accClient(t)
 	ctx := t.Context()
 
-	profile, _, err := client.UserProfile.Get(ctx)
+	profile, _, err := client.UserProfile.Get(ctx, nil)
 	if err != nil {
 		t.Fatalf("UserProfile.Get() error = %v", err)
 	}
@@ -154,30 +154,30 @@ func TestAccUsers_refused(t *testing.T) {
 
 	// The user the client authenticates as can't delete itself, nor reset
 	// its own token here; the bodies are bare JSON.
-	_, err = client.Users.Delete(ctx, self)
+	_, err = client.Users.Delete(ctx, self, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || errResp.Message != "Users may not delete themselves" {
 		t.Errorf("Delete(self) error = %v, want a 400 with the message", err)
 	}
-	if _, err := client.Users.ResetAPIToken(ctx, self); !errors.Is(err, defectdojo.ErrBadRequest) {
+	if _, err := client.Users.ResetAPIToken(ctx, self, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("ResetAPIToken(self) error = %v, want ErrBadRequest", err)
 	}
 
 	// A user that a product refers to can't be deleted.
-	u, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	u, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: randName(t, "acc"), Email: "acc@example.com", IsActive: true}, Password: accPassword,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanupUser(t, client, u.ID)
 	_, _, err = client.Products.Create(ctx, &defectdojo.Product{
 		Name: randName(t, "acc"), Description: "acceptance test", ProdType: createProductType(t, client), ProductManager: u.ID,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("creating product: %v", err)
 	}
-	if _, err := client.Users.Delete(ctx, u.ID); !errors.Is(err, defectdojo.ErrConflict) {
+	if _, err := client.Users.Delete(ctx, u.ID, nil); !errors.Is(err, defectdojo.ErrConflict) {
 		t.Errorf("Delete(product manager) error = %v, want ErrConflict", err)
 	}
 	// A password in an update is refused.
@@ -207,17 +207,17 @@ func TestAccConfigurationPermissions(t *testing.T) {
 		}
 	}
 
-	p, _, err := client.ConfigurationPermissions.GetByCodename(ctx, "add_product_type")
+	p, _, err := client.ConfigurationPermissions.GetByCodename(ctx, "add_product_type", nil)
 	if err != nil {
 		t.Fatalf("GetByCodename() error = %v", err)
 	}
-	if got, _, err := client.ConfigurationPermissions.Get(ctx, p.ID); err != nil || *got != *p {
+	if got, _, err := client.ConfigurationPermissions.Get(ctx, p.ID, nil); err != nil || *got != *p {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, p)
 	}
 	// Codenames are exact, and permissions that aren't configuration
 	// permissions are not listed.
 	for _, codename := range []string{"add_product", "ADD_PRODUCT_TYPE"} {
-		if _, _, err := client.ConfigurationPermissions.GetByCodename(ctx, codename); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.ConfigurationPermissions.GetByCodename(ctx, codename, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByCodename(%q) error = %v, want ErrNotFound", codename, err)
 		}
 	}
@@ -228,7 +228,7 @@ func TestAccConfigurationPermissions(t *testing.T) {
 func cleanupUser(t *testing.T, client *defectdojo.Client, id int) {
 	t.Helper()
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.Users.Delete(ctx, id)
+		_, err := client.Users.Delete(ctx, id, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}

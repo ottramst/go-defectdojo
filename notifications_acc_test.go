@@ -19,13 +19,13 @@ func TestAccNotifications_systemAndPersonal(t *testing.T) {
 	ctx := t.Context()
 
 	// DefectDojo creates the system-wide settings and admin's personal ones.
-	system, _, err := client.Notifications.GetByScope(ctx, 0, 0, false)
+	system, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: 0, Product: 0, Template: false}, nil)
 	if err != nil {
 		t.Fatalf("GetByScope(system) error = %v", err)
 	}
 	original := *system
 	cleanup(t, func(ctx context.Context) error {
-		_, _, err := client.Notifications.Update(ctx, original.ID, &original)
+		_, _, err := client.Notifications.Update(ctx, original.ID, &original, nil)
 		return err
 	})
 	patched, _, err := client.Notifications.Patch(ctx, system.ID, &defectdojo.NotificationSettingsPatch{
@@ -33,7 +33,7 @@ func TestAccNotifications_systemAndPersonal(t *testing.T) {
 		SLABreach:    new([]string{}),
 		// A single channel, and the response holds it as a string.
 		ScanAddedEmpty: new(defectdojo.NotificationChannelAlert),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch(system) error = %v", err)
 	}
@@ -41,13 +41,13 @@ func TestAccNotifications_systemAndPersonal(t *testing.T) {
 		!reflect.DeepEqual(patched.ScanAddedEmpty, defectdojo.NotificationChannels{"alert"}) || !reflect.DeepEqual(patched.Other, []string{"alert"}) {
 		t.Errorf("Patch(system) = %+v", patched)
 	}
-	got, _, err := client.Notifications.Get(ctx, system.ID)
+	got, _, err := client.Notifications.Get(ctx, system.ID, nil)
 	if err != nil || !reflect.DeepEqual(got.ScanAddedEmpty, defectdojo.NotificationChannels{"alert"}) {
 		t.Errorf("Get(system) = %+v, %v; want scan_added_empty [alert]", got, err)
 	}
 
 	// A PUT resets the events it leaves out, and keeps the scope.
-	updated, _, err := client.Notifications.Update(ctx, system.ID, &defectdojo.NotificationSettings{Other: []string{"mail"}})
+	updated, _, err := client.Notifications.Update(ctx, system.ID, &defectdojo.NotificationSettings{Other: []string{"mail"}}, nil)
 	if err != nil {
 		t.Fatalf("Update(system) error = %v", err)
 	}
@@ -56,34 +56,34 @@ func TestAccNotifications_systemAndPersonal(t *testing.T) {
 		t.Errorf("Update(system) = %+v, want other [mail] and the rest reset to alert", updated)
 	}
 	// scan_added_empty, which DefectDojo would keep, is reset too.
-	if got, _, err := client.Notifications.Get(ctx, system.ID); err != nil || len(got.ScanAddedEmpty) != 0 {
+	if got, _, err := client.Notifications.Get(ctx, system.ID, nil); err != nil || len(got.ScanAddedEmpty) != 0 {
 		t.Errorf("Get(system) after Update = %+v, %v; want no scan_added_empty channel", got, err)
 	}
 
 	// A new user gets personal settings.
-	u, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	u, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: randName(t, "acc"), Email: "acc@example.com", IsActive: true}, Password: accPassword,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Users.Create() error = %v", err)
 	}
 	cleanupUser(t, client, u.ID)
-	personal, _, err := client.Notifications.GetByScope(ctx, u.ID, 0, false)
+	personal, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: u.ID, Product: 0, Template: false}, nil)
 	if err != nil || personal.User != u.ID || personal.Product != 0 {
 		t.Fatalf("GetByScope(personal) = %+v, %v", personal, err)
 	}
 	// A second row for the scope is refused.
-	if _, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{User: u.ID}); !errors.Is(err, defectdojo.ErrBadRequest) {
+	if _, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{User: u.ID}, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Create(existing scope) error = %v, want ErrBadRequest", err)
 	}
 	// Deleting the user deletes them, and the user filter then answers 400.
-	if _, err := client.Users.Delete(ctx, u.ID); err != nil {
+	if _, err := client.Users.Delete(ctx, u.ID, nil); err != nil {
 		t.Fatalf("Users.Delete() error = %v", err)
 	}
-	if _, _, err := client.Notifications.Get(ctx, personal.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Notifications.Get(ctx, personal.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(personal of deleted user) error = %v, want ErrNotFound", err)
 	}
-	if _, _, err := client.Notifications.GetByScope(ctx, u.ID, 0, false); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: u.ID, Product: 0, Template: false}, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByScope(deleted user) error = %v, want ErrNotFound", err)
 	}
 }
@@ -92,13 +92,13 @@ func TestAccNotifications_product(t *testing.T) {
 	client := accClient(t)
 	ctx := t.Context()
 
-	profile, _, err := client.UserProfile.Get(ctx)
+	profile, _, err := client.UserProfile.Get(ctx, nil)
 	if err != nil {
 		t.Fatal(err)
 	}
 	product, _, err := client.Products.Create(ctx, &defectdojo.Product{
 		Name: randName(t, "acc"), Description: "acceptance test", ProdType: createProductType(t, client),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("creating product: %v", err)
 	}
@@ -107,12 +107,12 @@ func TestAccNotifications_product(t *testing.T) {
 		User: profile.User.ID, Product: product.ID,
 		EngagementAdded: []string{defectdojo.NotificationChannelMail},
 		ScanAddedEmpty:  defectdojo.NotificationChannels{defectdojo.NotificationChannelMail},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.Notifications.Delete(ctx, created.ID)
+		_, err := client.Notifications.Delete(ctx, created.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -125,7 +125,7 @@ func TestAccNotifications_product(t *testing.T) {
 		t.Errorf("Create() = %+v (%d)", created, resp.StatusCode)
 	}
 
-	byScope, _, err := client.Notifications.GetByScope(ctx, profile.User.ID, product.ID, false)
+	byScope, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: profile.User.ID, Product: product.ID, Template: false}, nil)
 	if err != nil || byScope.ID != created.ID {
 		t.Errorf("GetByScope(product) = %+v, %v; want ID %d", byScope, err, created.ID)
 	}
@@ -142,13 +142,13 @@ func TestAccNotifications_product(t *testing.T) {
 	}
 
 	preview, _, err := client.Notifications.DeletePreview(ctx, created.ID, nil)
-	if err != nil || !slices.ContainsFunc(preview.Objects, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
+	if err != nil || !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
 		t.Errorf("DeletePreview() = %+v, %v", preview, err)
 	}
-	if _, err := client.Notifications.Delete(ctx, created.ID); err != nil {
+	if _, err := client.Notifications.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.Notifications.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Notifications.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 }
@@ -157,17 +157,17 @@ func TestAccNotifications_template(t *testing.T) {
 	client := accClient(t)
 	ctx := t.Context()
 
-	if existing, _, err := client.Notifications.GetByScope(ctx, 0, 0, true); err == nil {
+	if existing, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: 0, Product: 0, Template: true}, nil); err == nil {
 		t.Fatalf("a template exists already (ID %d); this test needs a server without one", existing.ID)
 	}
 	template, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{
 		Template: true, ProductAdded: []string{defectdojo.NotificationChannelSlack},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create(template) error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.Notifications.Delete(ctx, template.ID)
+		_, err := client.Notifications.Delete(ctx, template.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -179,36 +179,36 @@ func TestAccNotifications_template(t *testing.T) {
 
 	// A second template, and a PUT of the template, are refused; a PATCH
 	// works.
-	if _, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{Template: true}); !errors.Is(err, defectdojo.ErrBadRequest) {
+	if _, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{Template: true}, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Create(second template) error = %v, want ErrBadRequest", err)
 	}
-	if _, _, err := client.Notifications.Update(ctx, template.ID, &defectdojo.NotificationSettings{Template: true}); !errors.Is(err, defectdojo.ErrBadRequest) {
+	if _, _, err := client.Notifications.Update(ctx, template.ID, &defectdojo.NotificationSettings{Template: true}, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Update(template) error = %v, want ErrBadRequest", err)
 	}
 	patched, _, err := client.Notifications.Patch(ctx, template.ID, &defectdojo.NotificationSettingsPatch{
 		ProductAdded: new([]string{defectdojo.NotificationChannelMail}),
-	})
+	}, nil)
 	if err != nil || !patched.Template || !reflect.DeepEqual(patched.ProductAdded, []string{"mail"}) {
 		t.Errorf("Patch(template) = %+v, %v", patched, err)
 	}
-	if byScope, _, err := client.Notifications.GetByScope(ctx, 0, 0, true); err != nil || byScope.ID != template.ID {
+	if byScope, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: 0, Product: 0, Template: true}, nil); err != nil || byScope.ID != template.ID {
 		t.Errorf("GetByScope(template) = %+v, %v; want ID %d", byScope, err, template.ID)
 	}
 
 	// A new user's personal settings are copied from the template.
-	u, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	u, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: randName(t, "acc"), Email: "acc@example.com", IsActive: true}, Password: accPassword,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Users.Create() error = %v", err)
 	}
 	cleanupUser(t, client, u.ID)
-	personal, _, err := client.Notifications.GetByScope(ctx, u.ID, 0, false)
+	personal, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: u.ID, Product: 0, Template: false}, nil)
 	if err != nil || !reflect.DeepEqual(personal.ProductAdded, []string{"mail"}) || personal.Template {
 		t.Errorf("GetByScope(new user) = %+v, %v; want the template's events", personal, err)
 	}
 
-	if _, err := client.Notifications.Delete(ctx, template.ID); err != nil {
+	if _, err := client.Notifications.Delete(ctx, template.ID, nil); err != nil {
 		t.Fatalf("Delete(template) error = %v", err)
 	}
 }

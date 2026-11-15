@@ -17,7 +17,7 @@ func TestUserProfileService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "user_profile/get.json"))
 	})
 
-	profile, _, err := client.UserProfile.Get(context.Background())
+	profile, _, err := client.UserProfile.Get(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -45,7 +45,7 @@ func TestUserProfileService_Get_noContactInfo(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/user_profile/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"user":{"id":1,"username":"admin","is_superuser":true},"user_contact_info":null}`))
 	})
-	profile, _, err := client.UserProfile.Get(context.Background())
+	profile, _, err := client.UserProfile.Get(context.Background(), nil)
 	if err != nil || profile.UserContactInfo != nil || !profile.User.IsSuperuser {
 		t.Errorf("Get() = %+v, %v; want a superuser without contact information", profile, err)
 	}
@@ -56,7 +56,7 @@ func TestUserProfileService_Get_error(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/user_profile/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusForbidden, fixture(t, "errors/invalid_token.json"))
 	})
-	if _, _, err := client.UserProfile.Get(context.Background()); !errors.Is(err, defectdojo.ErrForbidden) {
+	if _, _, err := client.UserProfile.Get(context.Background(), nil); !errors.Is(err, defectdojo.ErrForbidden) {
 		t.Errorf("Get() error = %v, want ErrForbidden", err)
 	}
 }
