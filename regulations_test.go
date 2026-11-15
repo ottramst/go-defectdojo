@@ -283,8 +283,8 @@ func TestRegulationsService_invalidArguments(t *testing.T) {
 			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Jurisdiction = "" }))
 			return err
 		},
-		"Create unknown category": func() error {
-			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Category = "Privacy" }))
+		"Create empty category": func() error {
+			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Category = "" }))
 			return err
 		},
 		"Update negative ID":    func() error { _, _, err := client.Regulations.Update(ctx, -1, &valid); return err },
