@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -24,7 +25,7 @@ func TestTestTypesService_List(t *testing.T) {
 	if list.Count != 394 || len(list.Results) != 3 {
 		t.Fatalf("List() = %d of %d, want 3 of 394", len(list.Results), list.Count)
 	}
-	if want := (defectdojo.TestType{ID: 3, Name: "Pen Test", Active: true}); list.Results[2] != want {
+	if want := (defectdojo.TestType{ID: 3, Name: "Pen Test", Active: true}); !reflect.DeepEqual(list.Results[2], want) {
 		t.Errorf("third test type = %+v, want %+v", list.Results[2], want)
 	}
 }
@@ -67,7 +68,7 @@ func TestTestTypesService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "test_types/get.json"))
 	})
 	got, _, err := client.TestTypes.Get(context.Background(), 1, nil)
-	if err != nil || *got != (defectdojo.TestType{ID: 1, Name: "API Test", Active: true}) {
+	if err != nil || !reflect.DeepEqual(*got, defectdojo.TestType{ID: 1, Name: "API Test", Active: true}) {
 		t.Errorf("Get() = %+v, %v; want API Test", got, err)
 	}
 	if _, _, err := client.TestTypes.Get(context.Background(), 2, nil); !errors.Is(err, defectdojo.ErrNotFound) {

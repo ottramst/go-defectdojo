@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"slices"
 	"testing"
 
@@ -39,7 +40,7 @@ func TestAccSLAConfigurations(t *testing.T) {
 		ID: created.ID, Name: name, Description: "acceptance test",
 		Critical: 3, EnforceCritical: true, High: 14, EnforceHigh: true, Medium: 60, Low: 90,
 	}
-	if resp.StatusCode != http.StatusCreated || created.ID == 0 || *created != want {
+	if resp.StatusCode != http.StatusCreated || created.ID == 0 || !reflect.DeepEqual(*created, want) {
 		t.Errorf("Create() = %+v (%d), want %+v", created, resp.StatusCode, want)
 	}
 
@@ -51,7 +52,7 @@ func TestAccSLAConfigurations(t *testing.T) {
 	}
 
 	got, _, err := client.SLAConfigurations.Get(ctx, created.ID, nil)
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 

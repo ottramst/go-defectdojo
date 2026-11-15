@@ -35,6 +35,8 @@ const (
 // Regulation is a DefectDojo regulation. The same type is used for reads and
 // writes: the read-only ID is ignored when writing.
 type Regulation struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name (at most 128 characters) and Acronym (at most 20) are each
@@ -95,6 +97,8 @@ func newRegulationRequest(r *Regulation) (*regulationRequest, error) {
 // RegulationPatch is the body of [RegulationsService.Patch]. Only the fields
 // that are set are changed; an empty Description or Reference clears it.
 type RegulationPatch struct {
+	_ [0]func()
+
 	Name         *string             `json:"name,omitempty"`
 	Acronym      *string             `json:"acronym,omitempty"`
 	Category     *RegulationCategory `json:"category,omitempty"`
@@ -106,6 +110,8 @@ type RegulationPatch struct {
 // ListRegulationsOptions are the options of [RegulationsService.List] and
 // [RegulationsService.ListAll].
 type ListRegulationsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name filters by exact, case-sensitive name. DefectDojo has no acronym
@@ -115,6 +121,8 @@ type ListRegulationsOptions struct {
 
 // ListRegulationsResult is a page of regulations.
 type ListRegulationsResult struct {
+	_ [0]func()
+
 	Results []Regulation
 
 	// Count is the number of regulations that match the filters.
@@ -159,7 +167,9 @@ func (s *RegulationsService) ListAll(ctx context.Context, opt *ListRegulationsOp
 }
 
 // GetRegulationOptions are the options of [RegulationsService.Get].
-type GetRegulationOptions struct{}
+type GetRegulationOptions struct {
+	_ [0]func()
+}
 
 // Get returns a regulation by its ID.
 //
@@ -177,7 +187,9 @@ func (s *RegulationsService) Get(ctx context.Context, id int, opt *GetRegulation
 }
 
 // GetRegulationByNameOptions are the options of [RegulationsService.GetByName].
-type GetRegulationByNameOptions struct{}
+type GetRegulationByNameOptions struct {
+	_ [0]func()
+}
 
 // GetByName returns the regulation with exactly the given name. It returns an
 // error matching [ErrNotFound] when there is none.
@@ -201,7 +213,9 @@ func (s *RegulationsService) GetByName(ctx context.Context, name string, opt *Ge
 }
 
 // GetRegulationByAcronymOptions are the options of [RegulationsService.GetByAcronym].
-type GetRegulationByAcronymOptions struct{}
+type GetRegulationByAcronymOptions struct {
+	_ [0]func()
+}
 
 // GetByAcronym returns the regulation with exactly the given acronym,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
@@ -233,7 +247,9 @@ func (s *RegulationsService) GetByAcronym(ctx context.Context, acronym string, o
 }
 
 // CreateRegulationOptions are the options of [RegulationsService.Create].
-type CreateRegulationOptions struct{}
+type CreateRegulationOptions struct {
+	_ [0]func()
+}
 
 // Create creates a regulation. Its read-only ID is ignored. A name or acronym
 // that is taken is a 400 ([ErrBadRequest]) with a "name" or "acronym" field
@@ -254,7 +270,9 @@ func (s *RegulationsService) Create(ctx context.Context, r *Regulation, opt *Cre
 }
 
 // UpdateRegulationOptions are the options of [RegulationsService.Update].
-type UpdateRegulationOptions struct{}
+type UpdateRegulationOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the regulation with the given ID.
 // Every writable field is sent: an empty Description or Reference clears it.
@@ -277,7 +295,9 @@ func (s *RegulationsService) Update(ctx context.Context, id int, r *Regulation, 
 }
 
 // PatchRegulationOptions are the options of [RegulationsService.Patch].
-type PatchRegulationOptions struct{}
+type PatchRegulationOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the regulation that are set in patch.
 //
@@ -298,7 +318,9 @@ func (s *RegulationsService) Patch(ctx context.Context, id int, patch *Regulatio
 }
 
 // DeleteRegulationOptions are the options of [RegulationsService.Delete].
-type DeleteRegulationOptions struct{}
+type DeleteRegulationOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes a regulation by its ID. The products it applies to lose it
 // silently: DefectDojo removes it from their Regulations.
@@ -313,6 +335,8 @@ func (s *RegulationsService) Delete(ctx context.Context, id int, opt *DeleteRegu
 
 // DeletePreviewRegulationOptions are the options of [RegulationsService.DeletePreview].
 type DeletePreviewRegulationOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -45,7 +46,7 @@ func TestAccProductAttributes(t *testing.T) {
 				return err
 			})
 			want := defectdojo.ProductAttribute{ID: created.ID, Value: value, Name: "Acceptance", Icon: "flask", DisplayOrder: 99}
-			if resp.StatusCode != http.StatusCreated || *created != want {
+			if resp.StatusCode != http.StatusCreated || !reflect.DeepEqual(*created, want) {
 				t.Errorf("Create() = %+v (%d), want %+v", created, resp.StatusCode, want)
 			}
 
@@ -57,7 +58,7 @@ func TestAccProductAttributes(t *testing.T) {
 			}
 
 			got, _, err := tt.svc.Get(ctx, created.ID, nil)
-			if err != nil || *got != want {
+			if err != nil || !reflect.DeepEqual(*got, want) {
 				t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 			}
 			byValue, _, err := tt.svc.GetByValue(ctx, value, nil)
@@ -73,7 +74,7 @@ func TestAccProductAttributes(t *testing.T) {
 			if err != nil {
 				t.Fatalf("Update() error = %v", err)
 			}
-			if *updated != (defectdojo.ProductAttribute{ID: created.ID, Value: value, Name: "Renamed", DisplayOrder: -1}) {
+			if !reflect.DeepEqual(*updated, defectdojo.ProductAttribute{ID: created.ID, Value: value, Name: "Renamed", DisplayOrder: -1}) {
 				t.Errorf("Update() = %+v, want the value kept, the new name and order, and no icon", updated)
 			}
 			patched, _, err := tt.svc.Patch(ctx, created.ID, &defectdojo.ProductAttributePatch{Icon: new("star")}, nil)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"strconv"
 	"testing"
 	"time"
@@ -30,7 +31,7 @@ func TestAccNoteTypes(t *testing.T) {
 		return err
 	})
 	want := defectdojo.NoteType{ID: created.ID, Name: name, Description: "acceptance test", IsSingle: true}
-	if resp.StatusCode != http.StatusCreated || created.ID == 0 || *created != want {
+	if resp.StatusCode != http.StatusCreated || created.ID == 0 || !reflect.DeepEqual(*created, want) {
 		t.Errorf("Create() = %+v (%d), want %+v", created, resp.StatusCode, want)
 	}
 
@@ -42,7 +43,7 @@ func TestAccNoteTypes(t *testing.T) {
 	}
 
 	got, _, err := client.NoteTypes.Get(ctx, created.ID, nil)
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 	byName, _, err := client.NoteTypes.GetByName(ctx, name, nil)
@@ -61,7 +62,7 @@ func TestAccNoteTypes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
-	if *updated != *got {
+	if !reflect.DeepEqual(*updated, *got) {
 		t.Errorf("Update() = %+v, want %+v", updated, got)
 	}
 	patched, _, err := client.NoteTypes.Patch(ctx, got.ID, &defectdojo.NoteTypePatch{Description: new("patched"), IsMandatory: new(false)}, nil)

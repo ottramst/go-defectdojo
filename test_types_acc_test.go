@@ -2,6 +2,7 @@ package defectdojo_test
 
 import (
 	"errors"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -20,7 +21,7 @@ func TestAccTestTypes(t *testing.T) {
 		t.Errorf("GetByName(other case) error = %v, want ErrNotFound", err)
 	}
 	got, _, err := client.TestTypes.Get(ctx, api.ID, nil)
-	if err != nil || *got != *api {
+	if err != nil || !reflect.DeepEqual(*got, *api) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, api)
 	}
 

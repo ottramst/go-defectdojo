@@ -17,6 +17,7 @@ BREAKING CHANGES:
 * The notification events are `[]NotificationChannel`, and `NotificationSettings.ScanAddedEmpty` too: `NotificationChannels` is removed, and `NotificationSettings` decodes DefectDojo's single-channel `scan_added_empty` itself ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * Pages hold values: `List…Result.Results` and `DeletePreviewResult.Results` are `[]T` instead of `[]*T`. Use `&page.Results[i]` for a pointer; the `ListAll` iterators still yield pointers ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `JiraProject.ArchiveBatch` is left out of the JSON when empty, like the other `ArchiveBatch` fields ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* Every exported struct, except the value types `Date`, `Nullable[T]` and `NotificationScope`, has an unexported field: structs can no longer be compared with `==` or used as map keys, and literals must name their fields. In return, adding a field in a later v1 release can't break such code. Compare with `reflect.DeepEqual`, or compare fields. `%+v` output starts with `_:[]` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 
 FEATURES:
 

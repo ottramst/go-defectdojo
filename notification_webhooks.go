@@ -47,6 +47,8 @@ const (
 // used for reads and writes: the read-only fields ID, Status, FirstError,
 // LastError and Note are ignored when writing.
 type NotificationWebhook struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is unique across all notification webhooks, compared
@@ -114,6 +116,8 @@ func newNotificationWebhookRequest(w *NotificationWebhook) (*notificationWebhook
 // NotificationWebhookPatch is the body of [NotificationWebhooksService.Patch].
 // Only the fields that are set are changed.
 type NotificationWebhookPatch struct {
+	_ [0]func()
+
 	Name        *string          `json:"name,omitempty"`
 	URL         *string          `json:"url,omitempty"`
 	HeaderName  Nullable[string] `json:"header_name,omitzero"`
@@ -128,6 +132,8 @@ type NotificationWebhookPatch struct {
 // NotificationWebhookStatus constants, or an Owner that doesn't exist, is a
 // 400 ([ErrBadRequest]).
 type ListNotificationWebhooksOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name, URL and Status are exact, case-sensitive matches.
@@ -141,6 +147,8 @@ type ListNotificationWebhooksOptions struct {
 
 // ListNotificationWebhooksResult is a page of notification webhooks.
 type ListNotificationWebhooksResult struct {
+	_ [0]func()
+
 	Results []NotificationWebhook
 
 	// Count is the number of notification webhooks that match the filters.
@@ -188,7 +196,9 @@ func (s *NotificationWebhooksService) ListAll(ctx context.Context, opt *ListNoti
 }
 
 // GetNotificationWebhookOptions are the options of [NotificationWebhooksService.Get].
-type GetNotificationWebhookOptions struct{}
+type GetNotificationWebhookOptions struct {
+	_ [0]func()
+}
 
 // Get returns a notification webhook by its ID.
 //
@@ -206,7 +216,9 @@ func (s *NotificationWebhooksService) Get(ctx context.Context, id int, opt *GetN
 }
 
 // GetNotificationWebhookByNameOptions are the options of [NotificationWebhooksService.GetByName].
-type GetNotificationWebhookByNameOptions struct{}
+type GetNotificationWebhookByNameOptions struct {
+	_ [0]func()
+}
 
 // GetByName returns the notification webhook with exactly the given name. It
 // returns an error matching [ErrNotFound] when there is none.
@@ -230,7 +242,9 @@ func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string
 }
 
 // CreateNotificationWebhookOptions are the options of [NotificationWebhooksService.Create].
-type CreateNotificationWebhookOptions struct{}
+type CreateNotificationWebhookOptions struct {
+	_ [0]func()
+}
 
 // Create creates a notification webhook. Its read-only fields are ignored. A
 // name that is taken is a 400 ([ErrBadRequest]) with a "name" field error.
@@ -251,7 +265,9 @@ func (s *NotificationWebhooksService) Create(ctx context.Context, w *Notificatio
 }
 
 // UpdateNotificationWebhookOptions are the options of [NotificationWebhooksService.Update].
-type UpdateNotificationWebhookOptions struct{}
+type UpdateNotificationWebhookOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the notification webhook with the
 // given ID. Every writable field is sent: an empty HeaderName or HeaderValue
@@ -277,7 +293,9 @@ func (s *NotificationWebhooksService) Update(ctx context.Context, id int, w *Not
 }
 
 // PatchNotificationWebhookOptions are the options of [NotificationWebhooksService.Patch].
-type PatchNotificationWebhookOptions struct{}
+type PatchNotificationWebhookOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the notification webhook that are set in
 // patch.
@@ -299,7 +317,9 @@ func (s *NotificationWebhooksService) Patch(ctx context.Context, id int, patch *
 }
 
 // DeleteNotificationWebhookOptions are the options of [NotificationWebhooksService.Delete].
-type DeleteNotificationWebhookOptions struct{}
+type DeleteNotificationWebhookOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes a notification webhook by its ID.
 //
@@ -313,6 +333,8 @@ func (s *NotificationWebhooksService) Delete(ctx context.Context, id int, opt *D
 
 // DeletePreviewNotificationWebhookOptions are the options of [NotificationWebhooksService.DeletePreview].
 type DeletePreviewNotificationWebhookOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

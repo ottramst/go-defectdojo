@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"slices"
 	"strconv"
 	"testing"
@@ -37,7 +38,7 @@ func TestAccNotificationWebhooks(t *testing.T) {
 		ID: created.ID, Name: name, URL: "https://hooks.invalid/defectdojo",
 		HeaderName: "Authorization", HeaderValue: "Bearer acc-test", Status: defectdojo.NotificationWebhookStatusActive,
 	}
-	if resp.StatusCode != http.StatusCreated || *created != want {
+	if resp.StatusCode != http.StatusCreated || !reflect.DeepEqual(*created, want) {
 		t.Errorf("Create() = %+v (%d), want %+v", created, resp.StatusCode, want)
 	}
 
@@ -49,7 +50,7 @@ func TestAccNotificationWebhooks(t *testing.T) {
 	}
 
 	got, _, err := client.NotificationWebhooks.Get(ctx, created.ID, nil)
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 	if byName, _, err := client.NotificationWebhooks.GetByName(ctx, name, nil); err != nil || byName.ID != created.ID {

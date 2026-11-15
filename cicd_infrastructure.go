@@ -34,6 +34,8 @@ const (
 // type is used for reads and writes: the read-only ID is ignored when
 // writing.
 type CICDInfrastructure struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is at most 200 characters, unique among the objects of its type.
@@ -86,6 +88,8 @@ func newCICDInfrastructureRequest(ci *CICDInfrastructure) (*cicdInfrastructureRe
 // Only the fields that are set are changed; an empty Description or URL
 // clears it. The type can't change, so it has no field here.
 type CICDInfrastructurePatch struct {
+	_ [0]func()
+
 	Name        *string `json:"name,omitempty"`
 	Description *string `json:"description,omitempty"`
 	URL         *string `json:"url,omitempty"`
@@ -94,6 +98,8 @@ type CICDInfrastructurePatch struct {
 // ListCICDInfrastructureOptions are the options of
 // [CICDInfrastructureService.List] and [CICDInfrastructureService.ListAll].
 type ListCICDInfrastructureOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name filters by exact, case-sensitive name.
@@ -105,6 +111,8 @@ type ListCICDInfrastructureOptions struct {
 
 // ListCICDInfrastructureResult is a page of CI/CD infrastructure objects.
 type ListCICDInfrastructureResult struct {
+	_ [0]func()
+
 	Results []CICDInfrastructure
 
 	// Count is the number of objects that match the filters.
@@ -149,7 +157,9 @@ func (s *CICDInfrastructureService) ListAll(ctx context.Context, opt *ListCICDIn
 }
 
 // GetCICDInfrastructureOptions are the options of [CICDInfrastructureService.Get].
-type GetCICDInfrastructureOptions struct{}
+type GetCICDInfrastructureOptions struct {
+	_ [0]func()
+}
 
 // Get returns a CI/CD infrastructure object by its ID.
 //
@@ -168,6 +178,8 @@ func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opt *GetCIC
 
 // GetCICDInfrastructureByNameOptions are the options of [CICDInfrastructureService.GetByName].
 type GetCICDInfrastructureByNameOptions struct {
+	_ [0]func()
+
 	// InfrastructureType restricts the lookup to one type, one of the
 	// CICDInfrastructureType constants. Names are unique within a type.
 	InfrastructureType CICDInfrastructureType
@@ -220,7 +232,9 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name string, 
 }
 
 // CreateCICDInfrastructureOptions are the options of [CICDInfrastructureService.Create].
-type CreateCICDInfrastructureOptions struct{}
+type CreateCICDInfrastructureOptions struct {
+	_ [0]func()
+}
 
 // Create creates a CI/CD infrastructure object. Its read-only ID is ignored.
 // A name that another object of the same type has is a 400 ([ErrBadRequest])
@@ -241,7 +255,9 @@ func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastr
 }
 
 // UpdateCICDInfrastructureOptions are the options of [CICDInfrastructureService.Update].
-type UpdateCICDInfrastructureOptions struct{}
+type UpdateCICDInfrastructureOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the CI/CD infrastructure object with
 // the given ID: an empty Description or URL clears it. InfrastructureType must
@@ -268,7 +284,9 @@ func (s *CICDInfrastructureService) Update(ctx context.Context, id int, ci *CICD
 }
 
 // PatchCICDInfrastructureOptions are the options of [CICDInfrastructureService.Patch].
-type PatchCICDInfrastructureOptions struct{}
+type PatchCICDInfrastructureOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the CI/CD infrastructure object that are set in
 // patch. A name that another object of the type has is a 409 ([ErrConflict]).
@@ -290,7 +308,9 @@ func (s *CICDInfrastructureService) Patch(ctx context.Context, id int, patch *CI
 }
 
 // DeleteCICDInfrastructureOptions are the options of [CICDInfrastructureService.Delete].
-type DeleteCICDInfrastructureOptions struct{}
+type DeleteCICDInfrastructureOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes a CI/CD infrastructure object by its ID. The engagements
 // that refer to it lose the reference.
@@ -305,6 +325,8 @@ func (s *CICDInfrastructureService) Delete(ctx context.Context, id int, opt *Del
 
 // DeletePreviewCICDInfrastructureOptions are the options of [CICDInfrastructureService.DeletePreview].
 type DeletePreviewCICDInfrastructureOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

@@ -38,6 +38,8 @@ const (
 // and writes; the read-only ID is ignored when writing. Its password is
 // write-only: see [CreateJiraInstanceRequest].
 type JiraInstance struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// ConfigurationName names the instance (at most 2000 characters). It
@@ -96,6 +98,8 @@ type JiraInstance struct {
 // [JiraInstancesService.Update]: a Jira instance and the password or API token
 // of its account, which DefectDojo never returns.
 type CreateJiraInstanceRequest struct {
+	_ [0]func()
+
 	JiraInstance
 
 	// Password is the password or API token of the Jira account (at most
@@ -180,6 +184,8 @@ func newJiraInstanceRequest(ji *CreateJiraInstanceRequest) (*jiraInstanceRequest
 // with a "password" field error; a URL that differs only in a trailing slash
 // isn't a change. The client doesn't check this.
 type JiraInstancePatch struct {
+	_ [0]func()
+
 	ConfigurationName              *string          `json:"configuration_name,omitempty"`
 	URL                            *string          `json:"url,omitempty"`
 	Username                       *string          `json:"username,omitempty"`
@@ -204,6 +210,8 @@ type JiraInstancePatch struct {
 // ListJiraInstancesOptions are the options of [JiraInstancesService.List] and
 // [JiraInstancesService.ListAll]. DefectDojo can't filter by name.
 type ListJiraInstancesOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// URL is an exact match.
@@ -212,6 +220,8 @@ type ListJiraInstancesOptions struct {
 
 // ListJiraInstancesResult is a page of Jira instances.
 type ListJiraInstancesResult struct {
+	_ [0]func()
+
 	Results []JiraInstance
 
 	// Count is the number of Jira instances that match the filters.
@@ -256,7 +266,9 @@ func (s *JiraInstancesService) ListAll(ctx context.Context, opt *ListJiraInstanc
 }
 
 // GetJiraInstanceOptions are the options of [JiraInstancesService.Get].
-type GetJiraInstanceOptions struct{}
+type GetJiraInstanceOptions struct {
+	_ [0]func()
+}
 
 // Get returns a Jira instance by its ID.
 //
@@ -274,7 +286,9 @@ func (s *JiraInstancesService) Get(ctx context.Context, id int, opt *GetJiraInst
 }
 
 // GetJiraInstanceByNameOptions are the options of [JiraInstancesService.GetByName].
-type GetJiraInstanceByNameOptions struct{}
+type GetJiraInstanceByNameOptions struct {
+	_ [0]func()
+}
 
 // GetByName returns the Jira instance whose ConfigurationName is exactly the
 // given name, compared case-sensitively. It returns an error matching
@@ -323,7 +337,9 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opt *
 }
 
 // CreateJiraInstanceOptions are the options of [JiraInstancesService.Create].
-type CreateJiraInstanceOptions struct{}
+type CreateJiraInstanceOptions struct {
+	_ [0]func()
+}
 
 // Create creates a Jira instance. DefectDojo doesn't test the connection.
 //
@@ -346,7 +362,9 @@ func (s *JiraInstancesService) Create(ctx context.Context, ji *CreateJiraInstanc
 }
 
 // UpdateJiraInstanceOptions are the options of [JiraInstancesService.Update].
-type UpdateJiraInstanceOptions struct{}
+type UpdateJiraInstanceOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the Jira instance with the given ID.
 // DefectDojo requires the password on every update; to keep it, use
@@ -371,7 +389,9 @@ func (s *JiraInstancesService) Update(ctx context.Context, id int, ji *CreateJir
 }
 
 // PatchJiraInstanceOptions are the options of [JiraInstancesService.Patch].
-type PatchJiraInstanceOptions struct{}
+type PatchJiraInstanceOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the Jira instance that are set in patch. A
 // patch without a Password keeps the stored one, unless it changes the URL;
@@ -394,7 +414,9 @@ func (s *JiraInstancesService) Patch(ctx context.Context, id int, patch *JiraIns
 }
 
 // DeleteJiraInstanceOptions are the options of [JiraInstancesService.Delete].
-type DeleteJiraInstanceOptions struct{}
+type DeleteJiraInstanceOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes a Jira instance by its ID.
 //
@@ -412,6 +434,8 @@ func (s *JiraInstancesService) Delete(ctx context.Context, id int, opt *DeleteJi
 
 // DeletePreviewJiraInstanceOptions are the options of [JiraInstancesService.DeletePreview].
 type DeletePreviewJiraInstanceOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
@@ -438,7 +462,9 @@ func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *D
 }
 
 // CountJiraInstanceJiraProjectsOptions are the options of [JiraInstancesService.CountJiraProjects].
-type CountJiraInstanceJiraProjectsOptions struct{}
+type CountJiraInstanceJiraProjectsOptions struct {
+	_ [0]func()
+}
 
 // CountJiraProjects returns the number of Jira projects that use the Jira
 // instance, which keep it from being deleted. It reads the count of the Jira

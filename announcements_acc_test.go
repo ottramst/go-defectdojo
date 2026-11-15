@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -32,7 +33,7 @@ func TestAccAnnouncements(t *testing.T) {
 		t.Fatalf("Create() error = %v", err)
 	}
 	want := defectdojo.Announcement{ID: 1, Message: "Maintenance on <b>Saturday</b>.", Style: defectdojo.AnnouncementStyleInfo}
-	if resp.StatusCode != http.StatusCreated || *created != want {
+	if resp.StatusCode != http.StatusCreated || !reflect.DeepEqual(*created, want) {
 		t.Errorf("Create() = %+v (%d), want %+v", created, resp.StatusCode, want)
 	}
 
@@ -44,16 +45,16 @@ func TestAccAnnouncements(t *testing.T) {
 	}
 
 	current, _, err := client.Announcements.Current(ctx, nil)
-	if err != nil || *current != want {
+	if err != nil || !reflect.DeepEqual(*current, want) {
 		t.Errorf("Current() = %+v, %v; want %+v", current, err, want)
 	}
 	got, _, err := client.Announcements.Get(ctx, 1, nil)
-	if err != nil || *got != want {
+	if err != nil || !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
 	}
 
 	updated, _, err := client.Announcements.Update(ctx, 1, &defectdojo.Announcement{Message: "Updated", Style: defectdojo.AnnouncementStyleDanger, Dismissable: true}, nil)
-	if err != nil || *updated != (defectdojo.Announcement{ID: 1, Message: "Updated", Style: "danger", Dismissable: true}) {
+	if err != nil || !reflect.DeepEqual(*updated, defectdojo.Announcement{ID: 1, Message: "Updated", Style: "danger", Dismissable: true}) {
 		t.Errorf("Update() = %+v, %v", updated, err)
 	}
 	// An empty style keeps the current one.

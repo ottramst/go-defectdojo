@@ -50,6 +50,8 @@ const (
 // [EngagementsService.Create] and [EngagementsService.Update] send zero
 // values of nullable fields as null.
 type Engagement struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Product is the ID of the engagement's product. Changing it moves the
@@ -238,6 +240,8 @@ func newEngagementRequest(e *Engagement) (*engagementRequest, error) {
 // EngagementPatch is the body of [EngagementsService.Patch]. Only the fields
 // that are set are changed.
 type EngagementPatch struct {
+	_ [0]func()
+
 	Product *int `json:"product,omitempty"`
 
 	// Name can't be cleared: null or "" names the engagement after its
@@ -282,6 +286,8 @@ type EngagementPatch struct {
 // ListEngagementsOptions are the options of [EngagementsService.List] and
 // [EngagementsService.ListAll].
 type ListEngagementsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Product filters by product ID. A product that doesn't exist is a 400.
@@ -298,6 +304,8 @@ type ListEngagementsOptions struct {
 
 // ListEngagementsResult is a page of engagements.
 type ListEngagementsResult struct {
+	_ [0]func()
+
 	Results []Engagement
 
 	// Count is the number of engagements that match the filters.
@@ -342,7 +350,9 @@ func (s *EngagementsService) ListAll(ctx context.Context, opt *ListEngagementsOp
 }
 
 // GetEngagementOptions are the options of [EngagementsService.Get].
-type GetEngagementOptions struct{}
+type GetEngagementOptions struct {
+	_ [0]func()
+}
 
 // Get returns an engagement by its ID.
 //
@@ -360,7 +370,9 @@ func (s *EngagementsService) Get(ctx context.Context, id int, opt *GetEngagement
 }
 
 // CreateEngagementOptions are the options of [EngagementsService.Create].
-type CreateEngagementOptions struct{}
+type CreateEngagementOptions struct {
+	_ [0]func()
+}
 
 // Create creates an engagement. Its read-only fields are ignored.
 //
@@ -383,7 +395,9 @@ func (s *EngagementsService) Create(ctx context.Context, e *Engagement, opt *Cre
 }
 
 // UpdateEngagementOptions are the options of [EngagementsService.Update].
-type UpdateEngagementOptions struct{}
+type UpdateEngagementOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the engagement with the given ID.
 // Every writable field is sent except an empty Status and EngagementType,
@@ -410,7 +424,9 @@ func (s *EngagementsService) Update(ctx context.Context, id int, e *Engagement, 
 }
 
 // PatchEngagementOptions are the options of [EngagementsService.Patch].
-type PatchEngagementOptions struct{}
+type PatchEngagementOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the engagement that are set in patch.
 //
@@ -439,7 +455,9 @@ func (s *EngagementsService) Patch(ctx context.Context, id int, patch *Engagemen
 }
 
 // DeleteEngagementOptions are the options of [EngagementsService.Delete].
-type DeleteEngagementOptions struct{}
+type DeleteEngagementOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes an engagement by its ID.
 //
@@ -461,6 +479,8 @@ func (s *EngagementsService) Delete(ctx context.Context, id int, opt *DeleteEnga
 
 // DeletePreviewEngagementOptions are the options of [EngagementsService.DeletePreview].
 type DeletePreviewEngagementOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
@@ -485,7 +505,9 @@ func (s *EngagementsService) DeletePreview(ctx context.Context, id int, opt *Del
 }
 
 // CloseEngagementOptions are the options of [EngagementsService.Close].
-type CloseEngagementOptions struct{}
+type CloseEngagementOptions struct {
+	_ [0]func()
+}
 
 // Close closes the engagement: its Status becomes EngagementStatusCompleted
 // and Active false.
@@ -499,7 +521,9 @@ func (s *EngagementsService) Close(ctx context.Context, id int, opt *CloseEngage
 }
 
 // ReopenEngagementOptions are the options of [EngagementsService.Reopen].
-type ReopenEngagementOptions struct{}
+type ReopenEngagementOptions struct {
+	_ [0]func()
+}
 
 // Reopen reopens the engagement: its Status becomes
 // EngagementStatusInProgress and Active true.
@@ -513,7 +537,9 @@ func (s *EngagementsService) Reopen(ctx context.Context, id int, opt *ReopenEnga
 }
 
 // CountEngagementTestsOptions are the options of [EngagementsService.CountTests].
-type CountEngagementTestsOptions struct{}
+type CountEngagementTestsOptions struct {
+	_ [0]func()
+}
 
 // CountTests returns the number of tests of the engagement, which a delete
 // of the engagement would also delete. It reads the count of the tests list

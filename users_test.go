@@ -280,7 +280,7 @@ func TestUsersService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 7 || preview.Results[4] != (defectdojo.DeletedObject{Model: "Notifications", ID: 11, Name: "Notifications about all projects for Dependency Track (dependency-track)"}) {
+	if preview.Count != 7 || !reflect.DeepEqual(preview.Results[4], defectdojo.DeletedObject{Model: "Notifications", ID: 11, Name: "Notifications about all projects for Dependency Track (dependency-track)"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
@@ -348,7 +348,7 @@ func TestConfigurationPermissionsService_List(t *testing.T) {
 		t.Fatalf("List() error = %v", err)
 	}
 	if list.Count != 52 || len(list.Results) != 3 ||
-		list.Results[1] != (defectdojo.ConfigurationPermission{ID: 9, Name: "Can add user", Codename: "add_user"}) {
+		!reflect.DeepEqual(list.Results[1], defectdojo.ConfigurationPermission{ID: 9, Name: "Can add user", Codename: "add_user"}) {
 		t.Errorf("List() = %d %+v", list.Count, list.Results)
 	}
 }
@@ -384,7 +384,7 @@ func TestConfigurationPermissionsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "configuration_permissions/get.json"))
 	})
 	p, _, err := client.ConfigurationPermissions.Get(context.Background(), 389, nil)
-	if err != nil || *p != (defectdojo.ConfigurationPermission{ID: 389, Name: "Can add sl a_ configuration", Codename: "add_sla_configuration"}) {
+	if err != nil || !reflect.DeepEqual(*p, defectdojo.ConfigurationPermission{ID: 389, Name: "Can add sl a_ configuration", Codename: "add_sla_configuration"}) {
 		t.Errorf("Get() = %+v, %v", p, err)
 	}
 }

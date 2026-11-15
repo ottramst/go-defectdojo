@@ -28,6 +28,8 @@ type SLAConfigurationsService service
 // they name another configuration and which cannot be deleted, and "No SLA
 // Enforced" (ID 2).
 type SLAConfiguration struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is unique across all SLA configurations, compared
@@ -121,6 +123,8 @@ func checkSLADays(critical, high, medium, low *int) error {
 // SLAConfigurationPatch is the body of [SLAConfigurationsService.Patch]. Only
 // the fields that are set are changed.
 type SLAConfigurationPatch struct {
+	_ [0]func()
+
 	Name                     *string          `json:"name,omitempty"`
 	Description              Nullable[string] `json:"description,omitzero"`
 	Critical                 *int             `json:"critical,omitempty"`
@@ -138,11 +142,15 @@ type SLAConfigurationPatch struct {
 // [SLAConfigurationsService.List] and [SLAConfigurationsService.ListAll].
 // DefectDojo has no filters for SLA configurations.
 type ListSLAConfigurationsOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
 // ListSLAConfigurationsResult is a page of SLA configurations.
 type ListSLAConfigurationsResult struct {
+	_ [0]func()
+
 	Results []SLAConfiguration
 
 	// Count is the number of SLA configurations.
@@ -188,7 +196,9 @@ func (s *SLAConfigurationsService) ListAll(ctx context.Context, opt *ListSLAConf
 }
 
 // GetSLAConfigurationOptions are the options of [SLAConfigurationsService.Get].
-type GetSLAConfigurationOptions struct{}
+type GetSLAConfigurationOptions struct {
+	_ [0]func()
+}
 
 // Get returns an SLA configuration by its ID.
 //
@@ -206,7 +216,9 @@ func (s *SLAConfigurationsService) Get(ctx context.Context, id int, opt *GetSLAC
 }
 
 // GetSLAConfigurationByNameOptions are the options of [SLAConfigurationsService.GetByName].
-type GetSLAConfigurationByNameOptions struct{}
+type GetSLAConfigurationByNameOptions struct {
+	_ [0]func()
+}
 
 // GetByName returns the SLA configuration with exactly the given name,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
@@ -238,7 +250,9 @@ func (s *SLAConfigurationsService) GetByName(ctx context.Context, name string, o
 }
 
 // CreateSLAConfigurationOptions are the options of [SLAConfigurationsService.Create].
-type CreateSLAConfigurationOptions struct{}
+type CreateSLAConfigurationOptions struct {
+	_ [0]func()
+}
 
 // Create creates an SLA configuration. A name that is taken is a 400
 // ([ErrBadRequest]) with a "name" field error.
@@ -261,7 +275,9 @@ func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfigura
 }
 
 // UpdateSLAConfigurationOptions are the options of [SLAConfigurationsService.Update].
-type UpdateSLAConfigurationOptions struct{}
+type UpdateSLAConfigurationOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the SLA configuration with the given
 // ID. Every writable field is sent: an empty Description clears it. Update an
@@ -293,7 +309,9 @@ func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAC
 }
 
 // PatchSLAConfigurationOptions are the options of [SLAConfigurationsService.Patch].
-type PatchSLAConfigurationOptions struct{}
+type PatchSLAConfigurationOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the SLA configuration that are set in patch.
 // Days below 1 are rejected before sending.
@@ -321,7 +339,9 @@ func (s *SLAConfigurationsService) Patch(ctx context.Context, id int, patch *SLA
 }
 
 // DeleteSLAConfigurationOptions are the options of [SLAConfigurationsService.Delete].
-type DeleteSLAConfigurationOptions struct{}
+type DeleteSLAConfigurationOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes an SLA configuration by its ID.
 //
@@ -338,6 +358,8 @@ func (s *SLAConfigurationsService) Delete(ctx context.Context, id int, opt *Dele
 
 // DeletePreviewSLAConfigurationOptions are the options of [SLAConfigurationsService.DeletePreview].
 type DeletePreviewSLAConfigurationOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

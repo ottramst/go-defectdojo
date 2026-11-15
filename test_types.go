@@ -23,6 +23,8 @@ type TestTypesService service
 
 // TestType is a DefectDojo test type.
 type TestType struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is unique, at most 200 characters, and can't change.
@@ -38,6 +40,8 @@ type TestType struct {
 // ListTestTypesOptions are the options of [TestTypesService.List] and
 // [TestTypesService.ListAll].
 type ListTestTypesOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Name filters by exact, case-sensitive name.
@@ -46,6 +50,8 @@ type ListTestTypesOptions struct {
 
 // ListTestTypesResult is a page of test types.
 type ListTestTypesResult struct {
+	_ [0]func()
+
 	Results []TestType
 
 	// Count is the number of test types that match the filters.
@@ -90,7 +96,9 @@ func (s *TestTypesService) ListAll(ctx context.Context, opt *ListTestTypesOption
 }
 
 // GetTestTypeOptions are the options of [TestTypesService.Get].
-type GetTestTypeOptions struct{}
+type GetTestTypeOptions struct {
+	_ [0]func()
+}
 
 // Get returns a test type by its ID.
 //
@@ -108,7 +116,9 @@ func (s *TestTypesService) Get(ctx context.Context, id int, opt *GetTestTypeOpti
 }
 
 // GetTestTypeByNameOptions are the options of [TestTypesService.GetByName].
-type GetTestTypeByNameOptions struct{}
+type GetTestTypeByNameOptions struct {
+	_ [0]func()
+}
 
 // GetByName returns the test type with exactly the given name, such as
 // "Trivy Scan". It returns an error matching [ErrNotFound] when there is none.

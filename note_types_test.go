@@ -5,6 +5,7 @@ import (
 	"errors"
 	"fmt"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -77,7 +78,7 @@ func TestNoteTypesService_Get(t *testing.T) {
 		t.Fatalf("Get() error = %v", err)
 	}
 	want := defectdojo.NoteType{ID: 6, Name: "Sign-off", Description: "The release sign-off.", IsSingle: true, IsMandatory: true}
-	if *got != want {
+	if !reflect.DeepEqual(*got, want) {
 		t.Errorf("Get() = %+v, want %+v", got, want)
 	}
 	if _, _, err := client.NoteTypes.Get(context.Background(), 7, nil); !errors.Is(err, defectdojo.ErrNotFound) {
@@ -203,7 +204,7 @@ func TestNoteTypesService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 7 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Note_Type", ID: 5, Name: "Code Review"}) {
+	if preview.Count != 7 || !reflect.DeepEqual(preview.Results[0], defectdojo.DeletedObject{Model: "Note_Type", ID: 5, Name: "Code Review"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results[0])
 	}
 }

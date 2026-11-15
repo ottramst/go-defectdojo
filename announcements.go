@@ -32,6 +32,8 @@ const (
 // Announcement is the DefectDojo announcement. The same type is used for
 // reads and writes: the read-only ID is ignored when writing.
 type Announcement struct {
+	_ [0]func()
+
 	// ID is always 1.
 	ID int `json:"id"`
 
@@ -71,6 +73,8 @@ func newAnnouncementRequest(a *Announcement) (*announcementRequest, error) {
 // AnnouncementPatch is the body of [AnnouncementsService.Patch]. Only the
 // fields that are set are changed.
 type AnnouncementPatch struct {
+	_ [0]func()
+
 	Message     *string            `json:"message,omitempty"`
 	Style       *AnnouncementStyle `json:"style,omitempty"`
 	Dismissable *bool              `json:"dismissable,omitempty"`
@@ -79,6 +83,8 @@ type AnnouncementPatch struct {
 // ListAnnouncementsOptions are the options of [AnnouncementsService.List] and
 // [AnnouncementsService.ListAll].
 type ListAnnouncementsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// Message filters by exact message.
@@ -94,6 +100,8 @@ type ListAnnouncementsOptions struct {
 
 // ListAnnouncementsResult is a page of announcements: the announcement, or none.
 type ListAnnouncementsResult struct {
+	_ [0]func()
+
 	Results []Announcement
 
 	// Count is the number of announcements, 0 or 1.
@@ -138,7 +146,9 @@ func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListAnnouncemen
 }
 
 // CurrentAnnouncementOptions are the options of [AnnouncementsService.Current].
-type CurrentAnnouncementOptions struct{}
+type CurrentAnnouncementOptions struct {
+	_ [0]func()
+}
 
 // Current returns the announcement. It returns an error matching
 // [ErrNotFound] when there is none.
@@ -154,7 +164,9 @@ func (s *AnnouncementsService) Current(ctx context.Context, opt *CurrentAnnounce
 }
 
 // GetAnnouncementOptions are the options of [AnnouncementsService.Get].
-type GetAnnouncementOptions struct{}
+type GetAnnouncementOptions struct {
+	_ [0]func()
+}
 
 // Get returns an announcement by its ID, which is always 1.
 //
@@ -172,7 +184,9 @@ func (s *AnnouncementsService) Get(ctx context.Context, id int, opt *GetAnnounce
 }
 
 // CreateAnnouncementOptions are the options of [AnnouncementsService.Create].
-type CreateAnnouncementOptions struct{}
+type CreateAnnouncementOptions struct {
+	_ [0]func()
+}
 
 // Create creates the announcement, which gets the ID 1 and is shown to every
 // user. Its read-only ID is ignored. When an announcement exists, DefectDojo
@@ -196,7 +210,9 @@ func (s *AnnouncementsService) Create(ctx context.Context, a *Announcement, opt 
 }
 
 // UpdateAnnouncementOptions are the options of [AnnouncementsService.Update].
-type UpdateAnnouncementOptions struct{}
+type UpdateAnnouncementOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the announcement with the given ID.
 // An empty Style keeps the current one.
@@ -223,7 +239,9 @@ func (s *AnnouncementsService) Update(ctx context.Context, id int, a *Announceme
 }
 
 // PatchAnnouncementOptions are the options of [AnnouncementsService.Patch].
-type PatchAnnouncementOptions struct{}
+type PatchAnnouncementOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the announcement that are set in patch. An
 // empty Message is a 400.
@@ -248,7 +266,9 @@ func (s *AnnouncementsService) Patch(ctx context.Context, id int, patch *Announc
 }
 
 // DeleteAnnouncementOptions are the options of [AnnouncementsService.Delete].
-type DeleteAnnouncementOptions struct{}
+type DeleteAnnouncementOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes an announcement by its ID, removing the banner for every
 // user.
@@ -263,6 +283,8 @@ func (s *AnnouncementsService) Delete(ctx context.Context, id int, opt *DeleteAn
 
 // DeletePreviewAnnouncementOptions are the options of [AnnouncementsService.DeletePreview].
 type DeletePreviewAnnouncementOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

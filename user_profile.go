@@ -14,6 +14,8 @@ type UserProfileService service
 
 // UserProfile is the user the client authenticates as.
 type UserProfile struct {
+	_ [0]func()
+
 	User *User `json:"user"`
 
 	// UserContactInfo is nil for users without contact information, such as
@@ -23,6 +25,8 @@ type UserProfile struct {
 
 // User is a DefectDojo user.
 type User struct {
+	_ [0]func()
+
 	ID        int    `json:"id"`
 	Username  string `json:"username"`
 	FirstName string `json:"first_name"`
@@ -76,6 +80,8 @@ const (
 // UserContactInfo is the contact information and personal settings of a
 // user.
 type UserContactInfo struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// User is the ID of the user.
@@ -104,7 +110,9 @@ type UserContactInfo struct {
 }
 
 // GetUserProfileOptions are the options of [UserProfileService.Get].
-type GetUserProfileOptions struct{}
+type GetUserProfileOptions struct {
+	_ [0]func()
+}
 
 // Get returns the user the client authenticates as.
 //

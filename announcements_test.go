@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"net/http"
+	"reflect"
 	"testing"
 
 	"github.com/ottramst/go-defectdojo"
@@ -21,7 +22,7 @@ func TestAnnouncementsService_List(t *testing.T) {
 		t.Fatalf("List() error = %v", err)
 	}
 	want := defectdojo.Announcement{ID: 1, Message: "Maintenance on <b>Saturday</b>.", Style: defectdojo.AnnouncementStyleWarning, Dismissable: true}
-	if list.Count != 1 || len(list.Results) != 1 || list.Results[0] != want {
+	if list.Count != 1 || len(list.Results) != 1 || !reflect.DeepEqual(list.Results[0], want) {
 		t.Errorf("List() = %d %+v, want %+v", list.Count, list.Results, want)
 	}
 }

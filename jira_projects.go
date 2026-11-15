@@ -28,6 +28,8 @@ type JiraProjectsService service
 // JiraProject is a DefectDojo Jira project configuration. The same type is
 // used for reads and writes; the read-only fields are ignored when writing.
 type JiraProject struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// JiraInstance is the ID of the Jira instance. DefectDojo's API accepts
@@ -215,6 +217,8 @@ func checkJiraProjectJSON(fields ...*json.RawMessage) error {
 // to the other, set the new one and [Null] the old one. The JSON fields are
 // set with [Value] (of a [json.RawMessage]) or cleared with [Null].
 type JiraProjectPatch struct {
+	_ [0]func()
+
 	JiraInstance                         *int                      `json:"jira_instance,omitempty"`
 	Product                              Nullable[int]             `json:"product,omitzero"`
 	Engagement                           Nullable[int]             `json:"engagement,omitzero"`
@@ -241,6 +245,8 @@ type JiraProjectPatch struct {
 // [JiraProjectsService.ListAll]. All filters are exact; a JiraInstance,
 // Product or Engagement that doesn't exist is a 400.
 type ListJiraProjectsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	JiraInstance                int    `url:"jira_instance,omitempty"`
@@ -256,6 +262,8 @@ type ListJiraProjectsOptions struct {
 
 // ListJiraProjectsResult is a page of Jira projects.
 type ListJiraProjectsResult struct {
+	_ [0]func()
+
 	Results []JiraProject
 
 	// Count is the number of Jira projects that match the filters.
@@ -301,7 +309,9 @@ func (s *JiraProjectsService) ListAll(ctx context.Context, opt *ListJiraProjects
 }
 
 // GetJiraProjectOptions are the options of [JiraProjectsService.Get].
-type GetJiraProjectOptions struct{}
+type GetJiraProjectOptions struct {
+	_ [0]func()
+}
 
 // Get returns a Jira project by its ID.
 //
@@ -319,7 +329,9 @@ func (s *JiraProjectsService) Get(ctx context.Context, id int, opt *GetJiraProje
 }
 
 // CreateJiraProjectOptions are the options of [JiraProjectsService.Create].
-type CreateJiraProjectOptions struct{}
+type CreateJiraProjectOptions struct {
+	_ [0]func()
+}
 
 // Create creates a Jira project configuration for a product or an engagement.
 //
@@ -347,7 +359,9 @@ func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opt *C
 }
 
 // UpdateJiraProjectOptions are the options of [JiraProjectsService.Update].
-type UpdateJiraProjectOptions struct{}
+type UpdateJiraProjectOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the Jira project with the given ID.
 // Every writable field is sent, except an empty EpicIssueTypeName and a nil
@@ -375,7 +389,9 @@ func (s *JiraProjectsService) Update(ctx context.Context, id int, p *JiraProject
 }
 
 // PatchJiraProjectOptions are the options of [JiraProjectsService.Patch].
-type PatchJiraProjectOptions struct{}
+type PatchJiraProjectOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the Jira project that are set in patch.
 // DefectDojo checks the result: it must still have either a product or an
@@ -407,7 +423,9 @@ func (s *JiraProjectsService) Patch(ctx context.Context, id int, patch *JiraProj
 }
 
 // DeleteJiraProjectOptions are the options of [JiraProjectsService.Delete].
-type DeleteJiraProjectOptions struct{}
+type DeleteJiraProjectOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes a Jira project configuration by its ID. It also deletes the
 // links between findings and Jira issues made through it.
@@ -422,6 +440,8 @@ func (s *JiraProjectsService) Delete(ctx context.Context, id int, opt *DeleteJir
 
 // DeletePreviewJiraProjectOptions are the options of [JiraProjectsService.DeletePreview].
 type DeletePreviewJiraProjectOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

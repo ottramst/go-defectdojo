@@ -39,6 +39,8 @@ const (
 // DefectDojo returns the secrets SlackToken, MSTeamsURL and JiraWebhookSecret
 // in plain text.
 type SystemSettings struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// EnableDeduplication marks new findings that match an existing finding
@@ -186,6 +188,8 @@ type SystemSettings struct {
 // Text fields that aren't nullable are cleared with "", nullable ones with
 // [Null]. JiraWebhookSecret can't be "".
 type SystemSettingsPatch struct {
+	_ [0]func()
+
 	EnableDeduplication *bool         `json:"enable_deduplication,omitempty"`
 	DeleteDuplicates    *bool         `json:"delete_duplicates,omitempty"`
 	MaxDupes            Nullable[int] `json:"max_dupes,omitzero"`
@@ -301,7 +305,9 @@ func checkPasswordLengths(minimum, maximum *int) error {
 }
 
 // GetSystemSettingsOptions are the options of [SystemSettingsService.Get].
-type GetSystemSettingsOptions struct{}
+type GetSystemSettingsOptions struct {
+	_ [0]func()
+}
 
 // Get returns the system settings. DefectDojo lists them as a single object;
 // Get returns an error if the list doesn't hold exactly one.
@@ -320,7 +326,9 @@ func (s *SystemSettingsService) Get(ctx context.Context, opt *GetSystemSettingsO
 }
 
 // PatchSystemSettingsOptions are the options of [SystemSettingsService.Patch].
-type PatchSystemSettingsOptions struct{}
+type PatchSystemSettingsOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the system settings that are set in patch. The ID is the one
 // [SystemSettingsService.Get] returns. Password lengths outside 9 to 48, and a

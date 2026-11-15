@@ -70,6 +70,8 @@ const (
 //   - RiskAcceptanceExpiration: a risk acceptance expires
 //   - ScanAddedEmpty: an import or reimport changes no findings
 type NotificationSettings struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// User is the ID of the user the settings belong to, or 0 for the
@@ -241,6 +243,8 @@ func singleChannel(channels []NotificationChannel) (NotificationChannel, error) 
 // removes every channel. The user, product and template, which identify a
 // row, can't be changed.
 type NotificationSettingsPatch struct {
+	_ [0]func()
+
 	ProductTypeAdded         *[]NotificationChannel `json:"product_type_added,omitempty"`
 	ProductAdded             *[]NotificationChannel `json:"product_added,omitempty"`
 	EngagementAdded          *[]NotificationChannel `json:"engagement_added,omitempty"`
@@ -290,6 +294,8 @@ func (patch *NotificationSettingsPatch) normalized() *NotificationSettingsPatch 
 // ListNotificationSettingsOptions are the options of [NotificationsService.List] and
 // [NotificationsService.ListAll].
 type ListNotificationSettingsOptions struct {
+	_ [0]func()
+
 	ListOptions
 
 	// User and Product filter by ID. An ID that doesn't exist is a 400
@@ -303,6 +309,8 @@ type ListNotificationSettingsOptions struct {
 
 // ListNotificationSettingsResult is a page of notification settings.
 type ListNotificationSettingsResult struct {
+	_ [0]func()
+
 	Results []NotificationSettings
 
 	// Count is the number of rows that match the filters.
@@ -347,7 +355,9 @@ func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificatio
 }
 
 // GetNotificationSettingsOptions are the options of [NotificationsService.Get].
-type GetNotificationSettingsOptions struct{}
+type GetNotificationSettingsOptions struct {
+	_ [0]func()
+}
 
 // Get returns notification settings by their ID.
 //
@@ -381,7 +391,9 @@ type NotificationScope struct {
 }
 
 // GetNotificationSettingsByScopeOptions are the options of [NotificationsService.GetByScope].
-type GetNotificationSettingsByScopeOptions struct{}
+type GetNotificationSettingsByScopeOptions struct {
+	_ [0]func()
+}
 
 // GetByScope returns the notification settings of a scope. It returns an
 // error matching [ErrNotFound] when there is no such row, also when the user
@@ -433,7 +445,9 @@ func (s *NotificationsService) GetByScope(ctx context.Context, scope Notificatio
 }
 
 // CreateNotificationSettingsOptions are the options of [NotificationsService.Create].
-type CreateNotificationSettingsOptions struct{}
+type CreateNotificationSettingsOptions struct {
+	_ [0]func()
+}
 
 // Create creates notification settings. Nil events are left out, so that
 // DefectDojo's default (alert) applies; an empty, non-nil event has no
@@ -456,7 +470,9 @@ func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettin
 }
 
 // UpdateNotificationSettingsOptions are the options of [NotificationsService.Update].
-type UpdateNotificationSettingsOptions struct{}
+type UpdateNotificationSettingsOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the notification settings with the given ID. The user,
 // product and template are always sent: DefectDojo resets them when they are
@@ -485,7 +501,9 @@ func (s *NotificationsService) Update(ctx context.Context, id int, n *Notificati
 }
 
 // PatchNotificationSettingsOptions are the options of [NotificationsService.Patch].
-type PatchNotificationSettingsOptions struct{}
+type PatchNotificationSettingsOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the events of the notification settings that are set in
 // patch.
@@ -507,7 +525,9 @@ func (s *NotificationsService) Patch(ctx context.Context, id int, patch *Notific
 }
 
 // DeleteNotificationSettingsOptions are the options of [NotificationsService.Delete].
-type DeleteNotificationSettingsOptions struct{}
+type DeleteNotificationSettingsOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes notification settings by their ID.
 //
@@ -525,6 +545,8 @@ func (s *NotificationsService) Delete(ctx context.Context, id int, opt *DeleteNo
 
 // DeletePreviewNotificationSettingsOptions are the options of [NotificationsService.DeletePreview].
 type DeletePreviewNotificationSettingsOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

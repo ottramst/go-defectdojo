@@ -7,7 +7,9 @@ import (
 )
 
 // ServerVersionOptions are the options of [Client.ServerVersion].
-type ServerVersionOptions struct{}
+type ServerVersionOptions struct {
+	_ [0]func()
+}
 
 // ServerVersion returns the DefectDojo version of the server, such as
 // "3.5.103". DefectDojo has no version endpoint, so it is read from the

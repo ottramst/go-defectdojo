@@ -19,6 +19,8 @@ type DevelopmentEnvironmentsService service
 // DevelopmentEnvironment is a DefectDojo development environment. The same
 // type is used for reads and writes: the read-only ID is ignored when writing.
 type DevelopmentEnvironment struct {
+	_ [0]func()
+
 	ID int `json:"id"`
 
 	// Name is at most 200 characters. DefectDojo doesn't require it to be
@@ -50,6 +52,8 @@ func newDevelopmentEnvironmentRequest(env *DevelopmentEnvironment) (*development
 // [DevelopmentEnvironmentsService.Patch]. Only the fields that are set are
 // changed.
 type DevelopmentEnvironmentPatch struct {
+	_ [0]func()
+
 	Name *string `json:"name,omitempty"`
 }
 
@@ -58,11 +62,15 @@ type DevelopmentEnvironmentPatch struct {
 // [DevelopmentEnvironmentsService.ListAll]. DefectDojo has no filters for
 // development environments, not even by name.
 type ListDevelopmentEnvironmentsOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 
 // ListDevelopmentEnvironmentsResult is a page of development environments.
 type ListDevelopmentEnvironmentsResult struct {
+	_ [0]func()
+
 	Results []DevelopmentEnvironment
 
 	// Count is the number of development environments.
@@ -108,7 +116,9 @@ func (s *DevelopmentEnvironmentsService) ListAll(ctx context.Context, opt *ListD
 }
 
 // GetDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Get].
-type GetDevelopmentEnvironmentOptions struct{}
+type GetDevelopmentEnvironmentOptions struct {
+	_ [0]func()
+}
 
 // Get returns a development environment by its ID.
 //
@@ -126,7 +136,9 @@ func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opt *G
 }
 
 // GetDevelopmentEnvironmentByNameOptions are the options of [DevelopmentEnvironmentsService.GetByName].
-type GetDevelopmentEnvironmentByNameOptions struct{}
+type GetDevelopmentEnvironmentByNameOptions struct {
+	_ [0]func()
+}
 
 // GetByName returns the development environment with exactly the given name,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
@@ -174,7 +186,9 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 }
 
 // CreateDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Create].
-type CreateDevelopmentEnvironmentOptions struct{}
+type CreateDevelopmentEnvironmentOptions struct {
+	_ [0]func()
+}
 
 // Create creates a development environment. Its read-only ID is ignored.
 // DefectDojo accepts a name that another environment already has, but then
@@ -195,7 +209,9 @@ func (s *DevelopmentEnvironmentsService) Create(ctx context.Context, env *Develo
 }
 
 // UpdateDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Update].
-type UpdateDevelopmentEnvironmentOptions struct{}
+type UpdateDevelopmentEnvironmentOptions struct {
+	_ [0]func()
+}
 
 // Update replaces the writable fields of the development environment with the
 // given ID.
@@ -218,7 +234,9 @@ func (s *DevelopmentEnvironmentsService) Update(ctx context.Context, id int, env
 }
 
 // PatchDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Patch].
-type PatchDevelopmentEnvironmentOptions struct{}
+type PatchDevelopmentEnvironmentOptions struct {
+	_ [0]func()
+}
 
 // Patch changes the fields of the development environment that are set in
 // patch.
@@ -240,7 +258,9 @@ func (s *DevelopmentEnvironmentsService) Patch(ctx context.Context, id int, patc
 }
 
 // DeleteDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Delete].
-type DeleteDevelopmentEnvironmentOptions struct{}
+type DeleteDevelopmentEnvironmentOptions struct {
+	_ [0]func()
+}
 
 // Delete deletes a development environment by its ID. Deleting an
 // environment that tests use is a 409 ([ErrConflict]).
@@ -255,6 +275,8 @@ func (s *DevelopmentEnvironmentsService) Delete(ctx context.Context, id int, opt
 
 // DeletePreviewDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.DeletePreview].
 type DeletePreviewDevelopmentEnvironmentOptions struct {
+	_ [0]func()
+
 	ListOptions
 }
 

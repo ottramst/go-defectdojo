@@ -11,6 +11,8 @@ const defaultPageSize = 100
 // ListOptions are the pagination options of list endpoints. DefectDojo
 // returns 25 items per page by default.
 type ListOptions struct {
+	_ [0]func()
+
 	// Limit is the number of items per page.
 	Limit int `url:"limit,omitempty"`
 
