@@ -84,7 +84,7 @@ if err != nil {
 productTypes, _, err := client.ProductTypes.List(ctx, nil)
 ```
 
-Methods return the decoded result, the `*defectdojo.Response` (which wraps `*http.Response`) and an
+Methods return the decoded result, the `*defectdojo.Response` (its status and headers) and an
 error. Methods for endpoints without a response body, such as `Delete`, return only the
 `*defectdojo.Response` and the error.
 

@@ -346,7 +346,8 @@ func (s *NotificationsService) Get(ctx context.Context, id int, opts ...RequestO
 // GetByScope returns the notification settings of a scope: those of the user
 // and product with the given IDs (0 for none), or the template. It returns an
 // error matching [ErrNotFound] when there is no such row, also when the user
-// or product doesn't exist, and an error when there are several.
+// or product doesn't exist, and an error matching [ErrAmbiguous] when there
+// are several.
 //
 // DefectDojo can't filter for rows without a user, so finding the
 // system-wide settings or the template lists the rows of every user.
