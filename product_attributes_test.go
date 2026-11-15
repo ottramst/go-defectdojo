@@ -95,7 +95,7 @@ func TestProductAttributesService_GetByValue(t *testing.T) {
 		// There are no filters: GetByValue reads 100 entries, then the whole
 		// table in one page when it is larger.
 		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
-		if r.URL.Query().Has("offset") || (limit != 100 && limit != 150) {
+		if r.URL.Query().Has("offset") || (limit != 100 && limit != 250) {
 			t.Errorf("unexpected query %q", r.URL.RawQuery)
 		}
 		results := ""

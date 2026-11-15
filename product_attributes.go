@@ -158,10 +158,11 @@ func (s *ProductAttributesService) Get(ctx context.Context, id int, opts ...Requ
 // case-sensitively. It returns an error matching [ErrNotFound] when there is
 // none.
 //
-// DefectDojo can't filter the tables, so GetByValue reads them in one page:
-// a first request of 100 entries, which hold the tables DefectDojo comes
-// with, and one of the whole table when it has more. Paging through a larger
-// table could skip entries, since its order isn't unique.
+// DefectDojo can't filter the tables, and paging through a table could skip
+// entries, since its order isn't unique. So GetByValue asks for 100 entries,
+// which hold the tables DefectDojo comes with, and asks again for the whole
+// table, in one page, when it has more; the returned response is the last
+// request's.
 func (s *ProductAttributesService) GetByValue(ctx context.Context, value string, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	if value == "" {
 		return nil, nil, fmt.Errorf("defectdojo: %s value must not be empty", s.kind)
@@ -169,7 +170,8 @@ func (s *ProductAttributesService) GetByValue(ctx context.Context, value string,
 	list, resp, err := s.List(ctx, &ListOptions{Limit: 100}, opts...)
 	if err == nil && list.Count > len(list.ProductAttributes) {
 		// DefectDojo doesn't cap the page size of these tables.
-		list, resp, err = s.List(ctx, &ListOptions{Limit: list.Count}, opts...)
+		// The margin covers entries added in between.
+		list, resp, err = s.List(ctx, &ListOptions{Limit: list.Count + 100}, opts...)
 	}
 	if err != nil {
 		return nil, resp, err

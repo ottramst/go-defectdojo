@@ -14,7 +14,7 @@ func TestAccTestTypes(t *testing.T) {
 
 	api, _, err := client.TestTypes.GetByName(ctx, "API Test")
 	if err != nil || api.ID != 1 || !api.Active {
-		t.Errorf("GetByName(API Test) = %+v, %v; want the fixture with ID 1", api, err)
+		t.Fatalf("GetByName(API Test) = %+v, %v; want the fixture with ID 1", api, err)
 	}
 	if _, _, err := client.TestTypes.GetByName(ctx, "api test"); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(other case) error = %v, want ErrNotFound", err)
