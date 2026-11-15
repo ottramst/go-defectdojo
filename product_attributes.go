@@ -158,29 +158,30 @@ func (s *ProductAttributesService) Get(ctx context.Context, id int, opts ...Requ
 // case-sensitively. It returns an error matching [ErrNotFound] when there is
 // none.
 //
-// DefectDojo can't filter the tables, so GetByValue reads them in pages of
-// 100, which hold the tables DefectDojo comes with; the returned response is
-// the last page's.
+// DefectDojo can't filter the tables, and paging through a table could skip
+// entries, since its order isn't unique. So GetByValue asks for 100 entries,
+// which hold the tables DefectDojo comes with, and asks again for the whole
+// table, in one page, when it has more; the returned response is the last
+// request's.
 func (s *ProductAttributesService) GetByValue(ctx context.Context, value string, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	if value == "" {
 		return nil, nil, fmt.Errorf("defectdojo: %s value must not be empty", s.kind)
 	}
-	opt := &ListOptions{Limit: 100}
-	for {
-		list, resp, err := s.List(ctx, opt, opts...)
-		if err != nil {
-			return nil, resp, err
-		}
-		for _, a := range list.ProductAttributes {
-			if a.Value == value {
-				return a, resp, nil
-			}
-		}
-		opt.Offset += len(list.ProductAttributes)
-		if len(list.ProductAttributes) == 0 || opt.Offset >= list.Count {
-			return nil, resp, fmt.Errorf("defectdojo: %s %q: %w", s.kind, value, ErrNotFound)
+	list, resp, err := s.List(ctx, &ListOptions{Limit: 100}, opts...)
+	if err == nil && list.Count > len(list.ProductAttributes) {
+		// DefectDojo doesn't cap the page size of these tables.
+		// The margin covers entries added in between.
+		list, resp, err = s.List(ctx, &ListOptions{Limit: list.Count + 100}, opts...)
+	}
+	if err != nil {
+		return nil, resp, err
+	}
+	for _, a := range list.ProductAttributes {
+		if a.Value == value {
+			return a, resp, nil
 		}
 	}
+	return nil, resp, fmt.Errorf("defectdojo: %s %q: %w", s.kind, value, ErrNotFound)
 }
 
 // Create creates an entry. Its read-only ID is ignored. A value that is taken
@@ -204,7 +205,8 @@ func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribu
 
 // Update replaces the writable fields of the entry with the given ID: an
 // empty Icon clears it. Value must be set, as DefectDojo requires it, but
-// DefectDojo ignores it: set it to the current value.
+// DefectDojo ignores it: set it to the current value (another entry's value
+// is a 400, since DefectDojo still checks that it is unique).
 //
 // DefectDojo API: PUT /api/v2/product_platforms/{id}/
 // DefectDojo API: PUT /api/v2/product_lifecycles/{id}/

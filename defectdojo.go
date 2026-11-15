@@ -77,6 +77,7 @@ type Client struct {
 	Regulations              *RegulationsService
 	SLAConfigurations        *SLAConfigurationsService
 	SystemSettings           *SystemSettingsService
+	TestTypes                *TestTypesService
 	UserProfile              *UserProfileService
 	Users                    *UsersService
 }
@@ -199,6 +200,7 @@ func (c *Client) initServices() {
 	c.Regulations = (*RegulationsService)(&c.common)
 	c.SLAConfigurations = (*SLAConfigurationsService)(&c.common)
 	c.SystemSettings = (*SystemSettingsService)(&c.common)
+	c.TestTypes = (*TestTypesService)(&c.common)
 	c.UserProfile = (*UserProfileService)(&c.common)
 	c.Users = (*UsersService)(&c.common)
 }

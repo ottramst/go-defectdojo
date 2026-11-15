@@ -8,6 +8,7 @@ FEATURES:
 * New `NoteTypes` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete`, `DeletePreview` and `CountNotes`. Deleting a note type deletes every note of the type, which `CountNotes` counts. `Create` sends every field, so `IsActive` and `IsMandatory`, which DefectDojo defaults to `true`, are `false` unless they are set ([#23](https://github.com/ottramst/go-defectdojo/issues/23))
 * New `ProductPlatforms`, `ProductLifecycles` and `ProductOrigins` services, one `ProductAttributesService` type for DefectDojo's three lookup tables of product attributes: `List`, `ListAll`, `Get`, `GetByValue`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`. The value can't change, so `ProductAttributePatch` has no field for it; deleting an entry that products use is a 409 ([#27](https://github.com/ottramst/go-defectdojo/issues/27))
 * New `Regulations` service: `List`, `ListAll`, `Get`, `GetByName`, `GetByAcronym`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, with the `RegulationCategory*` constants. Deleting a regulation silently removes it from the products it applies to ([#22](https://github.com/ottramst/go-defectdojo/issues/22))
+* New `TestTypes` service: `List`, `ListAll`, `Get` and `GetByName`. It only reads test types ([#28](https://github.com/ottramst/go-defectdojo/issues/28))
 
 ## v0.3.0
 
