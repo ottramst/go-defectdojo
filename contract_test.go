@@ -203,6 +203,7 @@ type openAPISchema struct {
 	Items      *openAPISchema            `json:"items"`
 	AllOf      []*openAPISchema          `json:"allOf"`
 	OneOf      []*openAPISchema          `json:"oneOf"`
+	Enum       []any                     `json:"enum"`
 }
 
 func loadContractSpec(t *testing.T, path string) *openAPISpec {
@@ -243,6 +244,7 @@ func (s *openAPISpec) resolve(p *openAPISchema) *openAPISchema {
 
 var (
 	timeType     = reflect.TypeFor[time.Time]()
+	stringType   = reflect.TypeFor[string]()
 	dateType     = reflect.TypeFor[Date]()
 	nullableName = reflect.TypeFor[Nullable[int]]().Name()[:len("Nullable")]
 )
@@ -375,10 +377,16 @@ func unwrap(ft reflect.Type) (reflect.Type, bool) {
 }
 
 func checkType(spec *openAPISpec, ft reflect.Type, prop *openAPISchema) error {
-	want := prop.Type
+	want, enum := prop.Type, len(prop.Enum) > 0
 	if want == "" && len(prop.OneOf) > 0 {
 		// Enums of a value or "" are oneOf the value's type and a blank enum.
-		want = spec.resolve(prop.OneOf[0]).Type
+		first := spec.resolve(prop.OneOf[0])
+		want, enum = first.Type, len(first.Enum) > 0
+	}
+	// A field with fixed values has a named type with constants: changing a
+	// string field's type after v1 would be incompatible.
+	if enum && want == "string" && ft == stringType {
+		return fmt.Errorf("Go string for an enum: give it a named string type")
 	}
 	if want == "" {
 		return nil // untyped: any JSON value

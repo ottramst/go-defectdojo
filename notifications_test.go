@@ -41,9 +41,11 @@ func TestNotificationSettings_UnmarshalJSON(t *testing.T) {
 	if err := json.Unmarshal([]byte(`{"scan_added_empty":1}`), &got); err == nil {
 		t.Error("Unmarshal(scan_added_empty 1) error = nil, want error")
 	}
-	// Without scan_added_empty, it stays nil.
-	if err := json.Unmarshal([]byte(`{"id":1}`), &got); err != nil || got.ScanAddedEmpty != nil {
-		t.Errorf("Unmarshal(no scan_added_empty) = %#v, %v; want nil", got.ScanAddedEmpty, err)
+	// Without scan_added_empty, the field is left as it is, as encoding/json
+	// leaves the others.
+	got = defectdojo.NotificationSettings{ScanAddedEmpty: []defectdojo.NotificationChannel{"mail"}}
+	if err := json.Unmarshal([]byte(`{"id":1}`), &got); err != nil || !reflect.DeepEqual(got.ScanAddedEmpty, []defectdojo.NotificationChannel{"mail"}) {
+		t.Errorf("Unmarshal(no scan_added_empty) = %#v, %v; want [mail] kept", got.ScanAddedEmpty, err)
 	}
 }
 

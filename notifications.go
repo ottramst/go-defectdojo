@@ -122,6 +122,10 @@ func (n *NotificationSettings) UnmarshalJSON(data []byte) error {
 	if err := json.Unmarshal(data, &v); err != nil {
 		return err
 	}
+	// As for the other fields, a missing value leaves the field as it is.
+	if len(v.ScanAddedEmpty) == 0 {
+		return nil
+	}
 	channels, err := decodeChannels(v.ScanAddedEmpty)
 	if err != nil {
 		return err
