@@ -1,0 +1,12 @@
+{
+  "count": 1,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "Product_Platform",
+      "id": 8,
+      "name": "Kiosk"
+    }
+  ]
+}

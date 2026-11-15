@@ -54,6 +54,7 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Announcements | CRUD, partial update, list with an iterator, the current announcement, delete preview ✅ |
 | Regulations | CRUD, partial update, list with an iterator, lookup by name and by acronym, delete preview ✅ |
 | CI/CD infrastructure | CRUD, partial update, list with an iterator, lookup by name and type, delete preview ✅ |
+| Product platforms, lifecycles and origins | CRUD, partial update, list with an iterator, lookup by value, delete preview ✅ |
 
 [COVERAGE.md](COVERAGE.md) lists every endpoint of the DefectDojo OpenAPI schemas and the method that
 implements it.

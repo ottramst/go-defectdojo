@@ -1,0 +1,3 @@
+{
+  "message": "It cannot be deleted while 1 other record still refers to it. Records that refer to it: product."
+}

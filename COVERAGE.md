@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**108 of 404 endpoints implemented.**
+**129 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -48,9 +48,9 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [oa3](#oa3) | 1 / 1 |
 | [organizations](#organizations) | 0 / 8 |
 | [product_api_scan_configurations](#product_api_scan_configurations) | 0 / 7 |
-| [product_lifecycles](#product_lifecycles) | 0 / 7 |
-| [product_origins](#product_origins) | 0 / 7 |
-| [product_platforms](#product_platforms) | 0 / 7 |
+| [product_lifecycles](#product_lifecycles) | 7 / 7 |
+| [product_origins](#product_origins) | 7 / 7 |
+| [product_platforms](#product_platforms) | 7 / 7 |
 | [product_types](#product_types) | 7 / 8 |
 | [products](#products) | 7 / 8 |
 | [regulations](#regulations) | 7 / 7 |
@@ -506,37 +506,37 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/product_lifecycles/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/product_lifecycles/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/product_lifecycles/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/product_lifecycles/` | ✅ | ✅ | `ProductAttributesService.List` |  |
+| POST | `/api/v2/product_lifecycles/` | ✅ | ✅ | `ProductAttributesService.Create` |  |
+| GET | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ | `ProductAttributesService.Get` |  |
+| PUT | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ | `ProductAttributesService.Update` |  |
+| PATCH | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ | `ProductAttributesService.Patch` |  |
+| DELETE | `/api/v2/product_lifecycles/{id}/` | ✅ | ✅ | `ProductAttributesService.Delete` |  |
+| GET | `/api/v2/product_lifecycles/{id}/delete_preview/` | ✅ | ✅ | `ProductAttributesService.DeletePreview` |  |
 
 ## product_origins
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/product_origins/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/product_origins/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/product_origins/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/product_origins/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/product_origins/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/product_origins/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/product_origins/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/product_origins/` | ✅ | ✅ | `ProductAttributesService.List` |  |
+| POST | `/api/v2/product_origins/` | ✅ | ✅ | `ProductAttributesService.Create` |  |
+| GET | `/api/v2/product_origins/{id}/` | ✅ | ✅ | `ProductAttributesService.Get` |  |
+| PUT | `/api/v2/product_origins/{id}/` | ✅ | ✅ | `ProductAttributesService.Update` |  |
+| PATCH | `/api/v2/product_origins/{id}/` | ✅ | ✅ | `ProductAttributesService.Patch` |  |
+| DELETE | `/api/v2/product_origins/{id}/` | ✅ | ✅ | `ProductAttributesService.Delete` |  |
+| GET | `/api/v2/product_origins/{id}/delete_preview/` | ✅ | ✅ | `ProductAttributesService.DeletePreview` |  |
 
 ## product_platforms
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/product_platforms/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/product_platforms/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/product_platforms/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/product_platforms/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/product_platforms/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/product_platforms/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/product_platforms/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/product_platforms/` | ✅ | ✅ | `ProductAttributesService.List` |  |
+| POST | `/api/v2/product_platforms/` | ✅ | ✅ | `ProductAttributesService.Create` |  |
+| GET | `/api/v2/product_platforms/{id}/` | ✅ | ✅ | `ProductAttributesService.Get` |  |
+| PUT | `/api/v2/product_platforms/{id}/` | ✅ | ✅ | `ProductAttributesService.Update` |  |
+| PATCH | `/api/v2/product_platforms/{id}/` | ✅ | ✅ | `ProductAttributesService.Patch` |  |
+| DELETE | `/api/v2/product_platforms/{id}/` | ✅ | ✅ | `ProductAttributesService.Delete` |  |
+| GET | `/api/v2/product_platforms/{id}/delete_preview/` | ✅ | ✅ | `ProductAttributesService.DeletePreview` |  |
 
 ## product_types
 
