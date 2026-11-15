@@ -106,9 +106,9 @@ type ListProductTypesOptions struct {
 	KeyProduct      *bool `url:"key_product,omitempty"`
 }
 
-// ProductTypeList is a page of product types.
-type ProductTypeList struct {
-	ProductTypes []*ProductType
+// ListProductTypesResult is a page of product types.
+type ListProductTypesResult struct {
+	Results []*ProductType
 
 	// Count is the number of product types that match the filters.
 	Count int
@@ -117,7 +117,7 @@ type ProductTypeList struct {
 // List returns a page of product types.
 //
 // DefectDojo API: GET /api/v2/product_types/
-func (s *ProductTypesService) List(ctx context.Context, opt *ListProductTypesOptions, opts ...RequestOption) (*ProductTypeList, *Response, error) {
+func (s *ProductTypesService) List(ctx context.Context, opt *ListProductTypesOptions, opts ...RequestOption) (*ListProductTypesResult, *Response, error) {
 	path, err := addQuery("/api/v2/product_types/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -127,7 +127,7 @@ func (s *ProductTypesService) List(ctx context.Context, opt *ListProductTypesOpt
 	if err != nil {
 		return nil, resp, err
 	}
-	return &ProductTypeList{ProductTypes: page.Results, Count: page.Count}, resp, nil
+	return &ListProductTypesResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the product types, starting at
@@ -147,14 +147,17 @@ func (s *ProductTypesService) ListAll(ctx context.Context, opt *ListProductTypes
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.ProductTypes, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetProductTypeOptions are the options of [ProductTypesService.Get].
+type GetProductTypeOptions struct{}
 
 // Get returns a product type by its ID.
 //
 // DefectDojo API: GET /api/v2/product_types/{id}/
-func (s *ProductTypesService) Get(ctx context.Context, id int, opts ...RequestOption) (*ProductType, *Response, error) {
+func (s *ProductTypesService) Get(ctx context.Context, id int, opt *GetProductTypeOptions, opts ...RequestOption) (*ProductType, *Response, error) {
 	if err := requirePositive("product type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -166,9 +169,12 @@ func (s *ProductTypesService) Get(ctx context.Context, id int, opts ...RequestOp
 	return pt, resp, nil
 }
 
+// GetProductTypeByNameOptions are the options of [ProductTypesService.GetByName].
+type GetProductTypeByNameOptions struct{}
+
 // GetByName returns the product type with exactly the given name. It returns
 // an error matching [ErrNotFound] when there is none.
-func (s *ProductTypesService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*ProductType, *Response, error) {
+func (s *ProductTypesService) GetByName(ctx context.Context, name string, opt *GetProductTypeByNameOptions, opts ...RequestOption) (*ProductType, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: product type name must not be empty")
 	}
@@ -178,7 +184,7 @@ func (s *ProductTypesService) GetByName(ctx context.Context, name string, opts .
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, pt := range list.ProductTypes {
+	for _, pt := range list.Results {
 		if pt.Name == name {
 			return pt, resp, nil
 		}
@@ -186,11 +192,14 @@ func (s *ProductTypesService) GetByName(ctx context.Context, name string, opts .
 	return nil, resp, fmt.Errorf("defectdojo: product type %q: %w", name, ErrNotFound)
 }
 
+// CreateProductTypeOptions are the options of [ProductTypesService.Create].
+type CreateProductTypeOptions struct{}
+
 // Create creates a product type. Its read-only fields are ignored. A name
 // that is taken is a 400 ([ErrBadRequest]) with a "name" field error.
 //
 // DefectDojo API: POST /api/v2/product_types/
-func (s *ProductTypesService) Create(ctx context.Context, pt *ProductType, opts ...RequestOption) (*ProductType, *Response, error) {
+func (s *ProductTypesService) Create(ctx context.Context, pt *ProductType, opt *CreateProductTypeOptions, opts ...RequestOption) (*ProductType, *Response, error) {
 	body, err := newProductTypeRequest(pt)
 	if err != nil {
 		return nil, nil, err
@@ -203,6 +212,9 @@ func (s *ProductTypesService) Create(ctx context.Context, pt *ProductType, opts 
 	return created, resp, nil
 }
 
+// UpdateProductTypeOptions are the options of [ProductTypesService.Update].
+type UpdateProductTypeOptions struct{}
+
 // Update replaces the writable fields of the product type with the given ID.
 // Every writable field is sent: an empty Description clears it, and a nil
 // AuthorizedUsers removes all authorized users. Update a product type
@@ -210,7 +222,7 @@ func (s *ProductTypesService) Create(ctx context.Context, pt *ProductType, opts 
 // [ProductTypesService.Patch].
 //
 // DefectDojo API: PUT /api/v2/product_types/{id}/
-func (s *ProductTypesService) Update(ctx context.Context, id int, pt *ProductType, opts ...RequestOption) (*ProductType, *Response, error) {
+func (s *ProductTypesService) Update(ctx context.Context, id int, pt *ProductType, opt *UpdateProductTypeOptions, opts ...RequestOption) (*ProductType, *Response, error) {
 	if err := requirePositive("product type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -226,10 +238,13 @@ func (s *ProductTypesService) Update(ctx context.Context, id int, pt *ProductTyp
 	return updated, resp, nil
 }
 
+// PatchProductTypeOptions are the options of [ProductTypesService.Patch].
+type PatchProductTypeOptions struct{}
+
 // Patch changes the fields of the product type that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/product_types/{id}/
-func (s *ProductTypesService) Patch(ctx context.Context, id int, patch *ProductTypePatch, opts ...RequestOption) (*ProductType, *Response, error) {
+func (s *ProductTypesService) Patch(ctx context.Context, id int, patch *ProductTypePatch, opt *PatchProductTypeOptions, opts ...RequestOption) (*ProductType, *Response, error) {
 	if err := requirePositive("product type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -250,6 +265,9 @@ func (s *ProductTypesService) Patch(ctx context.Context, id int, patch *ProductT
 	return updated, resp, nil
 }
 
+// DeleteProductTypeOptions are the options of [ProductTypesService.Delete].
+type DeleteProductTypeOptions struct{}
+
 // Delete deletes a product type by its ID.
 //
 // Deleting a product type also deletes its products, with their engagements,
@@ -261,7 +279,7 @@ func (s *ProductTypesService) Patch(ctx context.Context, id int, patch *ProductT
 // [ProductTypesService.Get] until it returns [ErrNotFound].
 //
 // DefectDojo API: DELETE /api/v2/product_types/{id}/
-func (s *ProductTypesService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *ProductTypesService) Delete(ctx context.Context, id int, opt *DeleteProductTypeOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("product type ID", id); err != nil {
 		return nil, err
 	}
@@ -281,13 +299,18 @@ type DeletedObject struct {
 	Name string `json:"name"`
 }
 
-// DeletePreviewList is a page of the objects a delete would remove.
-type DeletePreviewList struct {
-	Objects []*DeletedObject
+// DeletePreviewResult is a page of the objects a delete would remove.
+type DeletePreviewResult struct {
+	Results []*DeletedObject
 
 	// Count is the number of objects the delete would remove, including the
 	// object itself.
 	Count int
+}
+
+// DeletePreviewProductTypeOptions are the options of [ProductTypesService.DeletePreview].
+type DeletePreviewProductTypeOptions struct {
+	ListOptions
 }
 
 // DeletePreview returns a page of the objects that deleting the product type
@@ -297,7 +320,7 @@ type DeletePreviewList struct {
 // is slow for product types with many findings.
 //
 // DefectDojo API: GET /api/v2/product_types/{id}/delete_preview/
-func (s *ProductTypesService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *ProductTypesService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewProductTypeOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("product type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -310,14 +333,17 @@ func (s *ProductTypesService) DeletePreview(ctx context.Context, id int, opt *Li
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
+
+// CountProductTypeProductsOptions are the options of [ProductTypesService.CountProducts].
+type CountProductTypeProductsOptions struct{}
 
 // CountProducts returns the number of products of the product type, which a
 // delete of the product type would also delete. It reads the count of the
 // products list (GET /api/v2/products/?prod_type={id}), which is cheap on
 // every supported version.
-func (s *ProductTypesService) CountProducts(ctx context.Context, id int, opts ...RequestOption) (int, *Response, error) {
+func (s *ProductTypesService) CountProducts(ctx context.Context, id int, opt *CountProductTypeProductsOptions, opts ...RequestOption) (int, *Response, error) {
 	if err := requirePositive("product type ID", id); err != nil {
 		return 0, nil, err
 	}

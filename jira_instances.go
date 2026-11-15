@@ -23,7 +23,7 @@ type JiraInstancesService service
 
 // JiraInstance is a DefectDojo Jira instance. The same type is used for reads
 // and writes; the read-only ID is ignored when writing. Its password is
-// write-only: see [JiraInstanceWrite].
+// write-only: see [CreateJiraInstanceRequest].
 type JiraInstance struct {
 	ID int `json:"id"`
 
@@ -79,10 +79,10 @@ type JiraInstance struct {
 	FindingJiraSync           bool `json:"finding_jira_sync"`
 }
 
-// JiraInstanceWrite is the body of [JiraInstancesService.Create] and
+// CreateJiraInstanceRequest is the body of [JiraInstancesService.Create] and
 // [JiraInstancesService.Update]: a Jira instance and the password or API token
 // of its account, which DefectDojo never returns.
-type JiraInstanceWrite struct {
+type CreateJiraInstanceRequest struct {
 	JiraInstance
 
 	// Password is the password or API token of the Jira account (at most
@@ -119,7 +119,7 @@ type jiraInstanceRequest struct {
 
 // newJiraInstanceRequest validates a Jira instance and its password and
 // returns the request body.
-func newJiraInstanceRequest(ji *JiraInstanceWrite) (*jiraInstanceRequest, error) {
+func newJiraInstanceRequest(ji *CreateJiraInstanceRequest) (*jiraInstanceRequest, error) {
 	if ji == nil {
 		return nil, errors.New("defectdojo: Jira instance must not be nil")
 	}
@@ -197,9 +197,9 @@ type ListJiraInstancesOptions struct {
 	URL string `url:"url,omitempty"`
 }
 
-// JiraInstanceList is a page of Jira instances.
-type JiraInstanceList struct {
-	JiraInstances []*JiraInstance
+// ListJiraInstancesResult is a page of Jira instances.
+type ListJiraInstancesResult struct {
+	Results []*JiraInstance
 
 	// Count is the number of Jira instances that match the filters.
 	Count int
@@ -208,7 +208,7 @@ type JiraInstanceList struct {
 // List returns a page of Jira instances, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/jira_instances/
-func (s *JiraInstancesService) List(ctx context.Context, opt *ListJiraInstancesOptions, opts ...RequestOption) (*JiraInstanceList, *Response, error) {
+func (s *JiraInstancesService) List(ctx context.Context, opt *ListJiraInstancesOptions, opts ...RequestOption) (*ListJiraInstancesResult, *Response, error) {
 	path, err := addQuery("/api/v2/jira_instances/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -218,7 +218,7 @@ func (s *JiraInstancesService) List(ctx context.Context, opt *ListJiraInstancesO
 	if err != nil {
 		return nil, resp, err
 	}
-	return &JiraInstanceList{JiraInstances: page.Results, Count: page.Count}, resp, nil
+	return &ListJiraInstancesResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the Jira instances, starting at
@@ -238,14 +238,17 @@ func (s *JiraInstancesService) ListAll(ctx context.Context, opt *ListJiraInstanc
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.JiraInstances, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetJiraInstanceOptions are the options of [JiraInstancesService.Get].
+type GetJiraInstanceOptions struct{}
 
 // Get returns a Jira instance by its ID.
 //
 // DefectDojo API: GET /api/v2/jira_instances/{id}/
-func (s *JiraInstancesService) Get(ctx context.Context, id int, opts ...RequestOption) (*JiraInstance, *Response, error) {
+func (s *JiraInstancesService) Get(ctx context.Context, id int, opt *GetJiraInstanceOptions, opts ...RequestOption) (*JiraInstance, *Response, error) {
 	if err := requirePositive("Jira instance ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -257,6 +260,9 @@ func (s *JiraInstancesService) Get(ctx context.Context, id int, opts ...RequestO
 	return ji, resp, nil
 }
 
+// GetJiraInstanceByNameOptions are the options of [JiraInstancesService.GetByName].
+type GetJiraInstanceByNameOptions struct{}
+
 // GetByName returns the Jira instance whose ConfigurationName is exactly the
 // given name, compared case-sensitively. It returns an error matching
 // [ErrNotFound] when there is none, and an error matching [ErrAmbiguous] that
@@ -265,7 +271,7 @@ func (s *JiraInstancesService) Get(ctx context.Context, id int, opts ...RequestO
 //
 // DefectDojo can't filter Jira instances by name, so GetByName pages through
 // all of them; the returned response is the last page's.
-func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*JiraInstance, *Response, error) {
+func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opt *GetJiraInstanceByNameOptions, opts ...RequestOption) (*JiraInstance, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: Jira instance name must not be empty")
 	}
@@ -274,21 +280,21 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opts 
 		ids   []int
 		resp  *Response
 	)
-	opt := &ListJiraInstancesOptions{ListOptions: ListOptions{Limit: 100}}
+	listOpt := &ListJiraInstancesOptions{ListOptions: ListOptions{Limit: 100}}
 	for {
-		list, r, err := s.List(ctx, opt, opts...)
+		list, r, err := s.List(ctx, listOpt, opts...)
 		resp = r
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, ji := range list.JiraInstances {
+		for _, ji := range list.Results {
 			if ji.ConfigurationName == name {
 				found = ji
 				ids = append(ids, ji.ID)
 			}
 		}
-		opt.Offset += len(list.JiraInstances)
-		if len(list.JiraInstances) == 0 || opt.Offset >= list.Count {
+		listOpt.Offset += len(list.Results)
+		if len(list.Results) == 0 || listOpt.Offset >= list.Count {
 			break
 		}
 	}
@@ -302,6 +308,9 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opts 
 	}
 }
 
+// CreateJiraInstanceOptions are the options of [JiraInstancesService.Create].
+type CreateJiraInstanceOptions struct{}
+
 // Create creates a Jira instance. DefectDojo doesn't test the connection.
 //
 // Every writable field is sent, except an empty ConfigurationName or
@@ -309,7 +318,7 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opts 
 // Password and the five severity mappings must not be empty.
 //
 // DefectDojo API: POST /api/v2/jira_instances/
-func (s *JiraInstancesService) Create(ctx context.Context, ji *JiraInstanceWrite, opts ...RequestOption) (*JiraInstance, *Response, error) {
+func (s *JiraInstancesService) Create(ctx context.Context, ji *CreateJiraInstanceRequest, opt *CreateJiraInstanceOptions, opts ...RequestOption) (*JiraInstance, *Response, error) {
 	body, err := newJiraInstanceRequest(ji)
 	if err != nil {
 		return nil, nil, err
@@ -322,13 +331,16 @@ func (s *JiraInstancesService) Create(ctx context.Context, ji *JiraInstanceWrite
 	return created, resp, nil
 }
 
+// UpdateJiraInstanceOptions are the options of [JiraInstancesService.Update].
+type UpdateJiraInstanceOptions struct{}
+
 // Update replaces the writable fields of the Jira instance with the given ID.
 // DefectDojo requires the password on every update; to keep it, use
 // [JiraInstancesService.Patch]. An empty ConfigurationName or
 // DefaultIssueType is left out, which keeps the current value.
 //
 // DefectDojo API: PUT /api/v2/jira_instances/{id}/
-func (s *JiraInstancesService) Update(ctx context.Context, id int, ji *JiraInstanceWrite, opts ...RequestOption) (*JiraInstance, *Response, error) {
+func (s *JiraInstancesService) Update(ctx context.Context, id int, ji *CreateJiraInstanceRequest, opt *UpdateJiraInstanceOptions, opts ...RequestOption) (*JiraInstance, *Response, error) {
 	if err := requirePositive("Jira instance ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -344,12 +356,15 @@ func (s *JiraInstancesService) Update(ctx context.Context, id int, ji *JiraInsta
 	return updated, resp, nil
 }
 
+// PatchJiraInstanceOptions are the options of [JiraInstancesService.Patch].
+type PatchJiraInstanceOptions struct{}
+
 // Patch changes the fields of the Jira instance that are set in patch. A
 // patch without a Password keeps the stored one, unless it changes the URL;
 // see [JiraInstancePatch].
 //
 // DefectDojo API: PATCH /api/v2/jira_instances/{id}/
-func (s *JiraInstancesService) Patch(ctx context.Context, id int, patch *JiraInstancePatch, opts ...RequestOption) (*JiraInstance, *Response, error) {
+func (s *JiraInstancesService) Patch(ctx context.Context, id int, patch *JiraInstancePatch, opt *PatchJiraInstanceOptions, opts ...RequestOption) (*JiraInstance, *Response, error) {
 	if err := requirePositive("Jira instance ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -364,6 +379,9 @@ func (s *JiraInstancesService) Patch(ctx context.Context, id int, patch *JiraIns
 	return updated, resp, nil
 }
 
+// DeleteJiraInstanceOptions are the options of [JiraInstancesService.Delete].
+type DeleteJiraInstanceOptions struct{}
+
 // Delete deletes a Jira instance by its ID.
 //
 // DefectDojo answers a delete of an instance that Jira projects use with a
@@ -371,11 +389,16 @@ func (s *JiraInstancesService) Patch(ctx context.Context, id int, patch *JiraIns
 // doesn't show them: check [JiraInstancesService.CountJiraProjects] first.
 //
 // DefectDojo API: DELETE /api/v2/jira_instances/{id}/
-func (s *JiraInstancesService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *JiraInstancesService) Delete(ctx context.Context, id int, opt *DeleteJiraInstanceOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("Jira instance ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, jiraInstancePath(id), nil, nil, opts)
+}
+
+// DeletePreviewJiraInstanceOptions are the options of [JiraInstancesService.DeletePreview].
+type DeletePreviewJiraInstanceOptions struct {
+	ListOptions
 }
 
 // DeletePreview returns a page of the objects that deleting the Jira instance
@@ -384,7 +407,7 @@ func (s *JiraInstancesService) Delete(ctx context.Context, id int, opts ...Reque
 // [JiraInstancesService.Delete].
 //
 // DefectDojo API: GET /api/v2/jira_instances/{id}/delete_preview/
-func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewJiraInstanceOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("Jira instance ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -397,8 +420,11 @@ func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *L
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
+
+// CountJiraInstanceJiraProjectsOptions are the options of [JiraInstancesService.CountJiraProjects].
+type CountJiraInstanceJiraProjectsOptions struct{}
 
 // CountJiraProjects returns the number of Jira projects that use the Jira
 // instance, which keep it from being deleted. It reads the count of the Jira
@@ -406,7 +432,7 @@ func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *L
 // rejects instances that don't exist: the error then also matches
 // [ErrNotFound]. The count includes only the Jira projects of products and
 // engagements the caller may view.
-func (s *JiraInstancesService) CountJiraProjects(ctx context.Context, id int, opts ...RequestOption) (int, *Response, error) {
+func (s *JiraInstancesService) CountJiraProjects(ctx context.Context, id int, opt *CountJiraInstanceJiraProjectsOptions, opts ...RequestOption) (int, *Response, error) {
 	if err := requirePositive("Jira instance ID", id); err != nil {
 		return 0, nil, err
 	}

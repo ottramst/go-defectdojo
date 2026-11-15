@@ -110,9 +110,9 @@ type ListRegulationsOptions struct {
 	Name string `url:"name,omitempty"`
 }
 
-// RegulationList is a page of regulations.
-type RegulationList struct {
-	Regulations []*Regulation
+// ListRegulationsResult is a page of regulations.
+type ListRegulationsResult struct {
+	Results []*Regulation
 
 	// Count is the number of regulations that match the filters.
 	Count int
@@ -121,7 +121,7 @@ type RegulationList struct {
 // List returns a page of regulations, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/regulations/
-func (s *RegulationsService) List(ctx context.Context, opt *ListRegulationsOptions, opts ...RequestOption) (*RegulationList, *Response, error) {
+func (s *RegulationsService) List(ctx context.Context, opt *ListRegulationsOptions, opts ...RequestOption) (*ListRegulationsResult, *Response, error) {
 	path, err := addQuery("/api/v2/regulations/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -131,7 +131,7 @@ func (s *RegulationsService) List(ctx context.Context, opt *ListRegulationsOptio
 	if err != nil {
 		return nil, resp, err
 	}
-	return &RegulationList{Regulations: page.Results, Count: page.Count}, resp, nil
+	return &ListRegulationsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the regulations, starting at opt.Offset.
@@ -151,14 +151,17 @@ func (s *RegulationsService) ListAll(ctx context.Context, opt *ListRegulationsOp
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Regulations, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetRegulationOptions are the options of [RegulationsService.Get].
+type GetRegulationOptions struct{}
 
 // Get returns a regulation by its ID.
 //
 // DefectDojo API: GET /api/v2/regulations/{id}/
-func (s *RegulationsService) Get(ctx context.Context, id int, opts ...RequestOption) (*Regulation, *Response, error) {
+func (s *RegulationsService) Get(ctx context.Context, id int, opt *GetRegulationOptions, opts ...RequestOption) (*Regulation, *Response, error) {
 	if err := requirePositive("regulation ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -170,9 +173,12 @@ func (s *RegulationsService) Get(ctx context.Context, id int, opts ...RequestOpt
 	return r, resp, nil
 }
 
+// GetRegulationByNameOptions are the options of [RegulationsService.GetByName].
+type GetRegulationByNameOptions struct{}
+
 // GetByName returns the regulation with exactly the given name. It returns an
 // error matching [ErrNotFound] when there is none.
-func (s *RegulationsService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*Regulation, *Response, error) {
+func (s *RegulationsService) GetByName(ctx context.Context, name string, opt *GetRegulationByNameOptions, opts ...RequestOption) (*Regulation, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: regulation name must not be empty")
 	}
@@ -182,7 +188,7 @@ func (s *RegulationsService) GetByName(ctx context.Context, name string, opts ..
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, r := range list.Regulations {
+	for _, r := range list.Results {
 		if r.Name == name {
 			return r, resp, nil
 		}
@@ -190,40 +196,46 @@ func (s *RegulationsService) GetByName(ctx context.Context, name string, opts ..
 	return nil, resp, fmt.Errorf("defectdojo: regulation %q: %w", name, ErrNotFound)
 }
 
+// GetRegulationByAcronymOptions are the options of [RegulationsService.GetByAcronym].
+type GetRegulationByAcronymOptions struct{}
+
 // GetByAcronym returns the regulation with exactly the given acronym,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
 // there is none.
 //
 // DefectDojo cannot filter regulations by acronym, so GetByAcronym pages
 // through all of them; the returned response is the last page's.
-func (s *RegulationsService) GetByAcronym(ctx context.Context, acronym string, opts ...RequestOption) (*Regulation, *Response, error) {
+func (s *RegulationsService) GetByAcronym(ctx context.Context, acronym string, opt *GetRegulationByAcronymOptions, opts ...RequestOption) (*Regulation, *Response, error) {
 	if acronym == "" {
 		return nil, nil, errors.New("defectdojo: regulation acronym must not be empty")
 	}
-	opt := &ListRegulationsOptions{ListOptions: ListOptions{Limit: 100}}
+	listOpt := &ListRegulationsOptions{ListOptions: ListOptions{Limit: 100}}
 	for {
-		list, resp, err := s.List(ctx, opt, opts...)
+		list, resp, err := s.List(ctx, listOpt, opts...)
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, r := range list.Regulations {
+		for _, r := range list.Results {
 			if r.Acronym == acronym {
 				return r, resp, nil
 			}
 		}
-		opt.Offset += len(list.Regulations)
-		if len(list.Regulations) == 0 || opt.Offset >= list.Count {
+		listOpt.Offset += len(list.Results)
+		if len(list.Results) == 0 || listOpt.Offset >= list.Count {
 			return nil, resp, fmt.Errorf("defectdojo: regulation with acronym %q: %w", acronym, ErrNotFound)
 		}
 	}
 }
+
+// CreateRegulationOptions are the options of [RegulationsService.Create].
+type CreateRegulationOptions struct{}
 
 // Create creates a regulation. Its read-only ID is ignored. A name or acronym
 // that is taken is a 400 ([ErrBadRequest]) with a "name" or "acronym" field
 // error.
 //
 // DefectDojo API: POST /api/v2/regulations/
-func (s *RegulationsService) Create(ctx context.Context, r *Regulation, opts ...RequestOption) (*Regulation, *Response, error) {
+func (s *RegulationsService) Create(ctx context.Context, r *Regulation, opt *CreateRegulationOptions, opts ...RequestOption) (*Regulation, *Response, error) {
 	body, err := newRegulationRequest(r)
 	if err != nil {
 		return nil, nil, err
@@ -236,11 +248,14 @@ func (s *RegulationsService) Create(ctx context.Context, r *Regulation, opts ...
 	return created, resp, nil
 }
 
+// UpdateRegulationOptions are the options of [RegulationsService.Update].
+type UpdateRegulationOptions struct{}
+
 // Update replaces the writable fields of the regulation with the given ID.
 // Every writable field is sent: an empty Description or Reference clears it.
 //
 // DefectDojo API: PUT /api/v2/regulations/{id}/
-func (s *RegulationsService) Update(ctx context.Context, id int, r *Regulation, opts ...RequestOption) (*Regulation, *Response, error) {
+func (s *RegulationsService) Update(ctx context.Context, id int, r *Regulation, opt *UpdateRegulationOptions, opts ...RequestOption) (*Regulation, *Response, error) {
 	if err := requirePositive("regulation ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -256,10 +271,13 @@ func (s *RegulationsService) Update(ctx context.Context, id int, r *Regulation, 
 	return updated, resp, nil
 }
 
+// PatchRegulationOptions are the options of [RegulationsService.Patch].
+type PatchRegulationOptions struct{}
+
 // Patch changes the fields of the regulation that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/regulations/{id}/
-func (s *RegulationsService) Patch(ctx context.Context, id int, patch *RegulationPatch, opts ...RequestOption) (*Regulation, *Response, error) {
+func (s *RegulationsService) Patch(ctx context.Context, id int, patch *RegulationPatch, opt *PatchRegulationOptions, opts ...RequestOption) (*Regulation, *Response, error) {
 	if err := requirePositive("regulation ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -274,22 +292,30 @@ func (s *RegulationsService) Patch(ctx context.Context, id int, patch *Regulatio
 	return updated, resp, nil
 }
 
+// DeleteRegulationOptions are the options of [RegulationsService.Delete].
+type DeleteRegulationOptions struct{}
+
 // Delete deletes a regulation by its ID. The products it applies to lose it
 // silently: DefectDojo removes it from their Regulations.
 //
 // DefectDojo API: DELETE /api/v2/regulations/{id}/
-func (s *RegulationsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *RegulationsService) Delete(ctx context.Context, id int, opt *DeleteRegulationOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("regulation ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, regulationPath(id), nil, nil, opts)
 }
 
+// DeletePreviewRegulationOptions are the options of [RegulationsService.DeletePreview].
+type DeletePreviewRegulationOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the regulation
 // would remove, the regulation itself included.
 //
 // DefectDojo API: GET /api/v2/regulations/{id}/delete_preview/
-func (s *RegulationsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *RegulationsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewRegulationOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("regulation ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -302,7 +328,7 @@ func (s *RegulationsService) DeletePreview(ctx context.Context, id int, opt *Lis
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func regulationPath(id int) string {

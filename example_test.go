@@ -30,7 +30,7 @@ func ExampleAuthService_Token() {
 	if err != nil {
 		log.Fatal(err)
 	}
-	token, _, err := login.Auth.Token(ctx, "admin", os.Getenv("DEFECTDOJO_PASSWORD"))
+	token, _, err := login.Auth.Token(ctx, "admin", os.Getenv("DEFECTDOJO_PASSWORD"), nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -58,7 +58,7 @@ func ExampleProductTypesService_Patch() {
 	_, _, err := client.ProductTypes.Patch(context.Background(), 4, &defectdojo.ProductTypePatch{
 		Description:     defectdojo.Null[string](),
 		CriticalProduct: new(true),
-	})
+	}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -68,14 +68,14 @@ func ExampleProductTypesService_Delete() {
 	var client *defectdojo.Client // from NewClient
 	ctx := context.Background()
 	// Deleting a product type deletes its products too: refuse if it has any.
-	n, _, err := client.ProductTypes.CountProducts(ctx, 4)
+	n, _, err := client.ProductTypes.CountProducts(ctx, 4, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	if n > 0 {
 		log.Fatalf("product type 4 still has %d products", n)
 	}
-	if _, err := client.ProductTypes.Delete(ctx, 4); err != nil && !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, err := client.ProductTypes.Delete(ctx, 4, nil); err != nil && !errors.Is(err, defectdojo.ErrNotFound) {
 		log.Fatal(err)
 	}
 }
@@ -92,7 +92,7 @@ func ExampleProductsService_Create() {
 		BusinessCriticality:      defectdojo.BusinessCriticalityHigh,
 		EnableFullRiskAcceptance: true,
 		Tags:                     []string{"pci"},
-	})
+	}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -104,7 +104,7 @@ func ExampleSLAConfigurationsService_Patch() {
 	_, _, err := client.SLAConfigurations.Patch(context.Background(), 3, &defectdojo.SLAConfigurationPatch{
 		Critical: new(3),
 		High:     new(14),
-	})
+	}, nil)
 	if defectdojo.IsSLARecalculating(err) {
 		// DefectDojo is still recalculating the SLA dates of an earlier
 		// change; try again once its Celery task is done.
@@ -126,7 +126,7 @@ func ExampleEngagementsService_Create() {
 		TargetStart:    defectdojo.DateOf(time.Now()),
 		TargetEnd:      defectdojo.Date{Year: 2099, Month: time.December, Day: 31},
 		BranchTag:      "main",
-	})
+	}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -138,11 +138,11 @@ func ExampleUsersService_Create() {
 	ctx := context.Background()
 	// Permission IDs differ between DefectDojo installations: look them up
 	// by codename.
-	perm, _, err := client.ConfigurationPermissions.GetByCodename(ctx, "add_product_type")
+	perm, _, err := client.ConfigurationPermissions.GetByCodename(ctx, "add_product_type", nil)
 	if err != nil {
 		log.Fatal(err)
 	}
-	u, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{
+	u, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{
 		User: defectdojo.User{
 			Username:                 "dependency-track",
 			Email:                    "dependency-track@example.com",
@@ -150,7 +150,7 @@ func ExampleUsersService_Create() {
 			ConfigurationPermissions: []int{perm.ID},
 		},
 		Password: "Initial-Passw0rd!",
-	})
+	}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -161,14 +161,14 @@ func ExampleNotificationsService_GetByScope() {
 	var client *defectdojo.Client // from NewClient
 	ctx := context.Background()
 	// DefectDojo creates the system-wide settings: find and change them.
-	system, _, err := client.Notifications.GetByScope(ctx, 0, 0, false)
+	system, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: 0, Product: 0, Template: false}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
 	_, _, err = client.Notifications.Patch(ctx, system.ID, &defectdojo.NotificationSettingsPatch{
 		SLABreach:      &[]string{defectdojo.NotificationChannelMail, defectdojo.NotificationChannelAlert},
 		ScanAddedEmpty: new(""), // no channel
-	})
+	}, nil)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -176,7 +176,7 @@ func ExampleNotificationsService_GetByScope() {
 
 func ExampleUserProfileService_Get() {
 	var client *defectdojo.Client // from NewClient
-	profile, _, err := client.UserProfile.Get(context.Background())
+	profile, _, err := client.UserProfile.Get(context.Background(), nil)
 	if err != nil {
 		log.Fatal(err)
 	}

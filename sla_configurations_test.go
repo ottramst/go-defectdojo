@@ -25,13 +25,13 @@ func TestSLAConfigurationsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 3 || len(list.SLAConfigurations) != 3 {
-		t.Fatalf("List() = %d of %d, want 3 of 3", len(list.SLAConfigurations), list.Count)
+	if list.Count != 3 || len(list.Results) != 3 {
+		t.Fatalf("List() = %d of %d, want 3 of 3", len(list.Results), list.Count)
 	}
-	if def := list.SLAConfigurations[0]; def.ID != 1 || def.Name != "Default" || def.Critical != 7 || !def.EnforceCritical {
+	if def := list.Results[0]; def.ID != 1 || def.Name != "Default" || def.Critical != 7 || !def.EnforceCritical {
 		t.Errorf("first SLA configuration = %+v, want the Default fixture", def)
 	}
-	if none := list.SLAConfigurations[1]; none.Name != "No SLA Enforced" || none.EnforceHigh {
+	if none := list.Results[1]; none.Name != "No SLA Enforced" || none.EnforceHigh {
 		t.Errorf("second SLA configuration = %+v, want the No SLA Enforced fixture", none)
 	}
 }
@@ -75,7 +75,7 @@ func TestSLAConfigurationsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "sla_configurations/get.json"))
 	})
 
-	sla, _, err := client.SLAConfigurations.Get(context.Background(), 18)
+	sla, _, err := client.SLAConfigurations.Get(context.Background(), 18, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -96,7 +96,7 @@ func TestSLAConfigurationsService_Get(t *testing.T) {
 		t.Errorf("Get() = %+v, want %+v", sla, want)
 	}
 
-	if _, _, err := client.SLAConfigurations.Get(context.Background(), 5); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.SLAConfigurations.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -121,12 +121,12 @@ func TestSLAConfigurationsService_GetByName(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":150,"results":[`+results+`]}`))
 	})
 
-	sla, _, err := client.SLAConfigurations.GetByName(context.Background(), "sla-120")
+	sla, _, err := client.SLAConfigurations.GetByName(context.Background(), "sla-120", nil)
 	if err != nil || sla.ID != 121 {
 		t.Errorf("GetByName() = %v, %v; want ID 121 from the second page", sla, err)
 	}
 	for _, name := range []string{"SLA-120", "sla-1200"} {
-		if _, _, err := client.SLAConfigurations.GetByName(context.Background(), name); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.SLAConfigurations.GetByName(context.Background(), name, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByName(%q) error = %v, want ErrNotFound", name, err)
 		}
 	}
@@ -137,7 +137,7 @@ func TestSLAConfigurationsService_GetByName_error(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/sla_configurations/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusForbidden, fixture(t, "errors/invalid_token.json"))
 	})
-	if _, _, err := client.SLAConfigurations.GetByName(context.Background(), "x"); !errors.Is(err, defectdojo.ErrForbidden) {
+	if _, _, err := client.SLAConfigurations.GetByName(context.Background(), "x", nil); !errors.Is(err, defectdojo.ErrForbidden) {
 		t.Errorf("GetByName() error = %v, want ErrForbidden", err)
 	}
 }
@@ -154,7 +154,7 @@ func TestSLAConfigurationsService_Create(t *testing.T) {
 	})
 
 	in := &defectdojo.SLAConfiguration{ID: 99, Name: "Strict", Critical: 3, EnforceCritical: true, High: 14, Medium: 60, Low: 90}
-	sla, resp, err := client.SLAConfigurations.Create(context.Background(), in)
+	sla, resp, err := client.SLAConfigurations.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -177,7 +177,7 @@ func TestSLAConfigurationsService_Update(t *testing.T) {
 	_, _, err := client.SLAConfigurations.Update(context.Background(), 18, &defectdojo.SLAConfiguration{
 		Name: "Strict", Description: "d", Critical: 1, High: 2, EnforceHigh: true, Medium: 3, Low: 4, EnforceLow: true,
 		RestartSLAOnReactivation: true,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -206,7 +206,7 @@ func TestSLAConfigurationsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "sla_configurations/get.json"))
 			})
-			if _, _, err := client.SLAConfigurations.Patch(context.Background(), 18, tt.patch); err != nil {
+			if _, _, err := client.SLAConfigurations.Patch(context.Background(), 18, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -218,7 +218,7 @@ func TestSLAConfigurationsService_Patch_recalculating(t *testing.T) {
 	mux.HandleFunc("PATCH /api/v2/sla_configurations/18/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusBadRequest, fixture(t, "errors/sla_recalculating.json"))
 	})
-	_, _, err := client.SLAConfigurations.Patch(context.Background(), 18, &defectdojo.SLAConfigurationPatch{Critical: new(5)})
+	_, _, err := client.SLAConfigurations.Patch(context.Background(), 18, &defectdojo.SLAConfigurationPatch{Critical: new(5)}, nil)
 	if !errors.Is(err, defectdojo.ErrBadRequest) || !defectdojo.IsSLARecalculating(err) {
 		t.Errorf("Patch() error = %v, want a 400 that IsSLARecalculating", err)
 	}
@@ -245,7 +245,7 @@ func TestIsSLARecalculating(t *testing.T) {
 			mux.HandleFunc("PATCH /api/v2/products/1/", func(w http.ResponseWriter, _ *http.Request) {
 				writeJSON(t, w, tt.status, []byte(tt.body))
 			})
-			_, _, err := client.Products.Patch(context.Background(), 1, &defectdojo.ProductPatch{})
+			_, _, err := client.Products.Patch(context.Background(), 1, &defectdojo.ProductPatch{}, nil)
 			if got := defectdojo.IsSLARecalculating(err); got != tt.want {
 				t.Errorf("IsSLARecalculating(%v) = %v, want %v", err, got, tt.want)
 			}
@@ -265,14 +265,14 @@ func TestSLAConfigurationsService_Delete(t *testing.T) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.SLAConfigurations.Delete(context.Background(), 18)
+	resp, err := client.SLAConfigurations.Delete(context.Background(), 18, nil)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
 	if resp.StatusCode != http.StatusNoContent {
 		t.Errorf("StatusCode = %d, want 204", resp.StatusCode)
 	}
-	_, err = client.SLAConfigurations.Delete(context.Background(), 1)
+	_, err = client.SLAConfigurations.Delete(context.Background(), 1, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || errResp.Message != "Unable to delete default SLA Configuration." {
 		t.Errorf("Delete(1) error = %v, want the 400 for the Default SLA configuration", err)
@@ -285,12 +285,12 @@ func TestSLAConfigurationsService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=10")
 		writeJSON(t, w, http.StatusOK, fixture(t, "sla_configurations/delete_preview.json"))
 	})
-	preview, _, err := client.SLAConfigurations.DeletePreview(context.Background(), 18, &defectdojo.ListOptions{Limit: 10})
+	preview, _, err := client.SLAConfigurations.DeletePreview(context.Background(), 18, &defectdojo.DeletePreviewSLAConfigurationOptions{ListOptions: defectdojo.ListOptions{Limit: 10}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Objects[0] != (defectdojo.DeletedObject{Model: "SLA_Configuration", ID: 18, Name: "Strict"}) {
-		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Objects)
+	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "SLA_Configuration", ID: 18, Name: "Strict"}) {
+		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
 
@@ -307,36 +307,36 @@ func TestSLAConfigurationsService_invalidArguments(t *testing.T) {
 		return &sla
 	}
 	calls := map[string]func() error{
-		"Get zero ID":     func() error { _, _, err := client.SLAConfigurations.Get(ctx, 0); return err },
-		"GetByName empty": func() error { _, _, err := client.SLAConfigurations.GetByName(ctx, ""); return err },
-		"Create nil":      func() error { _, _, err := client.SLAConfigurations.Create(ctx, nil); return err },
+		"Get zero ID":     func() error { _, _, err := client.SLAConfigurations.Get(ctx, 0, nil); return err },
+		"GetByName empty": func() error { _, _, err := client.SLAConfigurations.GetByName(ctx, "", nil); return err },
+		"Create nil":      func() error { _, _, err := client.SLAConfigurations.Create(ctx, nil, nil); return err },
 		"Create empty name": func() error {
-			_, _, err := client.SLAConfigurations.Create(ctx, with(func(s *defectdojo.SLAConfiguration) { s.Name = "" }))
+			_, _, err := client.SLAConfigurations.Create(ctx, with(func(s *defectdojo.SLAConfiguration) { s.Name = "" }), nil)
 			return err
 		},
 		"Create zero days": func() error {
-			_, _, err := client.SLAConfigurations.Create(ctx, &defectdojo.SLAConfiguration{Name: "x"})
+			_, _, err := client.SLAConfigurations.Create(ctx, &defectdojo.SLAConfiguration{Name: "x"}, nil)
 			return err
 		},
 		"Create zero low": func() error {
-			_, _, err := client.SLAConfigurations.Create(ctx, with(func(s *defectdojo.SLAConfiguration) { s.Low = 0 }))
+			_, _, err := client.SLAConfigurations.Create(ctx, with(func(s *defectdojo.SLAConfiguration) { s.Low = 0 }), nil)
 			return err
 		},
-		"Update negative ID": func() error { _, _, err := client.SLAConfigurations.Update(ctx, -1, &valid); return err },
+		"Update negative ID": func() error { _, _, err := client.SLAConfigurations.Update(ctx, -1, &valid, nil); return err },
 		"Update negative high": func() error {
-			_, _, err := client.SLAConfigurations.Update(ctx, 1, with(func(s *defectdojo.SLAConfiguration) { s.High = -5 }))
+			_, _, err := client.SLAConfigurations.Update(ctx, 1, with(func(s *defectdojo.SLAConfiguration) { s.High = -5 }), nil)
 			return err
 		},
 		"Patch zero ID": func() error {
-			_, _, err := client.SLAConfigurations.Patch(ctx, 0, &defectdojo.SLAConfigurationPatch{})
+			_, _, err := client.SLAConfigurations.Patch(ctx, 0, &defectdojo.SLAConfigurationPatch{}, nil)
 			return err
 		},
-		"Patch nil": func() error { _, _, err := client.SLAConfigurations.Patch(ctx, 1, nil); return err },
+		"Patch nil": func() error { _, _, err := client.SLAConfigurations.Patch(ctx, 1, nil, nil); return err },
 		"Patch zero medium": func() error {
-			_, _, err := client.SLAConfigurations.Patch(ctx, 1, &defectdojo.SLAConfigurationPatch{Medium: new(0)})
+			_, _, err := client.SLAConfigurations.Patch(ctx, 1, &defectdojo.SLAConfigurationPatch{Medium: new(0)}, nil)
 			return err
 		},
-		"Delete zero ID":        func() error { _, err := client.SLAConfigurations.Delete(ctx, 0); return err },
+		"Delete zero ID":        func() error { _, err := client.SLAConfigurations.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.SLAConfigurations.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

@@ -92,9 +92,9 @@ type ListNoteTypesOptions struct {
 	IsMandatory *bool `url:"is_mandatory,omitempty"`
 }
 
-// NoteTypeList is a page of note types.
-type NoteTypeList struct {
-	NoteTypes []*NoteType
+// ListNoteTypesResult is a page of note types.
+type ListNoteTypesResult struct {
+	Results []*NoteType
 
 	// Count is the number of note types that match the filters.
 	Count int
@@ -103,7 +103,7 @@ type NoteTypeList struct {
 // List returns a page of note types, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/note_type/
-func (s *NoteTypesService) List(ctx context.Context, opt *ListNoteTypesOptions, opts ...RequestOption) (*NoteTypeList, *Response, error) {
+func (s *NoteTypesService) List(ctx context.Context, opt *ListNoteTypesOptions, opts ...RequestOption) (*ListNoteTypesResult, *Response, error) {
 	path, err := addQuery("/api/v2/note_type/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -113,7 +113,7 @@ func (s *NoteTypesService) List(ctx context.Context, opt *ListNoteTypesOptions, 
 	if err != nil {
 		return nil, resp, err
 	}
-	return &NoteTypeList{NoteTypes: page.Results, Count: page.Count}, resp, nil
+	return &ListNoteTypesResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the note types, starting at opt.Offset. It
@@ -133,14 +133,17 @@ func (s *NoteTypesService) ListAll(ctx context.Context, opt *ListNoteTypesOption
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.NoteTypes, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetNoteTypeOptions are the options of [NoteTypesService.Get].
+type GetNoteTypeOptions struct{}
 
 // Get returns a note type by its ID.
 //
 // DefectDojo API: GET /api/v2/note_type/{id}/
-func (s *NoteTypesService) Get(ctx context.Context, id int, opts ...RequestOption) (*NoteType, *Response, error) {
+func (s *NoteTypesService) Get(ctx context.Context, id int, opt *GetNoteTypeOptions, opts ...RequestOption) (*NoteType, *Response, error) {
 	if err := requirePositive("note type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -152,9 +155,12 @@ func (s *NoteTypesService) Get(ctx context.Context, id int, opts ...RequestOptio
 	return nt, resp, nil
 }
 
+// GetNoteTypeByNameOptions are the options of [NoteTypesService.GetByName].
+type GetNoteTypeByNameOptions struct{}
+
 // GetByName returns the note type with exactly the given name. It returns an
 // error matching [ErrNotFound] when there is none.
-func (s *NoteTypesService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*NoteType, *Response, error) {
+func (s *NoteTypesService) GetByName(ctx context.Context, name string, opt *GetNoteTypeByNameOptions, opts ...RequestOption) (*NoteType, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: note type name must not be empty")
 	}
@@ -164,13 +170,16 @@ func (s *NoteTypesService) GetByName(ctx context.Context, name string, opts ...R
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, nt := range list.NoteTypes {
+	for _, nt := range list.Results {
 		if nt.Name == name {
 			return nt, resp, nil
 		}
 	}
 	return nil, resp, fmt.Errorf("defectdojo: note type %q: %w", name, ErrNotFound)
 }
+
+// CreateNoteTypeOptions are the options of [NoteTypesService.Create].
+type CreateNoteTypeOptions struct{}
 
 // Create creates a note type. Its read-only ID is ignored. A name that is
 // taken is a 400 ([ErrBadRequest]) with a "name" field error.
@@ -179,7 +188,7 @@ func (s *NoteTypesService) GetByName(ctx context.Context, name string, opts ...R
 // defaults to true, are false unless they are set.
 //
 // DefectDojo API: POST /api/v2/note_type/
-func (s *NoteTypesService) Create(ctx context.Context, nt *NoteType, opts ...RequestOption) (*NoteType, *Response, error) {
+func (s *NoteTypesService) Create(ctx context.Context, nt *NoteType, opt *CreateNoteTypeOptions, opts ...RequestOption) (*NoteType, *Response, error) {
 	body, err := newNoteTypeRequest(nt)
 	if err != nil {
 		return nil, nil, err
@@ -192,11 +201,14 @@ func (s *NoteTypesService) Create(ctx context.Context, nt *NoteType, opts ...Req
 	return created, resp, nil
 }
 
+// UpdateNoteTypeOptions are the options of [NoteTypesService.Update].
+type UpdateNoteTypeOptions struct{}
+
 // Update replaces the writable fields of the note type with the given ID.
 // Every writable field is sent.
 //
 // DefectDojo API: PUT /api/v2/note_type/{id}/
-func (s *NoteTypesService) Update(ctx context.Context, id int, nt *NoteType, opts ...RequestOption) (*NoteType, *Response, error) {
+func (s *NoteTypesService) Update(ctx context.Context, id int, nt *NoteType, opt *UpdateNoteTypeOptions, opts ...RequestOption) (*NoteType, *Response, error) {
 	if err := requirePositive("note type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -212,10 +224,13 @@ func (s *NoteTypesService) Update(ctx context.Context, id int, nt *NoteType, opt
 	return updated, resp, nil
 }
 
+// PatchNoteTypeOptions are the options of [NoteTypesService.Patch].
+type PatchNoteTypeOptions struct{}
+
 // Patch changes the fields of the note type that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/note_type/{id}/
-func (s *NoteTypesService) Patch(ctx context.Context, id int, patch *NoteTypePatch, opts ...RequestOption) (*NoteType, *Response, error) {
+func (s *NoteTypesService) Patch(ctx context.Context, id int, patch *NoteTypePatch, opt *PatchNoteTypeOptions, opts ...RequestOption) (*NoteType, *Response, error) {
 	if err := requirePositive("note type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -230,6 +245,9 @@ func (s *NoteTypesService) Patch(ctx context.Context, id int, patch *NoteTypePat
 	return updated, resp, nil
 }
 
+// DeleteNoteTypeOptions are the options of [NoteTypesService.Delete].
+type DeleteNoteTypeOptions struct{}
+
 // Delete deletes a note type by its ID.
 //
 // Deleting a note type also deletes every note of the type, on findings,
@@ -237,11 +255,16 @@ func (s *NoteTypesService) Patch(ctx context.Context, id int, patch *NoteTypePat
 // see how many.
 //
 // DefectDojo API: DELETE /api/v2/note_type/{id}/
-func (s *NoteTypesService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *NoteTypesService) Delete(ctx context.Context, id int, opt *DeleteNoteTypeOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("note type ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, noteTypePath(id), nil, nil, opts)
+}
+
+// DeletePreviewNoteTypeOptions are the options of [NoteTypesService.DeletePreview].
+type DeletePreviewNoteTypeOptions struct {
+	ListOptions
 }
 
 // DeletePreview returns a page of the objects that deleting the note type
@@ -251,7 +274,7 @@ func (s *NoteTypesService) Delete(ctx context.Context, id int, opts ...RequestOp
 // from UI edits; they can belong to notes of another type).
 //
 // DefectDojo API: GET /api/v2/note_type/{id}/delete_preview/
-func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewNoteTypeOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("note type ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -264,8 +287,11 @@ func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *ListO
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
+
+// CountNoteTypeNotesOptions are the options of [NoteTypesService.CountNotes].
+type CountNoteTypeNotesOptions struct{}
 
 // CountNotes returns the number of notes of the note type, which a delete of
 // the note type would also delete.
@@ -274,26 +300,26 @@ func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *ListO
 // delete preview (GET /api/v2/note_type/{id}/delete_preview/) and counts its
 // "Notes" entries; the preview also lists the note type, the notes' history
 // and their links.
-func (s *NoteTypesService) CountNotes(ctx context.Context, id int, opts ...RequestOption) (int, *Response, error) {
+func (s *NoteTypesService) CountNotes(ctx context.Context, id int, opt *CountNoteTypeNotesOptions, opts ...RequestOption) (int, *Response, error) {
 	if err := requirePositive("note type ID", id); err != nil {
 		return 0, nil, err
 	}
 	// DefectDojo 3.4 builds the whole preview for every page, so ask for
 	// large pages; 3.5 caps them at 250.
-	opt := &ListOptions{Limit: 250}
+	listOpt := &DeletePreviewNoteTypeOptions{ListOptions: ListOptions{Limit: 250}}
 	count := 0
 	for {
-		page, resp, err := s.DeletePreview(ctx, id, opt, opts...)
+		page, resp, err := s.DeletePreview(ctx, id, listOpt, opts...)
 		if err != nil {
 			return 0, resp, err
 		}
-		for _, o := range page.Objects {
+		for _, o := range page.Results {
 			if o.Model == "Notes" {
 				count++
 			}
 		}
-		opt.Offset += len(page.Objects)
-		if len(page.Objects) == 0 || opt.Offset >= page.Count {
+		listOpt.Offset += len(page.Results)
+		if len(page.Results) == 0 || listOpt.Offset >= page.Count {
 			return count, resp, nil
 		}
 	}

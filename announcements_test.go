@@ -16,13 +16,29 @@ func TestAnnouncementsService_List(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "announcements/list.json"))
 	})
 
-	list, _, err := client.Announcements.List(context.Background(), &defectdojo.ListOptions{Limit: 5})
+	list, _, err := client.Announcements.List(context.Background(), &defectdojo.ListAnnouncementsOptions{ListOptions: defectdojo.ListOptions{Limit: 5}})
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
 	want := defectdojo.Announcement{ID: 1, Message: "Maintenance on <b>Saturday</b>.", Style: defectdojo.AnnouncementStyleWarning, Dismissable: true}
-	if list.Count != 1 || len(list.Announcements) != 1 || *list.Announcements[0] != want {
-		t.Errorf("List() = %d %+v, want %+v", list.Count, list.Announcements, want)
+	if list.Count != 1 || len(list.Results) != 1 || *list.Results[0] != want {
+		t.Errorf("List() = %d %+v, want %+v", list.Count, list.Results, want)
+	}
+}
+
+func TestAnnouncementsService_List_filters(t *testing.T) {
+	mux, client := setup(t)
+	mux.HandleFunc("GET /api/v2/announcements/", func(w http.ResponseWriter, r *http.Request) {
+		testQuery(t, r, "dismissable=false&message=Maintenance+on+Saturday&style=warning")
+		writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"results":[]}`))
+	})
+	_, _, err := client.Announcements.List(context.Background(), &defectdojo.ListAnnouncementsOptions{
+		Message:     "Maintenance on Saturday",
+		Style:       defectdojo.AnnouncementStyleWarning,
+		Dismissable: new(false),
+	})
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
 	}
 }
 
@@ -54,7 +70,7 @@ func TestAnnouncementsService_Current(t *testing.T) {
 			testQuery(t, r, "")
 			writeJSON(t, w, http.StatusOK, fixture(t, "announcements/list.json"))
 		})
-		a, _, err := client.Announcements.Current(context.Background())
+		a, _, err := client.Announcements.Current(context.Background(), nil)
 		if err != nil || a.ID != 1 || a.Style != "warning" {
 			t.Errorf("Current() = %+v, %v; want the fixture", a, err)
 		}
@@ -64,7 +80,7 @@ func TestAnnouncementsService_Current(t *testing.T) {
 		mux.HandleFunc("GET /api/v2/announcements/", func(w http.ResponseWriter, _ *http.Request) {
 			writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"next":null,"previous":null,"results":[]}`))
 		})
-		if _, _, err := client.Announcements.Current(context.Background()); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.Announcements.Current(context.Background(), nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("Current() error = %v, want ErrNotFound", err)
 		}
 	})
@@ -73,7 +89,7 @@ func TestAnnouncementsService_Current(t *testing.T) {
 		mux.HandleFunc("GET /api/v2/announcements/", func(w http.ResponseWriter, _ *http.Request) {
 			writeJSON(t, w, http.StatusForbidden, fixture(t, "errors/invalid_token.json"))
 		})
-		if _, _, err := client.Announcements.Current(context.Background()); !errors.Is(err, defectdojo.ErrForbidden) {
+		if _, _, err := client.Announcements.Current(context.Background(), nil); !errors.Is(err, defectdojo.ErrForbidden) {
 			t.Errorf("Current() error = %v, want ErrForbidden", err)
 		}
 	})
@@ -88,11 +104,11 @@ func TestAnnouncementsService_Get(t *testing.T) {
 		}
 		writeJSON(t, w, http.StatusOK, fixture(t, "announcements/get.json"))
 	})
-	a, _, err := client.Announcements.Get(context.Background(), 1)
+	a, _, err := client.Announcements.Get(context.Background(), 1, nil)
 	if err != nil || a.Message != "Maintenance on <b>Saturday</b>." || !a.Dismissable {
 		t.Errorf("Get() = %+v, %v; want the fixture", a, err)
 	}
-	if _, _, err := client.Announcements.Get(context.Background(), 2); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Announcements.Get(context.Background(), 2, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(2) error = %v, want ErrNotFound", err)
 	}
 }
@@ -115,7 +131,7 @@ func TestAnnouncementsService_Create(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusCreated, fixture(t, "announcements/get.json"))
 			})
-			a, resp, err := client.Announcements.Create(context.Background(), tt.in)
+			a, resp, err := client.Announcements.Create(context.Background(), tt.in, nil)
 			if err != nil || resp.StatusCode != http.StatusCreated || a.ID != 1 {
 				t.Errorf("Create() = %+v, %v", a, err)
 			}
@@ -128,7 +144,7 @@ func TestAnnouncementsService_Create_exists(t *testing.T) {
 	mux.HandleFunc("POST /api/v2/announcements/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusBadRequest, fixture(t, "errors/announcement_exists.json"))
 	})
-	_, _, err := client.Announcements.Create(context.Background(), &defectdojo.Announcement{Message: "second"})
+	_, _, err := client.Announcements.Create(context.Background(), &defectdojo.Announcement{Message: "second"}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || errResp.Message != "No more than one Announcement is allowed" {
 		t.Errorf("Create() error = %v, want the 400 for a second announcement", err)
@@ -141,7 +157,7 @@ func TestAnnouncementsService_Update(t *testing.T) {
 		testJSONBody(t, r, `{"message":"m","style":"success","dismissable":false}`)
 		writeJSON(t, w, http.StatusOK, fixture(t, "announcements/get.json"))
 	})
-	if _, _, err := client.Announcements.Update(context.Background(), 1, &defectdojo.Announcement{Message: "m", Style: "success"}); err != nil {
+	if _, _, err := client.Announcements.Update(context.Background(), 1, &defectdojo.Announcement{Message: "m", Style: "success"}, nil); err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
 }
@@ -163,7 +179,7 @@ func TestAnnouncementsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "announcements/get.json"))
 			})
-			if _, _, err := client.Announcements.Patch(context.Background(), 1, tt.patch); err != nil {
+			if _, _, err := client.Announcements.Patch(context.Background(), 1, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -175,7 +191,7 @@ func TestAnnouncementsService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/announcements/1/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.Announcements.Delete(context.Background(), 1)
+	resp, err := client.Announcements.Delete(context.Background(), 1, nil)
 	if err != nil || resp.StatusCode != http.StatusNoContent {
 		t.Errorf("Delete() = %v, %v; want 204", resp, err)
 	}
@@ -187,12 +203,12 @@ func TestAnnouncementsService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=10")
 		writeJSON(t, w, http.StatusOK, fixture(t, "announcements/delete_preview.json"))
 	})
-	preview, _, err := client.Announcements.DeletePreview(context.Background(), 1, &defectdojo.ListOptions{Limit: 10})
+	preview, _, err := client.Announcements.DeletePreview(context.Background(), 1, &defectdojo.DeletePreviewAnnouncementOptions{ListOptions: defectdojo.ListOptions{Limit: 10}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 2 || preview.Objects[0].Model != "Announcement" || preview.Objects[1].Model != "UserAnnouncement" {
-		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Objects)
+	if preview.Count != 2 || preview.Results[0].Model != "Announcement" || preview.Results[1].Model != "UserAnnouncement" {
+		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
 
@@ -204,14 +220,14 @@ func TestAnnouncementsService_invalidArguments(t *testing.T) {
 	ctx := context.Background()
 	svc := client.Announcements
 	calls := map[string]func() error{
-		"Get zero ID":           func() error { _, _, err := svc.Get(ctx, 0); return err },
-		"Create nil":            func() error { _, _, err := svc.Create(ctx, nil); return err },
-		"Create empty message":  func() error { _, _, err := svc.Create(ctx, &defectdojo.Announcement{Style: "info"}); return err },
-		"Update zero ID":        func() error { _, _, err := svc.Update(ctx, 0, &defectdojo.Announcement{Message: "m"}); return err },
-		"Update empty message":  func() error { _, _, err := svc.Update(ctx, 1, &defectdojo.Announcement{}); return err },
-		"Patch zero ID":         func() error { _, _, err := svc.Patch(ctx, 0, &defectdojo.AnnouncementPatch{}); return err },
-		"Patch nil":             func() error { _, _, err := svc.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := svc.Delete(ctx, 0); return err },
+		"Get zero ID":           func() error { _, _, err := svc.Get(ctx, 0, nil); return err },
+		"Create nil":            func() error { _, _, err := svc.Create(ctx, nil, nil); return err },
+		"Create empty message":  func() error { _, _, err := svc.Create(ctx, &defectdojo.Announcement{Style: "info"}, nil); return err },
+		"Update zero ID":        func() error { _, _, err := svc.Update(ctx, 0, &defectdojo.Announcement{Message: "m"}, nil); return err },
+		"Update empty message":  func() error { _, _, err := svc.Update(ctx, 1, &defectdojo.Announcement{}, nil); return err },
+		"Patch zero ID":         func() error { _, _, err := svc.Patch(ctx, 0, &defectdojo.AnnouncementPatch{}, nil); return err },
+		"Patch nil":             func() error { _, _, err := svc.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := svc.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := svc.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

@@ -29,8 +29,8 @@ func TestUsersService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if len(list.Users) != 2 || list.Users[0].Username != "admin" || !list.Users[0].IsSuperuser {
-		t.Errorf("List() = %d users, first %+v; want admin first", len(list.Users), list.Users[0])
+	if len(list.Results) != 2 || list.Results[0].Username != "admin" || !list.Results[0].IsSuperuser {
+		t.Errorf("List() = %d users, first %+v; want admin first", len(list.Results), list.Results[0])
 	}
 }
 
@@ -73,7 +73,7 @@ func TestUsersService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "users/get.json"))
 	})
 
-	u, _, err := client.Users.Get(context.Background(), 7)
+	u, _, err := client.Users.Get(context.Background(), 7, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -92,7 +92,7 @@ func TestUsersService_Get(t *testing.T) {
 		t.Errorf("Get() = %+v, want %+v", u, want)
 	}
 
-	if _, _, err := client.Users.Get(context.Background(), 5); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Users.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -119,7 +119,7 @@ func TestUsersService_GetByUsername(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":122,"results":[`+results+`]}`))
 	})
 
-	u, _, err := client.Users.GetByUsername(context.Background(), "ci")
+	u, _, err := client.Users.GetByUsername(context.Background(), "ci", nil)
 	if err != nil || u.ID != 501 {
 		t.Errorf("GetByUsername() = %v, %v; want ID 501, not the case variant", u, err)
 	}
@@ -131,7 +131,7 @@ func TestUsersService_GetByUsername_notFound(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":1,"results":[{"id":2,"username":"Alice"}]}`))
 	})
 	for _, name := range []string{"alice", "Ali"} {
-		if _, _, err := client.Users.GetByUsername(context.Background(), name); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.Users.GetByUsername(context.Background(), name, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByUsername(%q) error = %v, want ErrNotFound", name, err)
 		}
 	}
@@ -146,11 +146,11 @@ func TestUsersService_Create(t *testing.T) {
 		writeJSON(t, w, http.StatusCreated, fixture(t, "users/get.json"))
 	})
 
-	in := &defectdojo.UserCreate{
+	in := &defectdojo.CreateUserRequest{
 		User:     defectdojo.User{ID: 99, Username: "dependency-track", Email: "dt@example.com", IsActive: true, DateJoined: time.Now()},
 		Password: "Secret-Passw0rd!",
 	}
-	u, resp, err := client.Users.Create(context.Background(), in)
+	u, resp, err := client.Users.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -171,9 +171,9 @@ func TestUsersService_Create_withoutPassword(t *testing.T) {
 			`"is_active":false,"is_staff":false,"is_superuser":false}`)
 		writeJSON(t, w, http.StatusCreated, fixture(t, "users/get.json"))
 	})
-	_, _, err := client.Users.Create(context.Background(), &defectdojo.UserCreate{
+	_, _, err := client.Users.Create(context.Background(), &defectdojo.CreateUserRequest{
 		User: defectdojo.User{Username: "sso", Email: "sso@example.com", ConfigurationPermissions: []int{}},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -212,7 +212,7 @@ func TestUsersService_Update(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "users/get.json"))
 			})
-			if _, _, err := client.Users.Update(context.Background(), 7, tt.user); err != nil {
+			if _, _, err := client.Users.Update(context.Background(), 7, tt.user, nil); err != nil {
 				t.Fatalf("Update() error = %v", err)
 			}
 		})
@@ -242,7 +242,7 @@ func TestUsersService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "users/get.json"))
 			})
-			if _, _, err := client.Users.Patch(context.Background(), 7, tt.patch); err != nil {
+			if _, _, err := client.Users.Patch(context.Background(), 7, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -261,10 +261,10 @@ func TestUsersService_Delete(t *testing.T) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	})
-	if _, err := client.Users.Delete(context.Background(), 7); err != nil {
+	if _, err := client.Users.Delete(context.Background(), 7, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	_, err := client.Users.Delete(context.Background(), 1)
+	_, err := client.Users.Delete(context.Background(), 1, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || errResp.Message != "Users may not delete themselves" {
 		t.Errorf("Delete(self) error = %v, want a 400 with the message", err)
@@ -280,8 +280,8 @@ func TestUsersService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 7 || *preview.Objects[4] != (defectdojo.DeletedObject{Model: "Notifications", ID: 11, Name: "Notifications about all projects for Dependency Track (dependency-track)"}) {
-		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Objects)
+	if preview.Count != 7 || *preview.Results[4] != (defectdojo.DeletedObject{Model: "Notifications", ID: 11, Name: "Notifications about all projects for Dependency Track (dependency-track)"}) {
+		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
 
@@ -293,7 +293,7 @@ func TestUsersService_ResetAPIToken(t *testing.T) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.Users.ResetAPIToken(context.Background(), 7)
+	resp, err := client.Users.ResetAPIToken(context.Background(), 7, nil)
 	if err != nil || resp.StatusCode != http.StatusNoContent {
 		t.Errorf("ResetAPIToken() = %v, %v; want 204", resp, err)
 	}
@@ -307,24 +307,24 @@ func TestUsersService_invalidArguments(t *testing.T) {
 	ctx := context.Background()
 	u := &defectdojo.User{Username: "x", Email: "x@example.com"}
 	calls := map[string]func() error{
-		"Get zero ID":         func() error { _, _, err := client.Users.Get(ctx, 0); return err },
-		"GetByUsername empty": func() error { _, _, err := client.Users.GetByUsername(ctx, ""); return err },
-		"Create nil":          func() error { _, _, err := client.Users.Create(ctx, nil); return err },
+		"Get zero ID":         func() error { _, _, err := client.Users.Get(ctx, 0, nil); return err },
+		"GetByUsername empty": func() error { _, _, err := client.Users.GetByUsername(ctx, "", nil); return err },
+		"Create nil":          func() error { _, _, err := client.Users.Create(ctx, nil, nil); return err },
 		"Create empty username": func() error {
-			_, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{User: defectdojo.User{Email: "x@example.com"}})
+			_, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{User: defectdojo.User{Email: "x@example.com"}}, nil)
 			return err
 		},
 		"Create empty email": func() error {
-			_, _, err := client.Users.Create(ctx, &defectdojo.UserCreate{User: defectdojo.User{Username: "x"}})
+			_, _, err := client.Users.Create(ctx, &defectdojo.CreateUserRequest{User: defectdojo.User{Username: "x"}}, nil)
 			return err
 		},
-		"Update negative ID":    func() error { _, _, err := client.Users.Update(ctx, -1, u); return err },
-		"Update nil":            func() error { _, _, err := client.Users.Update(ctx, 1, nil); return err },
-		"Patch zero ID":         func() error { _, _, err := client.Users.Patch(ctx, 0, &defectdojo.UserPatch{}); return err },
-		"Patch nil":             func() error { _, _, err := client.Users.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := client.Users.Delete(ctx, 0); return err },
+		"Update negative ID":    func() error { _, _, err := client.Users.Update(ctx, -1, u, nil); return err },
+		"Update nil":            func() error { _, _, err := client.Users.Update(ctx, 1, nil, nil); return err },
+		"Patch zero ID":         func() error { _, _, err := client.Users.Patch(ctx, 0, &defectdojo.UserPatch{}, nil); return err },
+		"Patch nil":             func() error { _, _, err := client.Users.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := client.Users.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.Users.DeletePreview(ctx, 0, nil); return err },
-		"ResetAPIToken zero ID": func() error { _, err := client.Users.ResetAPIToken(ctx, 0); return err },
+		"ResetAPIToken zero ID": func() error { _, err := client.Users.ResetAPIToken(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {
 		t.Run(name, func(t *testing.T) {
@@ -347,9 +347,9 @@ func TestConfigurationPermissionsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 52 || len(list.ConfigurationPermissions) != 3 ||
-		*list.ConfigurationPermissions[1] != (defectdojo.ConfigurationPermission{ID: 9, Name: "Can add user", Codename: "add_user"}) {
-		t.Errorf("List() = %d %+v", list.Count, list.ConfigurationPermissions)
+	if list.Count != 52 || len(list.Results) != 3 ||
+		*list.Results[1] != (defectdojo.ConfigurationPermission{ID: 9, Name: "Can add user", Codename: "add_user"}) {
+		t.Errorf("List() = %d %+v", list.Count, list.Results)
 	}
 }
 
@@ -383,7 +383,7 @@ func TestConfigurationPermissionsService_Get(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/configuration_permissions/389/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "configuration_permissions/get.json"))
 	})
-	p, _, err := client.ConfigurationPermissions.Get(context.Background(), 389)
+	p, _, err := client.ConfigurationPermissions.Get(context.Background(), 389, nil)
 	if err != nil || *p != (defectdojo.ConfigurationPermission{ID: 389, Name: "Can add sl a_ configuration", Codename: "add_sla_configuration"}) {
 		t.Errorf("Get() = %+v, %v", p, err)
 	}
@@ -403,12 +403,12 @@ func TestConfigurationPermissionsService_GetByCodename(t *testing.T) {
 			writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"results":[]}`))
 		}
 	})
-	p, _, err := client.ConfigurationPermissions.GetByCodename(context.Background(), "view_user")
+	p, _, err := client.ConfigurationPermissions.GetByCodename(context.Background(), "view_user", nil)
 	if err != nil || p.ID != 12 {
 		t.Errorf("GetByCodename() = %+v, %v; want ID 12", p, err)
 	}
 	for _, codename := range []string{"view", "change_jira_instance"} {
-		if _, _, err := client.ConfigurationPermissions.GetByCodename(context.Background(), codename); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.ConfigurationPermissions.GetByCodename(context.Background(), codename, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByCodename(%q) error = %v, want ErrNotFound", codename, err)
 		}
 	}
@@ -419,10 +419,10 @@ func TestConfigurationPermissionsService_invalidArguments(t *testing.T) {
 	mux.HandleFunc("/", func(_ http.ResponseWriter, r *http.Request) {
 		t.Errorf("unexpected request %s %s", r.Method, r.URL)
 	})
-	if _, _, err := client.ConfigurationPermissions.Get(context.Background(), 0); err == nil {
+	if _, _, err := client.ConfigurationPermissions.Get(context.Background(), 0, nil); err == nil {
 		t.Error("Get(0) error = nil, want error")
 	}
-	if _, _, err := client.ConfigurationPermissions.GetByCodename(context.Background(), ""); err == nil {
+	if _, _, err := client.ConfigurationPermissions.GetByCodename(context.Background(), "", nil); err == nil {
 		t.Error("GetByCodename(\"\") error = nil, want error")
 	}
 }

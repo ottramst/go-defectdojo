@@ -290,9 +290,9 @@ type ListEngagementsOptions struct {
 	Active *bool `url:"active,omitempty"`
 }
 
-// EngagementList is a page of engagements.
-type EngagementList struct {
-	Engagements []*Engagement
+// ListEngagementsResult is a page of engagements.
+type ListEngagementsResult struct {
+	Results []*Engagement
 
 	// Count is the number of engagements that match the filters.
 	Count int
@@ -301,7 +301,7 @@ type EngagementList struct {
 // List returns a page of engagements.
 //
 // DefectDojo API: GET /api/v2/engagements/
-func (s *EngagementsService) List(ctx context.Context, opt *ListEngagementsOptions, opts ...RequestOption) (*EngagementList, *Response, error) {
+func (s *EngagementsService) List(ctx context.Context, opt *ListEngagementsOptions, opts ...RequestOption) (*ListEngagementsResult, *Response, error) {
 	path, err := addQuery("/api/v2/engagements/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -311,7 +311,7 @@ func (s *EngagementsService) List(ctx context.Context, opt *ListEngagementsOptio
 	if err != nil {
 		return nil, resp, err
 	}
-	return &EngagementList{Engagements: page.Results, Count: page.Count}, resp, nil
+	return &ListEngagementsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the engagements, starting at opt.Offset.
@@ -331,14 +331,17 @@ func (s *EngagementsService) ListAll(ctx context.Context, opt *ListEngagementsOp
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Engagements, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetEngagementOptions are the options of [EngagementsService.Get].
+type GetEngagementOptions struct{}
 
 // Get returns an engagement by its ID.
 //
 // DefectDojo API: GET /api/v2/engagements/{id}/
-func (s *EngagementsService) Get(ctx context.Context, id int, opts ...RequestOption) (*Engagement, *Response, error) {
+func (s *EngagementsService) Get(ctx context.Context, id int, opt *GetEngagementOptions, opts ...RequestOption) (*Engagement, *Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -350,6 +353,9 @@ func (s *EngagementsService) Get(ctx context.Context, id int, opts ...RequestOpt
 	return e, resp, nil
 }
 
+// CreateEngagementOptions are the options of [EngagementsService.Create].
+type CreateEngagementOptions struct{}
+
 // Create creates an engagement. Its read-only fields are ignored.
 //
 // Every writable field is sent, so the booleans that default to true in
@@ -357,7 +363,7 @@ func (s *EngagementsService) Get(ctx context.Context, id int, opts ...RequestOpt
 // they are set. An empty Status or EngagementType uses DefectDojo's default.
 //
 // DefectDojo API: POST /api/v2/engagements/
-func (s *EngagementsService) Create(ctx context.Context, e *Engagement, opts ...RequestOption) (*Engagement, *Response, error) {
+func (s *EngagementsService) Create(ctx context.Context, e *Engagement, opt *CreateEngagementOptions, opts ...RequestOption) (*Engagement, *Response, error) {
 	body, err := newEngagementRequest(e)
 	if err != nil {
 		return nil, nil, err
@@ -370,6 +376,9 @@ func (s *EngagementsService) Create(ctx context.Context, e *Engagement, opts ...
 	return created, resp, nil
 }
 
+// UpdateEngagementOptions are the options of [EngagementsService.Update].
+type UpdateEngagementOptions struct{}
+
 // Update replaces the writable fields of the engagement with the given ID.
 // Every writable field is sent except an empty Status and EngagementType,
 // and nil Tags, which are kept: empty nullable fields are cleared, and an
@@ -378,7 +387,7 @@ func (s *EngagementsService) Create(ctx context.Context, e *Engagement, opts ...
 // [EngagementsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/engagements/{id}/
-func (s *EngagementsService) Update(ctx context.Context, id int, e *Engagement, opts ...RequestOption) (*Engagement, *Response, error) {
+func (s *EngagementsService) Update(ctx context.Context, id int, e *Engagement, opt *UpdateEngagementOptions, opts ...RequestOption) (*Engagement, *Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -394,10 +403,13 @@ func (s *EngagementsService) Update(ctx context.Context, id int, e *Engagement, 
 	return updated, resp, nil
 }
 
+// PatchEngagementOptions are the options of [EngagementsService.Patch].
+type PatchEngagementOptions struct{}
+
 // Patch changes the fields of the engagement that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/engagements/{id}/
-func (s *EngagementsService) Patch(ctx context.Context, id int, patch *EngagementPatch, opts ...RequestOption) (*Engagement, *Response, error) {
+func (s *EngagementsService) Patch(ctx context.Context, id int, patch *EngagementPatch, opt *PatchEngagementOptions, opts ...RequestOption) (*Engagement, *Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -420,6 +432,9 @@ func (s *EngagementsService) Patch(ctx context.Context, id int, patch *Engagemen
 	return updated, resp, nil
 }
 
+// DeleteEngagementOptions are the options of [EngagementsService.Delete].
+type DeleteEngagementOptions struct{}
+
 // Delete deletes an engagement by its ID.
 //
 // Deleting an engagement also deletes its tests and their findings. Use
@@ -431,18 +446,23 @@ func (s *EngagementsService) Patch(ctx context.Context, id int, patch *Engagemen
 // [EngagementsService.Get] until it returns [ErrNotFound].
 //
 // DefectDojo API: DELETE /api/v2/engagements/{id}/
-func (s *EngagementsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *EngagementsService) Delete(ctx context.Context, id int, opt *DeleteEngagementOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, engagementPath(id), nil, nil, opts)
 }
 
+// DeletePreviewEngagementOptions are the options of [EngagementsService.DeletePreview].
+type DeletePreviewEngagementOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the engagement
 // would remove, the engagement itself included.
 //
 // DefectDojo API: GET /api/v2/engagements/{id}/delete_preview/
-func (s *EngagementsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *EngagementsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewEngagementOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -455,36 +475,45 @@ func (s *EngagementsService) DeletePreview(ctx context.Context, id int, opt *Lis
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
+
+// CloseEngagementOptions are the options of [EngagementsService.Close].
+type CloseEngagementOptions struct{}
 
 // Close closes the engagement: its Status becomes EngagementStatusCompleted
 // and Active false.
 //
 // DefectDojo API: POST /api/v2/engagements/{id}/close/
-func (s *EngagementsService) Close(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *EngagementsService) Close(ctx context.Context, id int, opt *CloseEngagementOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodPost, engagementPath(id)+"close/", nil, nil, opts)
 }
 
+// ReopenEngagementOptions are the options of [EngagementsService.Reopen].
+type ReopenEngagementOptions struct{}
+
 // Reopen reopens the engagement: its Status becomes
 // EngagementStatusInProgress and Active true.
 //
 // DefectDojo API: POST /api/v2/engagements/{id}/reopen/
-func (s *EngagementsService) Reopen(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *EngagementsService) Reopen(ctx context.Context, id int, opt *ReopenEngagementOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodPost, engagementPath(id)+"reopen/", nil, nil, opts)
 }
 
+// CountEngagementTestsOptions are the options of [EngagementsService.CountTests].
+type CountEngagementTestsOptions struct{}
+
 // CountTests returns the number of tests of the engagement, which a delete
 // of the engagement would also delete. It reads the count of the tests list
 // (GET /api/v2/tests/?engagement={id}), whose filter rejects engagements that
 // don't exist: the error then also matches [ErrNotFound].
-func (s *EngagementsService) CountTests(ctx context.Context, id int, opts ...RequestOption) (int, *Response, error) {
+func (s *EngagementsService) CountTests(ctx context.Context, id int, opt *CountEngagementTestsOptions, opts ...RequestOption) (int, *Response, error) {
 	if err := requirePositive("engagement ID", id); err != nil {
 		return 0, nil, err
 	}

@@ -361,7 +361,7 @@ func TestWithHTTPClient(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, err := client.ProductTypes.Delete(context.Background(), 1); err != nil {
+	if _, err := client.ProductTypes.Delete(context.Background(), 1, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
 	if !called {

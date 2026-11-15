@@ -24,7 +24,7 @@ func TestJiraProjectsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 1 || len(list.JiraProjects) != 1 || list.JiraProjects[0].ProjectKey != "SEC" {
+	if list.Count != 1 || len(list.Results) != 1 || list.Results[0].ProjectKey != "SEC" {
 		t.Errorf("List() = %+v, want the configuration of the fixture", list)
 	}
 }
@@ -69,7 +69,7 @@ func TestJiraProjectsService_Get(t *testing.T) {
 				writeJSON(t, w, http.StatusOK, fixture(t, tt.fixture))
 			})
 
-			p, _, err := client.JiraProjects.Get(context.Background(), 2)
+			p, _, err := client.JiraProjects.Get(context.Background(), 2, nil)
 			if err != nil {
 				t.Fatalf("Get() error = %v", err)
 			}
@@ -146,7 +146,7 @@ func TestJiraProjectsService_Create(t *testing.T) {
 		SuppressSLANotificationComments: new(true),
 		Enabled:                         true,
 	}
-	created, _, err := client.JiraProjects.Create(context.Background(), &in)
+	created, _, err := client.JiraProjects.Create(context.Background(), &in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -176,11 +176,11 @@ func TestJiraProjectsService_Create_invalid(t *testing.T) {
 		p := valid
 		mutate(&p)
 		// The mux has no handler, so a request would fail with a 404.
-		if _, _, err := client.JiraProjects.Create(context.Background(), &p); err == nil || errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.JiraProjects.Create(context.Background(), &p, nil); err == nil || errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("Create(%s) error = %v, want an error before sending", name, err)
 		}
 	}
-	if _, _, err := client.JiraProjects.Create(context.Background(), nil); err == nil {
+	if _, _, err := client.JiraProjects.Create(context.Background(), nil, nil); err == nil {
 		t.Error("Create(nil) error = nil, want an error")
 	}
 }
@@ -190,7 +190,7 @@ func TestJiraProjectsService_Create_engagementTaken(t *testing.T) {
 	mux.HandleFunc("POST /api/v2/jira_projects/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusBadRequest, fixture(t, "errors/jira_project_engagement_taken.json"))
 	})
-	_, _, err := client.JiraProjects.Create(context.Background(), &defectdojo.JiraProject{JiraInstance: 1, Engagement: 3})
+	_, _, err := client.JiraProjects.Create(context.Background(), &defectdojo.JiraProject{JiraInstance: 1, Engagement: 3}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || len(errResp.Fields["engagement"]) == 0 {
 		t.Errorf("Create() error = %v, want a 400 on engagement", err)
@@ -215,11 +215,11 @@ func TestJiraProjectsService_Update(t *testing.T) {
 	_, _, err := client.JiraProjects.Update(context.Background(), 2, &defectdojo.JiraProject{
 		JiraInstance: 1, Engagement: 3, DefaultAssignee: "alice", EnableEngagementEpicMapping: true, PushNotes: true,
 		ProductJiraSLANotification: true, RiskAcceptanceExpirationNotification: true,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
-	if _, _, err := client.JiraProjects.Update(context.Background(), 0, &defectdojo.JiraProject{JiraInstance: 1, Product: 7}); err == nil {
+	if _, _, err := client.JiraProjects.Update(context.Background(), 0, &defectdojo.JiraProject{JiraInstance: 1, Product: 7}, nil); err == nil {
 		t.Error("Update(0) error = nil, want an error")
 	}
 }
@@ -237,14 +237,14 @@ func TestJiraProjectsService_Patch(t *testing.T) {
 		CustomFields:          defectdojo.Value(json.RawMessage(`{"a":1}`)),
 		CloseTransitionFields: defectdojo.Null[json.RawMessage](),
 		Enabled:               new(false),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
-	if _, _, err := client.JiraProjects.Patch(context.Background(), 2, &defectdojo.JiraProjectPatch{CustomFields: defectdojo.Value(json.RawMessage(`{`))}); err == nil {
+	if _, _, err := client.JiraProjects.Patch(context.Background(), 2, &defectdojo.JiraProjectPatch{CustomFields: defectdojo.Value(json.RawMessage(`{`))}, nil); err == nil {
 		t.Error("Patch(invalid JSON) error = nil, want an error")
 	}
-	if _, _, err := client.JiraProjects.Patch(context.Background(), 2, nil); err == nil {
+	if _, _, err := client.JiraProjects.Patch(context.Background(), 2, nil, nil); err == nil {
 		t.Error("Patch(nil) error = nil, want an error")
 	}
 }
@@ -258,14 +258,14 @@ func TestJiraProjectsService_Delete(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "jira_projects/delete_preview.json"))
 	})
 
-	if _, err := client.JiraProjects.Delete(context.Background(), 2); err != nil {
+	if _, err := client.JiraProjects.Delete(context.Background(), 2, nil); err != nil {
 		t.Errorf("Delete() error = %v", err)
 	}
 	preview, _, err := client.JiraProjects.DeletePreview(context.Background(), 2, nil)
-	if err != nil || preview.Count != 1 || preview.Objects[0].Model != "JIRA_Project" {
+	if err != nil || preview.Count != 1 || preview.Results[0].Model != "JIRA_Project" {
 		t.Errorf("DeletePreview() = %+v, %v; want the configuration", preview, err)
 	}
-	if _, err := client.JiraProjects.Delete(context.Background(), 0); err == nil {
+	if _, err := client.JiraProjects.Delete(context.Background(), 0, nil); err == nil {
 		t.Error("Delete(0) error = nil, want an error")
 	}
 }
@@ -296,7 +296,7 @@ func TestJiraProjectsService_Create_emptyJSON(t *testing.T) {
 		writeJSON(t, w, http.StatusCreated, []byte(`{"id":3}`))
 	})
 	// An empty value is sent as null, like nil.
-	if _, _, err := client.JiraProjects.Create(context.Background(), &defectdojo.JiraProject{JiraInstance: 1, Product: 7, CustomFields: json.RawMessage{}}); err != nil {
+	if _, _, err := client.JiraProjects.Create(context.Background(), &defectdojo.JiraProject{JiraInstance: 1, Product: 7, CustomFields: json.RawMessage{}}, nil); err != nil {
 		t.Errorf("Create() error = %v", err)
 	}
 }

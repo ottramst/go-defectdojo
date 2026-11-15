@@ -16,7 +16,7 @@ func TestSystemSettingsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "system_settings/list.json"))
 	})
 
-	settings, _, err := client.SystemSettings.Get(context.Background())
+	settings, _, err := client.SystemSettings.Get(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -44,7 +44,7 @@ func TestSystemSettingsService_Get_olderServer(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "system_settings/list_3.4.json"))
 	})
 
-	settings, _, err := client.SystemSettings.Get(context.Background())
+	settings, _, err := client.SystemSettings.Get(context.Background(), nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -59,7 +59,7 @@ func TestSystemSettingsService_Get_notOne(t *testing.T) {
 		mux.HandleFunc("GET /api/v2/system_settings/", func(w http.ResponseWriter, _ *http.Request) {
 			writeJSON(t, w, http.StatusOK, []byte(body))
 		})
-		if settings, _, err := client.SystemSettings.Get(context.Background()); err == nil {
+		if settings, _, err := client.SystemSettings.Get(context.Background(), nil); err == nil {
 			t.Errorf("Get(%s) = %+v, want an error", body, settings)
 		}
 	}
@@ -70,7 +70,7 @@ func TestSystemSettingsService_Get_error(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/system_settings/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusForbidden, []byte(`{"detail":"You do not have permission to perform this action."}`))
 	})
-	if _, _, err := client.SystemSettings.Get(context.Background()); !errors.Is(err, defectdojo.ErrForbidden) {
+	if _, _, err := client.SystemSettings.Get(context.Background(), nil); !errors.Is(err, defectdojo.ErrForbidden) {
 		t.Errorf("Get() error = %v, want ErrForbidden", err)
 	}
 }
@@ -89,7 +89,7 @@ func TestSystemSettingsService_Patch(t *testing.T) {
 		EnableJira:            new(false),
 		MinimumPasswordLength: new(12),
 		MaximumPasswordLength: new(12),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -114,7 +114,7 @@ func TestSystemSettingsService_Patch_invalid(t *testing.T) {
 	}
 	for _, tt := range tests {
 		// The mux has no handler, so a request would fail with a 404.
-		if _, _, err := client.SystemSettings.Patch(ctx, tt.id, tt.patch); err == nil || errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.SystemSettings.Patch(ctx, tt.id, tt.patch, nil); err == nil || errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("Patch(%s) error = %v, want an error before sending", tt.name, err)
 		}
 	}
@@ -125,7 +125,7 @@ func TestSystemSettingsService_Patch_readOnly(t *testing.T) {
 	mux.HandleFunc("PATCH /api/v2/system_settings/1/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusLocked, fixture(t, "errors/read_only_mode.json"))
 	})
-	if _, _, err := client.SystemSettings.Patch(context.Background(), 1, &defectdojo.SystemSettingsPatch{TeamName: new("x")}); !errors.Is(err, defectdojo.ErrLocked) {
+	if _, _, err := client.SystemSettings.Patch(context.Background(), 1, &defectdojo.SystemSettingsPatch{TeamName: new("x")}, nil); !errors.Is(err, defectdojo.ErrLocked) {
 		t.Errorf("Patch() error = %v, want ErrLocked", err)
 	}
 }

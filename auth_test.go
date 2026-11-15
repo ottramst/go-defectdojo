@@ -16,7 +16,7 @@ func TestAuthService_Token(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"token":"0123456789abcdef"}`))
 	})
 
-	token, _, err := client.Auth.Token(context.Background(), "admin", "secret")
+	token, _, err := client.Auth.Token(context.Background(), "admin", "secret", nil)
 	if err != nil {
 		t.Fatalf("Token() error = %v", err)
 	}
@@ -35,10 +35,10 @@ func TestAuthService_Token_errors(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{}`))
 	})
 
-	if _, _, err := client.Auth.Token(context.Background(), "admin", "wrong"); !errors.Is(err, defectdojo.ErrBadRequest) {
+	if _, _, err := client.Auth.Token(context.Background(), "admin", "wrong", nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Token(wrong password) error = %v, want ErrBadRequest", err)
 	}
-	if _, _, err := client.Auth.Token(context.Background(), "", "x"); err == nil {
+	if _, _, err := client.Auth.Token(context.Background(), "", "x", nil); err == nil {
 		t.Error("Token(empty username) error = nil, want error")
 	}
 
@@ -46,7 +46,7 @@ func TestAuthService_Token_errors(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if _, _, err := empty.Auth.Token(context.Background(), "admin", "x"); err == nil {
+	if _, _, err := empty.Auth.Token(context.Background(), "admin", "x", nil); err == nil {
 		t.Error("Token(no token in response) error = nil, want error")
 	}
 }

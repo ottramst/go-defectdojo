@@ -100,9 +100,9 @@ type ListCICDInfrastructureOptions struct {
 	InfrastructureType string `url:"infrastructure_type,omitempty"`
 }
 
-// CICDInfrastructureList is a page of CI/CD infrastructure objects.
-type CICDInfrastructureList struct {
-	CICDInfrastructure []*CICDInfrastructure
+// ListCICDInfrastructureResult is a page of CI/CD infrastructure objects.
+type ListCICDInfrastructureResult struct {
+	Results []*CICDInfrastructure
 
 	// Count is the number of objects that match the filters.
 	Count int
@@ -111,7 +111,7 @@ type CICDInfrastructureList struct {
 // List returns a page of CI/CD infrastructure objects, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/cicd_infrastructure/
-func (s *CICDInfrastructureService) List(ctx context.Context, opt *ListCICDInfrastructureOptions, opts ...RequestOption) (*CICDInfrastructureList, *Response, error) {
+func (s *CICDInfrastructureService) List(ctx context.Context, opt *ListCICDInfrastructureOptions, opts ...RequestOption) (*ListCICDInfrastructureResult, *Response, error) {
 	path, err := addQuery("/api/v2/cicd_infrastructure/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -121,7 +121,7 @@ func (s *CICDInfrastructureService) List(ctx context.Context, opt *ListCICDInfra
 	if err != nil {
 		return nil, resp, err
 	}
-	return &CICDInfrastructureList{CICDInfrastructure: page.Results, Count: page.Count}, resp, nil
+	return &ListCICDInfrastructureResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the CI/CD infrastructure objects, starting
@@ -141,14 +141,17 @@ func (s *CICDInfrastructureService) ListAll(ctx context.Context, opt *ListCICDIn
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.CICDInfrastructure, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetCICDInfrastructureOptions are the options of [CICDInfrastructureService.Get].
+type GetCICDInfrastructureOptions struct{}
 
 // Get returns a CI/CD infrastructure object by its ID.
 //
 // DefectDojo API: GET /api/v2/cicd_infrastructure/{id}/
-func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
+func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opt *GetCICDInfrastructureOptions, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	if err := requirePositive("CI/CD infrastructure ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -160,14 +163,26 @@ func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opts ...Req
 	return ci, resp, nil
 }
 
+// GetCICDInfrastructureByNameOptions are the options of [CICDInfrastructureService.GetByName].
+type GetCICDInfrastructureByNameOptions struct {
+	// InfrastructureType restricts the lookup to one type, one of the
+	// CICDInfrastructureType constants. Names are unique within a type.
+	InfrastructureType string
+}
+
 // GetByName returns the CI/CD infrastructure object with exactly the given
-// name and type. Names are unique within a type; with an empty
-// infrastructureType, any type matches, and several matches are an error
-// matching [ErrAmbiguous] that names their IDs. It returns an error matching [ErrNotFound] when there is
-// none, and a 400 ([ErrBadRequest]) for an unknown infrastructureType.
-func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrastructureType string, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
+// name, and the type of the options if they give one. Names are unique within
+// a type; without a type, any type matches, and several matches are an error
+// matching [ErrAmbiguous] that names their IDs. It returns an error matching
+// [ErrNotFound] when there is none, and a 400 ([ErrBadRequest]) for an
+// unknown type.
+func (s *CICDInfrastructureService) GetByName(ctx context.Context, name string, opt *GetCICDInfrastructureByNameOptions, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: CI/CD infrastructure name must not be empty")
+	}
+	var infrastructureType string
+	if opt != nil {
+		infrastructureType = opt.InfrastructureType
 	}
 	list, resp, err := s.List(ctx, &ListCICDInfrastructureOptions{
 		ListOptions:        ListOptions{Limit: 100},
@@ -184,7 +199,7 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrast
 	// DefectDojo strips whitespace from the name filter, and may loosen the
 	// filters: check again. There is at most one object per type, so one
 	// page holds them.
-	for _, ci := range list.CICDInfrastructure {
+	for _, ci := range list.Results {
 		if ci.Name == name && (infrastructureType == "" || ci.InfrastructureType == infrastructureType) {
 			found = ci
 			ids = append(ids, ci.ID)
@@ -200,12 +215,15 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrast
 	}
 }
 
+// CreateCICDInfrastructureOptions are the options of [CICDInfrastructureService.Create].
+type CreateCICDInfrastructureOptions struct{}
+
 // Create creates a CI/CD infrastructure object. Its read-only ID is ignored.
 // A name that another object of the same type has is a 400 ([ErrBadRequest])
 // with a "non_field_errors" error.
 //
 // DefectDojo API: POST /api/v2/cicd_infrastructure/
-func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastructure, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
+func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastructure, opt *CreateCICDInfrastructureOptions, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	body, err := newCICDInfrastructureRequest(ci)
 	if err != nil {
 		return nil, nil, err
@@ -218,6 +236,9 @@ func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastr
 	return created, resp, nil
 }
 
+// UpdateCICDInfrastructureOptions are the options of [CICDInfrastructureService.Update].
+type UpdateCICDInfrastructureOptions struct{}
+
 // Update replaces the writable fields of the CI/CD infrastructure object with
 // the given ID: an empty Description or URL clears it. InfrastructureType must
 // be set (the schema requires it), but DefectDojo ignores it on an existing
@@ -226,7 +247,7 @@ func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastr
 // [CICDInfrastructureService.Create].
 //
 // DefectDojo API: PUT /api/v2/cicd_infrastructure/{id}/
-func (s *CICDInfrastructureService) Update(ctx context.Context, id int, ci *CICDInfrastructure, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
+func (s *CICDInfrastructureService) Update(ctx context.Context, id int, ci *CICDInfrastructure, opt *UpdateCICDInfrastructureOptions, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	if err := requirePositive("CI/CD infrastructure ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -242,11 +263,14 @@ func (s *CICDInfrastructureService) Update(ctx context.Context, id int, ci *CICD
 	return updated, resp, nil
 }
 
+// PatchCICDInfrastructureOptions are the options of [CICDInfrastructureService.Patch].
+type PatchCICDInfrastructureOptions struct{}
+
 // Patch changes the fields of the CI/CD infrastructure object that are set in
 // patch. A name that another object of the type has is a 409 ([ErrConflict]).
 //
 // DefectDojo API: PATCH /api/v2/cicd_infrastructure/{id}/
-func (s *CICDInfrastructureService) Patch(ctx context.Context, id int, patch *CICDInfrastructurePatch, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
+func (s *CICDInfrastructureService) Patch(ctx context.Context, id int, patch *CICDInfrastructurePatch, opt *PatchCICDInfrastructureOptions, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	if err := requirePositive("CI/CD infrastructure ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -261,22 +285,30 @@ func (s *CICDInfrastructureService) Patch(ctx context.Context, id int, patch *CI
 	return updated, resp, nil
 }
 
+// DeleteCICDInfrastructureOptions are the options of [CICDInfrastructureService.Delete].
+type DeleteCICDInfrastructureOptions struct{}
+
 // Delete deletes a CI/CD infrastructure object by its ID. The engagements
 // that refer to it lose the reference.
 //
 // DefectDojo API: DELETE /api/v2/cicd_infrastructure/{id}/
-func (s *CICDInfrastructureService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *CICDInfrastructureService) Delete(ctx context.Context, id int, opt *DeleteCICDInfrastructureOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("CI/CD infrastructure ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, cicdInfrastructurePath(id), nil, nil, opts)
 }
 
+// DeletePreviewCICDInfrastructureOptions are the options of [CICDInfrastructureService.DeletePreview].
+type DeletePreviewCICDInfrastructureOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the CI/CD
 // infrastructure object would remove, the object itself included.
 //
 // DefectDojo API: GET /api/v2/cicd_infrastructure/{id}/delete_preview/
-func (s *CICDInfrastructureService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *CICDInfrastructureService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewCICDInfrastructureOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("CI/CD infrastructure ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -289,7 +321,7 @@ func (s *CICDInfrastructureService) DeletePreview(ctx context.Context, id int, o
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func cicdInfrastructurePath(id int) string {

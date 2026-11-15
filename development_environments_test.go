@@ -25,10 +25,10 @@ func TestDevelopmentEnvironmentsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 8 || len(list.DevelopmentEnvironments) != 3 {
-		t.Fatalf("List() = %d of %d, want 3 of 8", len(list.DevelopmentEnvironments), list.Count)
+	if list.Count != 8 || len(list.Results) != 3 {
+		t.Fatalf("List() = %d of %d, want 3 of 8", len(list.Results), list.Count)
 	}
-	if prod := list.DevelopmentEnvironments[2]; *prod != (defectdojo.DevelopmentEnvironment{ID: 3, Name: "Production"}) {
+	if prod := list.Results[2]; *prod != (defectdojo.DevelopmentEnvironment{ID: 3, Name: "Production"}) {
 		t.Errorf("third development environment = %+v, want Production", prod)
 	}
 }
@@ -72,11 +72,11 @@ func TestDevelopmentEnvironmentsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "development_environments/get.json"))
 	})
 
-	got, _, err := client.DevelopmentEnvironments.Get(context.Background(), 12)
+	got, _, err := client.DevelopmentEnvironments.Get(context.Background(), 12, nil)
 	if err != nil || *got != (defectdojo.DevelopmentEnvironment{ID: 12, Name: "QA"}) {
 		t.Errorf("Get() = %+v, %v; want QA", got, err)
 	}
-	if _, _, err := client.DevelopmentEnvironments.Get(context.Background(), 13); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.DevelopmentEnvironments.Get(context.Background(), 13, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -105,17 +105,17 @@ func TestDevelopmentEnvironmentsService_GetByName(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":150,"results":[`+results+`]}`))
 	})
 
-	env, _, err := client.DevelopmentEnvironments.GetByName(context.Background(), "env-120")
+	env, _, err := client.DevelopmentEnvironments.GetByName(context.Background(), "env-120", nil)
 	if err != nil || env.ID != 121 {
 		t.Errorf("GetByName() = %v, %v; want ID 121 from the second page", env, err)
 	}
 	for _, name := range []string{"ENV-120", "env-1200"} {
-		if _, _, err := client.DevelopmentEnvironments.GetByName(context.Background(), name); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.DevelopmentEnvironments.GetByName(context.Background(), name, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByName(%q) error = %v, want ErrNotFound", name, err)
 		}
 	}
 	// Names aren't unique: several matches, on any page, are an error.
-	_, _, err = client.DevelopmentEnvironments.GetByName(context.Background(), "twice")
+	_, _, err = client.DevelopmentEnvironments.GetByName(context.Background(), "twice", nil)
 	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[11 141]") {
 		t.Errorf("GetByName(twice) error = %v, want an error naming IDs 11 and 141", err)
 	}
@@ -126,7 +126,7 @@ func TestDevelopmentEnvironmentsService_GetByName_error(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/development_environments/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusForbidden, fixture(t, "errors/invalid_token.json"))
 	})
-	if _, _, err := client.DevelopmentEnvironments.GetByName(context.Background(), "x"); !errors.Is(err, defectdojo.ErrForbidden) {
+	if _, _, err := client.DevelopmentEnvironments.GetByName(context.Background(), "x", nil); !errors.Is(err, defectdojo.ErrForbidden) {
 		t.Errorf("GetByName() error = %v, want ErrForbidden", err)
 	}
 }
@@ -140,7 +140,7 @@ func TestDevelopmentEnvironmentsService_Create(t *testing.T) {
 	})
 
 	in := &defectdojo.DevelopmentEnvironment{ID: 99, Name: "QA"}
-	env, resp, err := client.DevelopmentEnvironments.Create(context.Background(), in)
+	env, resp, err := client.DevelopmentEnvironments.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -158,7 +158,7 @@ func TestDevelopmentEnvironmentsService_Update(t *testing.T) {
 		testJSONBody(t, r, `{"name":"Quality"}`)
 		writeJSON(t, w, http.StatusOK, fixture(t, "development_environments/get.json"))
 	})
-	if _, _, err := client.DevelopmentEnvironments.Update(context.Background(), 12, &defectdojo.DevelopmentEnvironment{Name: "Quality"}); err != nil {
+	if _, _, err := client.DevelopmentEnvironments.Update(context.Background(), 12, &defectdojo.DevelopmentEnvironment{Name: "Quality"}, nil); err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
 }
@@ -177,7 +177,7 @@ func TestDevelopmentEnvironmentsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "development_environments/get.json"))
 			})
-			if _, _, err := client.DevelopmentEnvironments.Patch(context.Background(), 12, tt.patch); err != nil {
+			if _, _, err := client.DevelopmentEnvironments.Patch(context.Background(), 12, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -193,7 +193,7 @@ func TestDevelopmentEnvironmentsService_Delete(t *testing.T) {
 		}
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.DevelopmentEnvironments.Delete(context.Background(), 12)
+	resp, err := client.DevelopmentEnvironments.Delete(context.Background(), 12, nil)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
@@ -201,7 +201,7 @@ func TestDevelopmentEnvironmentsService_Delete(t *testing.T) {
 		t.Errorf("StatusCode = %d, want 204", resp.StatusCode)
 	}
 	// An environment that tests use can't be deleted.
-	_, err = client.DevelopmentEnvironments.Delete(context.Background(), 1)
+	_, err = client.DevelopmentEnvironments.Delete(context.Background(), 1, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrConflict) || !strings.Contains(errResp.Message, "Records that refer to it: test.") {
 		t.Errorf("Delete(in use) error = %v, want the 409", err)
@@ -214,12 +214,12 @@ func TestDevelopmentEnvironmentsService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=10")
 		writeJSON(t, w, http.StatusOK, fixture(t, "development_environments/delete_preview.json"))
 	})
-	preview, _, err := client.DevelopmentEnvironments.DeletePreview(context.Background(), 12, &defectdojo.ListOptions{Limit: 10})
+	preview, _, err := client.DevelopmentEnvironments.DeletePreview(context.Background(), 12, &defectdojo.DeletePreviewDevelopmentEnvironmentOptions{ListOptions: defectdojo.ListOptions{Limit: 10}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Objects[0] != (defectdojo.DeletedObject{Model: "Development_Environment", ID: 12, Name: "QA"}) {
-		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Objects)
+	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "Development_Environment", ID: 12, Name: "QA"}) {
+		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
 
@@ -231,21 +231,21 @@ func TestDevelopmentEnvironmentsService_invalidArguments(t *testing.T) {
 	ctx := context.Background()
 	svc := client.DevelopmentEnvironments
 	calls := map[string]func() error{
-		"Get zero ID":       func() error { _, _, err := svc.Get(ctx, 0); return err },
-		"GetByName empty":   func() error { _, _, err := svc.GetByName(ctx, ""); return err },
-		"Create nil":        func() error { _, _, err := svc.Create(ctx, nil); return err },
-		"Create empty name": func() error { _, _, err := svc.Create(ctx, &defectdojo.DevelopmentEnvironment{}); return err },
+		"Get zero ID":       func() error { _, _, err := svc.Get(ctx, 0, nil); return err },
+		"GetByName empty":   func() error { _, _, err := svc.GetByName(ctx, "", nil); return err },
+		"Create nil":        func() error { _, _, err := svc.Create(ctx, nil, nil); return err },
+		"Create empty name": func() error { _, _, err := svc.Create(ctx, &defectdojo.DevelopmentEnvironment{}, nil); return err },
 		"Update negative ID": func() error {
-			_, _, err := svc.Update(ctx, -1, &defectdojo.DevelopmentEnvironment{Name: "x"})
+			_, _, err := svc.Update(ctx, -1, &defectdojo.DevelopmentEnvironment{Name: "x"}, nil)
 			return err
 		},
-		"Update empty name": func() error { _, _, err := svc.Update(ctx, 1, &defectdojo.DevelopmentEnvironment{}); return err },
+		"Update empty name": func() error { _, _, err := svc.Update(ctx, 1, &defectdojo.DevelopmentEnvironment{}, nil); return err },
 		"Patch zero ID": func() error {
-			_, _, err := svc.Patch(ctx, 0, &defectdojo.DevelopmentEnvironmentPatch{})
+			_, _, err := svc.Patch(ctx, 0, &defectdojo.DevelopmentEnvironmentPatch{}, nil)
 			return err
 		},
-		"Patch nil":             func() error { _, _, err := svc.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := svc.Delete(ctx, 0); return err },
+		"Patch nil":             func() error { _, _, err := svc.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := svc.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := svc.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

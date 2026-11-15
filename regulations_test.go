@@ -25,10 +25,10 @@ func TestRegulationsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 26 || len(list.Regulations) != 2 {
-		t.Fatalf("List() = %d of %d, want 2 of 26", len(list.Regulations), list.Count)
+	if list.Count != 26 || len(list.Results) != 2 {
+		t.Fatalf("List() = %d of %d, want 2 of 26", len(list.Results), list.Count)
 	}
-	if pci := list.Regulations[0]; pci.ID != 1 || pci.Acronym != "PCI DSS" || pci.Category != defectdojo.RegulationCategoryFinance ||
+	if pci := list.Results[0]; pci.ID != 1 || pci.Acronym != "PCI DSS" || pci.Category != defectdojo.RegulationCategoryFinance ||
 		pci.Jurisdiction != "United States" || pci.Reference == "" {
 		t.Errorf("first regulation = %+v, want the PCI DSS fixture", pci)
 	}
@@ -73,7 +73,7 @@ func TestRegulationsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "regulations/get.json"))
 	})
 
-	got, _, err := client.Regulations.Get(context.Background(), 29)
+	got, _, err := client.Regulations.Get(context.Background(), 29, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -84,7 +84,7 @@ func TestRegulationsService_Get(t *testing.T) {
 	if *got != want {
 		t.Errorf("Get() = %+v, want %+v", got, want)
 	}
-	if _, _, err := client.Regulations.Get(context.Background(), 30); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Regulations.Get(context.Background(), 30, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -96,11 +96,11 @@ func TestRegulationsService_GetByName(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":2,"results":[{"id":1,"name":"gdpr"},{"id":2,"name":"GDPR"}]}`))
 	})
 
-	r, _, err := client.Regulations.GetByName(context.Background(), "GDPR")
+	r, _, err := client.Regulations.GetByName(context.Background(), "GDPR", nil)
 	if err != nil || r.ID != 2 {
 		t.Errorf("GetByName() = %v, %v; want ID 2", r, err)
 	}
-	if _, _, err := client.Regulations.GetByName(context.Background(), "Gdpr"); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Regulations.GetByName(context.Background(), "Gdpr", nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(other case) error = %v, want ErrNotFound", err)
 	}
 }
@@ -125,12 +125,12 @@ func TestRegulationsService_GetByAcronym(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":150,"results":[`+results+`]}`))
 	})
 
-	r, _, err := client.Regulations.GetByAcronym(context.Background(), "R-120")
+	r, _, err := client.Regulations.GetByAcronym(context.Background(), "R-120", nil)
 	if err != nil || r.ID != 121 {
 		t.Errorf("GetByAcronym() = %v, %v; want ID 121 from the second page", r, err)
 	}
 	for _, acronym := range []string{"r-120", "R-1200"} {
-		if _, _, err := client.Regulations.GetByAcronym(context.Background(), acronym); !errors.Is(err, defectdojo.ErrNotFound) {
+		if _, _, err := client.Regulations.GetByAcronym(context.Background(), acronym, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 			t.Errorf("GetByAcronym(%q) error = %v, want ErrNotFound", acronym, err)
 		}
 	}
@@ -141,7 +141,7 @@ func TestRegulationsService_GetByAcronym_error(t *testing.T) {
 	mux.HandleFunc("GET /api/v2/regulations/", func(w http.ResponseWriter, _ *http.Request) {
 		writeJSON(t, w, http.StatusForbidden, fixture(t, "errors/invalid_token.json"))
 	})
-	if _, _, err := client.Regulations.GetByAcronym(context.Background(), "x"); !errors.Is(err, defectdojo.ErrForbidden) {
+	if _, _, err := client.Regulations.GetByAcronym(context.Background(), "x", nil); !errors.Is(err, defectdojo.ErrForbidden) {
 		t.Errorf("GetByAcronym() error = %v, want ErrForbidden", err)
 	}
 }
@@ -156,7 +156,7 @@ func TestRegulationsService_Create(t *testing.T) {
 	})
 
 	in := &defectdojo.Regulation{ID: 99, Name: "GDPR Test", Acronym: "GDPR-T", Category: "privacy", Jurisdiction: "European Union"}
-	r, resp, err := client.Regulations.Create(context.Background(), in)
+	r, resp, err := client.Regulations.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -175,7 +175,7 @@ func TestRegulationsService_Create_duplicate(t *testing.T) {
 	})
 	_, _, err := client.Regulations.Create(context.Background(), &defectdojo.Regulation{
 		Name: "GDPR Test", Acronym: "X", Category: "privacy", Jurisdiction: "EU",
-	})
+	}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["name"]) != 1 {
 		t.Errorf("Create() error = %v, want a 400 with a name field error", err)
@@ -191,7 +191,7 @@ func TestRegulationsService_Update(t *testing.T) {
 
 	_, _, err := client.Regulations.Update(context.Background(), 29, &defectdojo.Regulation{
 		Name: "N", Acronym: "A", Category: defectdojo.RegulationCategoryOther, Jurisdiction: "J", Description: "d", Reference: "https://example.com",
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -218,7 +218,7 @@ func TestRegulationsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "regulations/get.json"))
 			})
-			if _, _, err := client.Regulations.Patch(context.Background(), 29, tt.patch); err != nil {
+			if _, _, err := client.Regulations.Patch(context.Background(), 29, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -230,7 +230,7 @@ func TestRegulationsService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/regulations/29/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.Regulations.Delete(context.Background(), 29)
+	resp, err := client.Regulations.Delete(context.Background(), 29, nil)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
@@ -245,12 +245,12 @@ func TestRegulationsService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=10")
 		writeJSON(t, w, http.StatusOK, fixture(t, "regulations/delete_preview.json"))
 	})
-	preview, _, err := client.Regulations.DeletePreview(context.Background(), 29, &defectdojo.ListOptions{Limit: 10})
+	preview, _, err := client.Regulations.DeletePreview(context.Background(), 29, &defectdojo.DeletePreviewRegulationOptions{ListOptions: defectdojo.ListOptions{Limit: 10}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Objects[0] != (defectdojo.DeletedObject{Model: "Regulation", ID: 29, Name: "GDPR-T (European Union)"}) {
-		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Objects)
+	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "Regulation", ID: 29, Name: "GDPR-T (European Union)"}) {
+		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
 
@@ -267,30 +267,33 @@ func TestRegulationsService_invalidArguments(t *testing.T) {
 		return &r
 	}
 	calls := map[string]func() error{
-		"Get zero ID":        func() error { _, _, err := client.Regulations.Get(ctx, 0); return err },
-		"GetByName empty":    func() error { _, _, err := client.Regulations.GetByName(ctx, ""); return err },
-		"GetByAcronym empty": func() error { _, _, err := client.Regulations.GetByAcronym(ctx, ""); return err },
-		"Create nil":         func() error { _, _, err := client.Regulations.Create(ctx, nil); return err },
+		"Get zero ID":        func() error { _, _, err := client.Regulations.Get(ctx, 0, nil); return err },
+		"GetByName empty":    func() error { _, _, err := client.Regulations.GetByName(ctx, "", nil); return err },
+		"GetByAcronym empty": func() error { _, _, err := client.Regulations.GetByAcronym(ctx, "", nil); return err },
+		"Create nil":         func() error { _, _, err := client.Regulations.Create(ctx, nil, nil); return err },
 		"Create empty name": func() error {
-			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Name = "" }))
+			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Name = "" }), nil)
 			return err
 		},
 		"Create empty acronym": func() error {
-			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Acronym = "" }))
+			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Acronym = "" }), nil)
 			return err
 		},
 		"Create empty jurisdiction": func() error {
-			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Jurisdiction = "" }))
+			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Jurisdiction = "" }), nil)
 			return err
 		},
 		"Create empty category": func() error {
-			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Category = "" }))
+			_, _, err := client.Regulations.Create(ctx, with(func(r *defectdojo.Regulation) { r.Category = "" }), nil)
 			return err
 		},
-		"Update negative ID":    func() error { _, _, err := client.Regulations.Update(ctx, -1, &valid); return err },
-		"Patch zero ID":         func() error { _, _, err := client.Regulations.Patch(ctx, 0, &defectdojo.RegulationPatch{}); return err },
-		"Patch nil":             func() error { _, _, err := client.Regulations.Patch(ctx, 1, nil); return err },
-		"Delete zero ID":        func() error { _, err := client.Regulations.Delete(ctx, 0); return err },
+		"Update negative ID": func() error { _, _, err := client.Regulations.Update(ctx, -1, &valid, nil); return err },
+		"Patch zero ID": func() error {
+			_, _, err := client.Regulations.Patch(ctx, 0, &defectdojo.RegulationPatch{}, nil)
+			return err
+		},
+		"Patch nil":             func() error { _, _, err := client.Regulations.Patch(ctx, 1, nil, nil); return err },
+		"Delete zero ID":        func() error { _, err := client.Regulations.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.Regulations.DeletePreview(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {

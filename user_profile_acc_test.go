@@ -7,7 +7,7 @@ import (
 
 func TestAccUserProfile(t *testing.T) {
 	client := accClient(t)
-	profile, _, err := client.UserProfile.Get(t.Context())
+	profile, _, err := client.UserProfile.Get(t.Context(), nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}

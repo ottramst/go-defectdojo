@@ -28,12 +28,12 @@ func TestEngagementsService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 2 || len(list.Engagements) != 2 {
-		t.Fatalf("List() = %d of %d, want 2 of 2", len(list.Engagements), list.Count)
+	if list.Count != 2 || len(list.Results) != 2 {
+		t.Fatalf("List() = %d of %d, want 2 of 2", len(list.Results), list.Count)
 	}
 	// An engagement created with only the required fields: null fields
 	// decode as zero values, and DefectDojo named it after its target start.
-	e := list.Engagements[1]
+	e := list.Results[1]
 	if e.Name != "2026-11-01" || e.Description != "" || e.Lead != 0 || !e.FirstContacted.IsZero() ||
 		e.Status != defectdojo.EngagementStatusNotStarted || e.EngagementType != defectdojo.EngagementTypeInteractive {
 		t.Errorf("second engagement = %+v, want DefectDojo's defaults", e)
@@ -80,7 +80,7 @@ func TestEngagementsService_Get(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, fixture(t, "engagements/get.json"))
 	})
 
-	e, _, err := client.Engagements.Get(context.Background(), 1)
+	e, _, err := client.Engagements.Get(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -119,7 +119,7 @@ func TestEngagementsService_Get(t *testing.T) {
 		t.Errorf("Created, Updated = %v, %v", e.Created, e.Updated)
 	}
 
-	if _, _, err := client.Engagements.Get(context.Background(), 5); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Engagements.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -147,7 +147,7 @@ func TestEngagementsService_Create(t *testing.T) {
 		TargetStart: defectdojo.Date{Year: 2026, Month: time.November, Day: 1},
 		TargetEnd:   defectdojo.Date{Year: 2026, Month: time.December, Day: 31},
 	}
-	e, resp, err := client.Engagements.Create(context.Background(), in)
+	e, resp, err := client.Engagements.Create(context.Background(), in, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -189,7 +189,7 @@ func TestEngagementsService_Update(t *testing.T) {
 		Lead: 1, Requester: 2, Preset: 3, ReportType: 4,
 		CICDSCMServer: 5, CICDBuildServer: 6, CICDOrchestrationEngine: 7,
 		Tags: []string{},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -226,7 +226,7 @@ func TestEngagementsService_Patch(t *testing.T) {
 				testJSONBody(t, r, tt.want)
 				writeJSON(t, w, http.StatusOK, fixture(t, "engagements/get.json"))
 			})
-			if _, _, err := client.Engagements.Patch(context.Background(), 1, tt.patch); err != nil {
+			if _, _, err := client.Engagements.Patch(context.Background(), 1, tt.patch, nil); err != nil {
 				t.Fatalf("Patch() error = %v", err)
 			}
 		})
@@ -242,7 +242,7 @@ func TestEngagementsService_Patch_nilTags(t *testing.T) {
 	})
 	var tags []string
 	patch := &defectdojo.EngagementPatch{Tags: &tags}
-	if _, _, err := client.Engagements.Patch(context.Background(), 1, patch); err != nil {
+	if _, _, err := client.Engagements.Patch(context.Background(), 1, patch, nil); err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
 	if patch.Tags != &tags || tags != nil {
@@ -255,7 +255,7 @@ func TestEngagementsService_Delete(t *testing.T) {
 	mux.HandleFunc("DELETE /api/v2/engagements/1/", func(w http.ResponseWriter, _ *http.Request) {
 		w.WriteHeader(http.StatusNoContent)
 	})
-	resp, err := client.Engagements.Delete(context.Background(), 1)
+	resp, err := client.Engagements.Delete(context.Background(), 1, nil)
 	if err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
@@ -270,12 +270,12 @@ func TestEngagementsService_DeletePreview(t *testing.T) {
 		testQuery(t, r, "limit=50")
 		writeJSON(t, w, http.StatusOK, fixture(t, "engagements/delete_preview.json"))
 	})
-	preview, _, err := client.Engagements.DeletePreview(context.Background(), 1, &defectdojo.ListOptions{Limit: 50})
+	preview, _, err := client.Engagements.DeletePreview(context.Background(), 1, &defectdojo.DeletePreviewEngagementOptions{ListOptions: defectdojo.ListOptions{Limit: 50}})
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count == 0 || preview.Objects[0].Model != "Engagement" || preview.Objects[0].ID != 1 {
-		t.Errorf("DeletePreview() = %+v, want the engagement first", preview.Objects)
+	if preview.Count == 0 || preview.Results[0].Model != "Engagement" || preview.Results[0].ID != 1 {
+		t.Errorf("DeletePreview() = %+v, want the engagement first", preview.Results)
 	}
 }
 
@@ -289,10 +289,10 @@ func TestEngagementsService_CloseReopen(t *testing.T) {
 			writeJSON(t, w, http.StatusOK, []byte(`{}`))
 		})
 	}
-	if _, err := client.Engagements.Close(context.Background(), 1); err != nil {
+	if _, err := client.Engagements.Close(context.Background(), 1, nil); err != nil {
 		t.Errorf("Close() error = %v", err)
 	}
-	if _, err := client.Engagements.Reopen(context.Background(), 1); err != nil {
+	if _, err := client.Engagements.Reopen(context.Background(), 1, nil); err != nil {
 		t.Errorf("Reopen() error = %v", err)
 	}
 }
@@ -308,11 +308,11 @@ func TestEngagementsService_CountTests(t *testing.T) {
 		testQuery(t, r, "engagement=1&limit=1")
 		writeJSON(t, w, http.StatusOK, fixture(t, "engagements/count_tests.json"))
 	})
-	n, _, err := client.Engagements.CountTests(context.Background(), 1)
+	n, _, err := client.Engagements.CountTests(context.Background(), 1, nil)
 	if err != nil || n != 1 {
 		t.Errorf("CountTests() = %d, %v; want 1", n, err)
 	}
-	if _, _, err := client.Engagements.CountTests(context.Background(), 99999); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Engagements.CountTests(context.Background(), 99999, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("CountTests(missing) error = %v, want ErrNotFound", err)
 	}
 }
@@ -326,40 +326,40 @@ func TestEngagementsService_invalidArguments(t *testing.T) {
 	day := defectdojo.Date{Year: 2026, Month: time.January, Day: 1}
 	e := &defectdojo.Engagement{Product: 1, TargetStart: day, TargetEnd: day}
 	calls := map[string]func() error{
-		"Get zero ID":        func() error { _, _, err := client.Engagements.Get(ctx, 0); return err },
-		"Update negative ID": func() error { _, _, err := client.Engagements.Update(ctx, -1, e); return err },
-		"Update nil":         func() error { _, _, err := client.Engagements.Update(ctx, 1, nil); return err },
-		"Create nil":         func() error { _, _, err := client.Engagements.Create(ctx, nil); return err },
+		"Get zero ID":        func() error { _, _, err := client.Engagements.Get(ctx, 0, nil); return err },
+		"Update negative ID": func() error { _, _, err := client.Engagements.Update(ctx, -1, e, nil); return err },
+		"Update nil":         func() error { _, _, err := client.Engagements.Update(ctx, 1, nil, nil); return err },
+		"Create nil":         func() error { _, _, err := client.Engagements.Create(ctx, nil, nil); return err },
 		"Create zero product": func() error {
-			_, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{TargetStart: day, TargetEnd: day})
+			_, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{TargetStart: day, TargetEnd: day}, nil)
 			return err
 		},
 		"Create zero target start": func() error {
-			_, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: 1, TargetEnd: day})
+			_, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: 1, TargetEnd: day}, nil)
 			return err
 		},
 		"Create zero target end": func() error {
-			_, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: 1, TargetStart: day})
+			_, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: 1, TargetStart: day}, nil)
 			return err
 		},
 		"Patch zero ID": func() error {
-			_, _, err := client.Engagements.Patch(ctx, 0, &defectdojo.EngagementPatch{})
+			_, _, err := client.Engagements.Patch(ctx, 0, &defectdojo.EngagementPatch{}, nil)
 			return err
 		},
-		"Patch nil": func() error { _, _, err := client.Engagements.Patch(ctx, 1, nil); return err },
+		"Patch nil": func() error { _, _, err := client.Engagements.Patch(ctx, 1, nil, nil); return err },
 		"Patch zero target start": func() error {
-			_, _, err := client.Engagements.Patch(ctx, 1, &defectdojo.EngagementPatch{TargetStart: &defectdojo.Date{}})
+			_, _, err := client.Engagements.Patch(ctx, 1, &defectdojo.EngagementPatch{TargetStart: &defectdojo.Date{}}, nil)
 			return err
 		},
 		"Patch zero target end": func() error {
-			_, _, err := client.Engagements.Patch(ctx, 1, &defectdojo.EngagementPatch{TargetEnd: &defectdojo.Date{}})
+			_, _, err := client.Engagements.Patch(ctx, 1, &defectdojo.EngagementPatch{TargetEnd: &defectdojo.Date{}}, nil)
 			return err
 		},
-		"Delete zero ID":        func() error { _, err := client.Engagements.Delete(ctx, 0); return err },
+		"Delete zero ID":        func() error { _, err := client.Engagements.Delete(ctx, 0, nil); return err },
 		"DeletePreview zero ID": func() error { _, _, err := client.Engagements.DeletePreview(ctx, 0, nil); return err },
-		"Close zero ID":         func() error { _, err := client.Engagements.Close(ctx, 0); return err },
-		"Reopen zero ID":        func() error { _, err := client.Engagements.Reopen(ctx, 0); return err },
-		"CountTests zero ID":    func() error { _, _, err := client.Engagements.CountTests(ctx, 0); return err },
+		"Close zero ID":         func() error { _, err := client.Engagements.Close(ctx, 0, nil); return err },
+		"Reopen zero ID":        func() error { _, err := client.Engagements.Reopen(ctx, 0, nil); return err },
+		"CountTests zero ID":    func() error { _, _, err := client.Engagements.CountTests(ctx, 0, nil); return err },
 	}
 	for name, call := range calls {
 		t.Run(name, func(t *testing.T) {

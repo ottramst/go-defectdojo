@@ -29,7 +29,7 @@ func TestAccJiraProjects(t *testing.T) {
 		JiraLabels:    "security",
 		PushAllIssues: true,
 		Enabled:       true,
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
@@ -41,7 +41,7 @@ func TestAccJiraProjects(t *testing.T) {
 	}
 
 	// A GET returns the JSON with sorted keys.
-	got, _, err := client.JiraProjects.Get(ctx, created.ID)
+	got, _, err := client.JiraProjects.Get(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -50,7 +50,7 @@ func TestAccJiraProjects(t *testing.T) {
 	}
 
 	// A product can get several configurations.
-	second, _, err := client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Product: productID, ProjectKey: "SEC2"})
+	second, _, err := client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Product: productID, ProjectKey: "SEC2"}, nil)
 	if err != nil {
 		t.Fatalf("Create(second for the product) error = %v", err)
 	}
@@ -58,7 +58,7 @@ func TestAccJiraProjects(t *testing.T) {
 	if err != nil || list.Count != 2 {
 		t.Errorf("List(product) = %+v, %v; want 2", list, err)
 	}
-	if _, err := client.JiraProjects.Delete(ctx, second.ID); err != nil {
+	if _, err := client.JiraProjects.Delete(ctx, second.ID, nil); err != nil {
 		t.Fatalf("Delete(second) error = %v", err)
 	}
 
@@ -69,7 +69,7 @@ func TestAccJiraProjects(t *testing.T) {
 	got.CloseTransitionFields = json.RawMessage(`{"resolution":{"name":"Won't Fix"}}`)
 	got.DefaultAssignee = "alice"
 	got.PushNotes = true
-	updated, _, err := client.JiraProjects.Update(ctx, got.ID, got)
+	updated, _, err := client.JiraProjects.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -82,7 +82,7 @@ func TestAccJiraProjects(t *testing.T) {
 		Enabled:               new(false),
 		CloseTransitionFields: defectdojo.Null[json.RawMessage](),
 		DefaultAssignee:       defectdojo.Null[string](),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -96,48 +96,48 @@ func TestAccJiraProjects(t *testing.T) {
 	engagement, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{
 		Name: randName(t, "acc"), Product: productID,
 		TargetStart: defectdojo.Date{Year: 2026, Month: time.January, Day: 1}, TargetEnd: defectdojo.Date{Year: 2026, Month: time.January, Day: 1},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("creating engagement: %v", err)
 	}
-	forEngagement, _, err := client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Engagement: engagement.ID, ProjectKey: "ENG"})
+	forEngagement, _, err := client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Engagement: engagement.ID, ProjectKey: "ENG"}, nil)
 	if err != nil || forEngagement.Engagement != engagement.ID || forEngagement.Product != 0 {
 		t.Fatalf("Create(engagement) = %+v, %v", forEngagement, err)
 	}
-	_, _, err = client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Engagement: engagement.ID, ProjectKey: "ENG2"})
+	_, _, err = client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Engagement: engagement.ID, ProjectKey: "ENG2"}, nil)
 	var errResp *defectdojo.ErrorResponse
 	if !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["engagement"]) == 0 {
 		t.Errorf("Create(second for the engagement) error = %v, want a 400 on engagement", err)
 	}
 	// A product that doesn't exist is a 404.
-	if _, _, err := client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Product: productID + 100000}); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.JiraProjects.Create(ctx, &defectdojo.JiraProject{JiraInstance: instanceID, Product: productID + 100000}, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Create(missing product) error = %v, want ErrNotFound", err)
 	}
 
 	// The instance can't be deleted while it is used: DefectDojo answers 500.
-	if n, _, err := client.JiraInstances.CountJiraProjects(ctx, instanceID); err != nil || n != 2 {
+	if n, _, err := client.JiraInstances.CountJiraProjects(ctx, instanceID, nil); err != nil || n != 2 {
 		t.Errorf("CountJiraProjects() = %d, %v; want 2", n, err)
 	}
-	if _, err := client.JiraInstances.Delete(ctx, instanceID); !errors.As(err, &errResp) || errResp.StatusCode != http.StatusInternalServerError {
+	if _, err := client.JiraInstances.Delete(ctx, instanceID, nil); !errors.As(err, &errResp) || errResp.StatusCode != http.StatusInternalServerError {
 		t.Errorf("JiraInstances.Delete(in use) error = %v, want a 500", err)
 	}
 
 	preview, _, err := client.JiraProjects.DeletePreview(ctx, created.ID, nil)
-	if err != nil || len(preview.Objects) == 0 || preview.Objects[0].Model != "JIRA_Project" {
+	if err != nil || len(preview.Results) == 0 || preview.Results[0].Model != "JIRA_Project" {
 		t.Errorf("DeletePreview() = %+v, %v; want the configuration", preview, err)
 	}
-	if _, err := client.JiraProjects.Delete(ctx, created.ID); err != nil {
+	if _, err := client.JiraProjects.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.JiraProjects.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.JiraProjects.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 
 	// Deleting the engagement deletes its configuration.
-	if _, err := client.Engagements.Delete(ctx, engagement.ID); err != nil {
+	if _, err := client.Engagements.Delete(ctx, engagement.ID, nil); err != nil {
 		t.Fatalf("deleting engagement: %v", err)
 	}
-	if _, _, err := client.JiraProjects.Get(ctx, forEngagement.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.JiraProjects.Get(ctx, forEngagement.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(configuration of a deleted engagement) error = %v, want ErrNotFound", err)
 	}
 }
@@ -151,7 +151,7 @@ func checkSuppressSLANotificationComments(t *testing.T, client *defectdojo.Clien
 	if err != nil {
 		t.Fatalf("ServerVersion() error = %v", err)
 	}
-	patched, _, err := client.JiraProjects.Patch(ctx, id, &defectdojo.JiraProjectPatch{SuppressSLANotificationComments: new(true)})
+	patched, _, err := client.JiraProjects.Patch(ctx, id, &defectdojo.JiraProjectPatch{SuppressSLANotificationComments: new(true)}, nil)
 	if err != nil {
 		t.Fatalf("Patch(suppress) error = %v", err)
 	}
@@ -177,7 +177,7 @@ func checkSuppressSLANotificationComments(t *testing.T, client *defectdojo.Clien
 	if !errors.As(err, &errResp) || len(errResp.Fields["suppress_sla_notification_comments"]) == 0 {
 		t.Errorf("POST with both SLA settings error = %v, want a 400 on suppress_sla_notification_comments", err)
 	}
-	if _, _, err := client.JiraProjects.Patch(ctx, id, &defectdojo.JiraProjectPatch{SuppressSLANotificationComments: new(false)}); err != nil {
+	if _, _, err := client.JiraProjects.Patch(ctx, id, &defectdojo.JiraProjectPatch{SuppressSLANotificationComments: new(false)}, nil); err != nil {
 		t.Errorf("Patch(suppress off) error = %v", err)
 	}
 }
@@ -187,14 +187,14 @@ func checkSuppressSLANotificationComments(t *testing.T, client *defectdojo.Clien
 func createJiraInstance(t *testing.T, client *defectdojo.Client) int {
 	t.Helper()
 	name := randName(t, "acc")
-	ji, _, err := client.JiraInstances.Create(t.Context(), &defectdojo.JiraInstanceWrite{
+	ji, _, err := client.JiraInstances.Create(t.Context(), &defectdojo.CreateJiraInstanceRequest{
 		JiraInstance: defectdojo.JiraInstance{
 			ConfigurationName: name, URL: "https://" + name + ".example.invalid", Username: "bot",
 			InfoMappingSeverity: "Lowest", LowMappingSeverity: "Low", MediumMappingSeverity: "Medium",
 			HighMappingSeverity: "High", CriticalMappingSeverity: "Highest",
 		},
 		Password: "fake-token",
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("creating Jira instance: %v", err)
 	}

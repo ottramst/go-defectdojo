@@ -288,11 +288,14 @@ func checkPasswordLengths(minimum, maximum *int) error {
 	return nil
 }
 
+// GetSystemSettingsOptions are the options of [SystemSettingsService.Get].
+type GetSystemSettingsOptions struct{}
+
 // Get returns the system settings. DefectDojo lists them as a single object;
 // Get returns an error if the list doesn't hold exactly one.
 //
 // DefectDojo API: GET /api/v2/system_settings/
-func (s *SystemSettingsService) Get(ctx context.Context, opts ...RequestOption) (*SystemSettings, *Response, error) {
+func (s *SystemSettingsService) Get(ctx context.Context, opt *GetSystemSettingsOptions, opts ...RequestOption) (*SystemSettings, *Response, error) {
 	var page listPage[*SystemSettings]
 	resp, err := s.client.do(ctx, http.MethodGet, "/api/v2/system_settings/", nil, &page, opts)
 	if err != nil {
@@ -304,12 +307,15 @@ func (s *SystemSettingsService) Get(ctx context.Context, opts ...RequestOption) 
 	return page.Results[0], resp, nil
 }
 
+// PatchSystemSettingsOptions are the options of [SystemSettingsService.Patch].
+type PatchSystemSettingsOptions struct{}
+
 // Patch changes the system settings that are set in patch. The ID is the one
 // [SystemSettingsService.Get] returns. Password lengths outside 9 to 48, and a
 // minimum above the maximum when both are set, are rejected before sending.
 //
 // DefectDojo API: PATCH /api/v2/system_settings/{id}/
-func (s *SystemSettingsService) Patch(ctx context.Context, id int, patch *SystemSettingsPatch, opts ...RequestOption) (*SystemSettings, *Response, error) {
+func (s *SystemSettingsService) Patch(ctx context.Context, id int, patch *SystemSettingsPatch, opt *PatchSystemSettingsOptions, opts ...RequestOption) (*SystemSettings, *Response, error) {
 	if err := requirePositive("system settings ID", id); err != nil {
 		return nil, nil, err
 	}

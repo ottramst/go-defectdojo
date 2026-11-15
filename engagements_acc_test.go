@@ -36,12 +36,12 @@ func TestAccEngagements(t *testing.T) {
 		ThreatModel:    true,
 		Lead:           1,
 		Tags:           []string{"ci"},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
 	cleanup(t, func(ctx context.Context) error {
-		_, err := client.Engagements.Delete(ctx, created.ID)
+		_, err := client.Engagements.Delete(ctx, created.ID, nil)
 		if errors.Is(err, defectdojo.ErrNotFound) {
 			return nil
 		}
@@ -58,18 +58,18 @@ func TestAccEngagements(t *testing.T) {
 	}
 
 	// An engagement without a name is named after its target start.
-	unnamed, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: productID, TargetStart: start, TargetEnd: end})
+	unnamed, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: productID, TargetStart: start, TargetEnd: end}, nil)
 	if err != nil {
 		t.Fatalf("Create(no name) error = %v", err)
 	}
 	if unnamed.Name != "2026-01-05" || unnamed.EngagementType != defectdojo.EngagementTypeInteractive {
 		t.Errorf("Create(no name) = %+v, want the name 2026-01-05 and an interactive engagement", unnamed)
 	}
-	if _, err := client.Engagements.Delete(ctx, unnamed.ID); err != nil {
+	if _, err := client.Engagements.Delete(ctx, unnamed.ID, nil); err != nil {
 		t.Errorf("Delete(unnamed) error = %v", err)
 	}
 
-	got, _, err := client.Engagements.Get(ctx, created.ID)
+	got, _, err := client.Engagements.Get(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -79,7 +79,7 @@ func TestAccEngagements(t *testing.T) {
 
 	// The name filter is exact.
 	list, _, err := client.Engagements.List(ctx, &defectdojo.ListEngagementsOptions{Product: productID, Name: name})
-	if err != nil || list.Count != 1 || list.Engagements[0].ID != created.ID {
+	if err != nil || list.Count != 1 || list.Results[0].ID != created.ID {
 		t.Errorf("List(product, name) = %+v, %v; want the engagement", list, err)
 	}
 	if list, _, err := client.Engagements.List(ctx, &defectdojo.ListEngagementsOptions{Product: productID, Name: name[:len(name)-1]}); err != nil || list.Count != 0 {
@@ -93,7 +93,7 @@ func TestAccEngagements(t *testing.T) {
 	got.Lead = 0
 	got.Status = ""
 	got.Version = "1.2.3"
-	updated, _, err := client.Engagements.Update(ctx, got.ID, got)
+	updated, _, err := client.Engagements.Update(ctx, got.ID, got, nil)
 	if err != nil {
 		t.Fatalf("Update() error = %v", err)
 	}
@@ -110,7 +110,7 @@ func TestAccEngagements(t *testing.T) {
 		FirstContacted: defectdojo.Value(start),
 		Status:         new(defectdojo.EngagementStatusCompleted),
 		Description:    defectdojo.Value("patched"),
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Patch() error = %v", err)
 	}
@@ -119,25 +119,25 @@ func TestAccEngagements(t *testing.T) {
 		patched.Status != defectdojo.EngagementStatusCompleted || !patched.Active {
 		t.Errorf("Patch() = %+v, want the late start, a completed but active engagement", patched)
 	}
-	if _, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: productID, TargetStart: late, TargetEnd: end}); !errors.Is(err, defectdojo.ErrBadRequest) {
+	if _, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{Product: productID, TargetStart: late, TargetEnd: end}, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 		t.Errorf("Create(start after end) error = %v, want ErrBadRequest", err)
 	}
 
-	if _, err := client.Engagements.Close(ctx, got.ID); err != nil {
+	if _, err := client.Engagements.Close(ctx, got.ID, nil); err != nil {
 		t.Fatalf("Close() error = %v", err)
 	}
-	if e, _, err := client.Engagements.Get(ctx, got.ID); err != nil || e.Active || e.Status != defectdojo.EngagementStatusCompleted {
+	if e, _, err := client.Engagements.Get(ctx, got.ID, nil); err != nil || e.Active || e.Status != defectdojo.EngagementStatusCompleted {
 		t.Errorf("Get(closed) = %+v, %v; want an inactive, completed engagement", e, err)
 	}
-	if _, err := client.Engagements.Reopen(ctx, got.ID); err != nil {
+	if _, err := client.Engagements.Reopen(ctx, got.ID, nil); err != nil {
 		t.Fatalf("Reopen() error = %v", err)
 	}
-	if e, _, err := client.Engagements.Get(ctx, got.ID); err != nil || !e.Active || e.Status != defectdojo.EngagementStatusInProgress {
+	if e, _, err := client.Engagements.Get(ctx, got.ID, nil); err != nil || !e.Active || e.Status != defectdojo.EngagementStatusInProgress {
 		t.Errorf("Get(reopened) = %+v, %v; want an active engagement in progress", e, err)
 	}
 
 	// Moving the engagement to another product.
-	moved, _, err := client.Engagements.Patch(ctx, got.ID, &defectdojo.EngagementPatch{Product: &otherID})
+	moved, _, err := client.Engagements.Patch(ctx, got.ID, &defectdojo.EngagementPatch{Product: &otherID}, nil)
 	if err != nil || moved.Product != otherID {
 		t.Fatalf("Patch(product) = %+v, %v; want product %d", moved, err, otherID)
 	}
@@ -157,29 +157,29 @@ func TestAccEngagements(t *testing.T) {
 	}
 
 	// A test makes the engagement's delete cascade.
-	if n, _, err := client.Engagements.CountTests(ctx, created.ID); err != nil || n != 0 {
+	if n, _, err := client.Engagements.CountTests(ctx, created.ID, nil); err != nil || n != 0 {
 		t.Errorf("CountTests() = %d, %v; want 0", n, err)
 	}
 	createTest(t, client, created.ID, nil)
-	if n, _, err := client.Engagements.CountTests(ctx, created.ID); err != nil || n != 1 {
+	if n, _, err := client.Engagements.CountTests(ctx, created.ID, nil); err != nil || n != 1 {
 		t.Errorf("CountTests() = %d, %v; want 1", n, err)
 	}
 	preview, _, err := client.Engagements.DeletePreview(ctx, created.ID, nil)
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Objects, func(o *defectdojo.DeletedObject) bool { return o.Model == "Test" }) {
-		t.Errorf("DeletePreview() = %+v, want the test", preview.Objects)
+	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Test" }) {
+		t.Errorf("DeletePreview() = %+v, want the test", preview.Results)
 	}
 
-	if _, err := client.Engagements.Delete(ctx, created.ID); err != nil {
+	if _, err := client.Engagements.Delete(ctx, created.ID, nil); err != nil {
 		t.Fatalf("Delete() error = %v", err)
 	}
-	if _, _, err := client.Engagements.Get(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Engagements.Get(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("Get(deleted) error = %v, want ErrNotFound", err)
 	}
 	// The tests filter rejects engagements that don't exist.
-	if _, _, err := client.Engagements.CountTests(ctx, created.ID); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.Engagements.CountTests(ctx, created.ID, nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("CountTests(deleted) error = %v, want ErrNotFound", err)
 	}
 }
@@ -194,11 +194,11 @@ func TestAccEngagements_tagInheritance(t *testing.T) {
 
 	e, _, err := client.Engagements.Create(ctx, &defectdojo.Engagement{
 		Product: productID, TargetStart: start, TargetEnd: start, Tags: []string{"own"},
-	})
+	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
-	got, _, err := client.Engagements.Get(ctx, e.ID)
+	got, _, err := client.Engagements.Get(ctx, e.ID, nil)
 	if err != nil {
 		t.Fatalf("Get() error = %v", err)
 	}
@@ -214,27 +214,27 @@ func TestAccEngagements_tagInheritance(t *testing.T) {
 		{tags: []string{}, want: []string{}},
 	} {
 		e := &defectdojo.Engagement{Product: productID, TargetStart: start, TargetEnd: start, Tags: tt.tags}
-		created, _, err := client.Engagements.Create(ctx, e)
+		created, _, err := client.Engagements.Create(ctx, e, nil)
 		if err != nil {
 			t.Fatalf("Create(tags %#v) error = %v", tt.tags, err)
 		}
-		if got, _, err := client.Engagements.Get(ctx, created.ID); err != nil || !slices.Equal(got.Tags, tt.want) {
+		if got, _, err := client.Engagements.Get(ctx, created.ID, nil); err != nil || !slices.Equal(got.Tags, tt.want) {
 			t.Errorf("Create(tags %#v): Get() tags = %v, %v; want %v", tt.tags, got.Tags, err, tt.want)
 		}
 	}
 
 	// A write without the inherited tags gets them back.
-	if _, _, err := client.Engagements.Patch(ctx, e.ID, &defectdojo.EngagementPatch{Tags: &[]string{"other"}}); err != nil {
+	if _, _, err := client.Engagements.Patch(ctx, e.ID, &defectdojo.EngagementPatch{Tags: &[]string{"other"}}, nil); err != nil {
 		t.Fatalf("Patch(other tags) error = %v", err)
 	}
-	if got, _, err := client.Engagements.Get(ctx, e.ID); err != nil || !slices.Equal(sorted(got.Tags), []string{"inherited", "other"}) {
+	if got, _, err := client.Engagements.Get(ctx, e.ID, nil); err != nil || !slices.Equal(sorted(got.Tags), []string{"inherited", "other"}) {
 		t.Errorf("Get() tags = %v, %v; want [inherited other]", got.Tags, err)
 	}
 	// But an empty list removes them too.
-	if _, _, err := client.Engagements.Patch(ctx, e.ID, &defectdojo.EngagementPatch{Tags: &[]string{}}); err != nil {
+	if _, _, err := client.Engagements.Patch(ctx, e.ID, &defectdojo.EngagementPatch{Tags: &[]string{}}, nil); err != nil {
 		t.Fatalf("Patch(no tags) error = %v", err)
 	}
-	if got, _, err := client.Engagements.Get(ctx, e.ID); err != nil || len(got.Tags) != 0 {
+	if got, _, err := client.Engagements.Get(ctx, e.ID, nil); err != nil || len(got.Tags) != 0 {
 		t.Errorf("Get() tags = %v, %v; want none", got.Tags, err)
 	}
 }
@@ -249,7 +249,7 @@ func createProductIn(t *testing.T, client *defectdojo.Client, productTypeID int,
 		p.EnableProductTagInheritance = true
 		p.Tags = []string{"inherited"}
 	}
-	created, _, err := client.Products.Create(t.Context(), p)
+	created, _, err := client.Products.Create(t.Context(), p, nil)
 	if err != nil {
 		t.Fatalf("creating product: %v", err)
 	}

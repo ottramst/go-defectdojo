@@ -85,9 +85,16 @@ type ProductAttributePatch struct {
 	DisplayOrder *int    `json:"display_order,omitempty"`
 }
 
-// ProductAttributeList is a page of entries.
-type ProductAttributeList struct {
-	ProductAttributes []*ProductAttribute
+// ListProductAttributesOptions are the options of [ProductAttributesService.List]
+// and [ProductAttributesService.ListAll]. DefectDojo has no filters for
+// product attributes.
+type ListProductAttributesOptions struct {
+	ListOptions
+}
+
+// ListProductAttributesResult is a page of entries.
+type ListProductAttributesResult struct {
+	Results []*ProductAttribute
 
 	// Count is the number of entries in the table.
 	Count int
@@ -99,7 +106,7 @@ type ProductAttributeList struct {
 // DefectDojo API: GET /api/v2/product_platforms/
 // DefectDojo API: GET /api/v2/product_lifecycles/
 // DefectDojo API: GET /api/v2/product_origins/
-func (s *ProductAttributesService) List(ctx context.Context, opt *ListOptions, opts ...RequestOption) (*ProductAttributeList, *Response, error) {
+func (s *ProductAttributesService) List(ctx context.Context, opt *ListProductAttributesOptions, opts ...RequestOption) (*ListProductAttributesResult, *Response, error) {
 	path, err := addQuery(s.path, opt)
 	if err != nil {
 		return nil, nil, err
@@ -109,7 +116,7 @@ func (s *ProductAttributesService) List(ctx context.Context, opt *ListOptions, o
 	if err != nil {
 		return nil, resp, err
 	}
-	return &ProductAttributeList{ProductAttributes: page.Results, Count: page.Count}, resp, nil
+	return &ListProductAttributesResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the table's entries, starting at
@@ -121,8 +128,8 @@ func (s *ProductAttributesService) List(ctx context.Context, opt *ListOptions, o
 //
 // Ranging over the iterator again starts over. On an error, the iterator
 // yields it once and stops.
-func (s *ProductAttributesService) ListAll(ctx context.Context, opt *ListOptions, opts ...RequestOption) iter.Seq2[*ProductAttribute, error] {
-	base := ListOptions{}
+func (s *ProductAttributesService) ListAll(ctx context.Context, opt *ListProductAttributesOptions, opts ...RequestOption) iter.Seq2[*ProductAttribute, error] {
+	base := ListProductAttributesOptions{}
 	if opt != nil {
 		base = *opt
 	}
@@ -133,16 +140,19 @@ func (s *ProductAttributesService) ListAll(ctx context.Context, opt *ListOptions
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.ProductAttributes, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetProductAttributeOptions are the options of [ProductAttributesService.Get].
+type GetProductAttributeOptions struct{}
 
 // Get returns an entry by its ID.
 //
 // DefectDojo API: GET /api/v2/product_platforms/{id}/
 // DefectDojo API: GET /api/v2/product_lifecycles/{id}/
 // DefectDojo API: GET /api/v2/product_origins/{id}/
-func (s *ProductAttributesService) Get(ctx context.Context, id int, opts ...RequestOption) (*ProductAttribute, *Response, error) {
+func (s *ProductAttributesService) Get(ctx context.Context, id int, opt *GetProductAttributeOptions, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	if err := requirePositive(s.kind+" ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -154,6 +164,9 @@ func (s *ProductAttributesService) Get(ctx context.Context, id int, opts ...Requ
 	return a, resp, nil
 }
 
+// GetProductAttributeByValueOptions are the options of [ProductAttributesService.GetByValue].
+type GetProductAttributeByValueOptions struct{}
+
 // GetByValue returns the entry with exactly the given value, compared
 // case-sensitively. It returns an error matching [ErrNotFound] when there is
 // none.
@@ -163,20 +176,20 @@ func (s *ProductAttributesService) Get(ctx context.Context, id int, opts ...Requ
 // which hold the tables DefectDojo comes with, and asks again for the whole
 // table, in one page, when it has more; the returned response is the last
 // request's.
-func (s *ProductAttributesService) GetByValue(ctx context.Context, value string, opts ...RequestOption) (*ProductAttribute, *Response, error) {
+func (s *ProductAttributesService) GetByValue(ctx context.Context, value string, opt *GetProductAttributeByValueOptions, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	if value == "" {
 		return nil, nil, fmt.Errorf("defectdojo: %s value must not be empty", s.kind)
 	}
-	list, resp, err := s.List(ctx, &ListOptions{Limit: 100}, opts...)
-	if err == nil && list.Count > len(list.ProductAttributes) {
+	list, resp, err := s.List(ctx, &ListProductAttributesOptions{ListOptions: ListOptions{Limit: 100}}, opts...)
+	if err == nil && list.Count > len(list.Results) {
 		// DefectDojo doesn't cap the page size of these tables.
 		// The margin covers entries added in between.
-		list, resp, err = s.List(ctx, &ListOptions{Limit: list.Count + 100}, opts...)
+		list, resp, err = s.List(ctx, &ListProductAttributesOptions{ListOptions: ListOptions{Limit: list.Count + 100}}, opts...)
 	}
 	if err != nil {
 		return nil, resp, err
 	}
-	for _, a := range list.ProductAttributes {
+	for _, a := range list.Results {
 		if a.Value == value {
 			return a, resp, nil
 		}
@@ -184,13 +197,16 @@ func (s *ProductAttributesService) GetByValue(ctx context.Context, value string,
 	return nil, resp, fmt.Errorf("defectdojo: %s %q: %w", s.kind, value, ErrNotFound)
 }
 
+// CreateProductAttributeOptions are the options of [ProductAttributesService.Create].
+type CreateProductAttributeOptions struct{}
+
 // Create creates an entry. Its read-only ID is ignored. A value that is taken
 // is a 400 ([ErrBadRequest]) with a "value" field error.
 //
 // DefectDojo API: POST /api/v2/product_platforms/
 // DefectDojo API: POST /api/v2/product_lifecycles/
 // DefectDojo API: POST /api/v2/product_origins/
-func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribute, opts ...RequestOption) (*ProductAttribute, *Response, error) {
+func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribute, opt *CreateProductAttributeOptions, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	body, err := s.newRequest(a)
 	if err != nil {
 		return nil, nil, err
@@ -203,6 +219,9 @@ func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribu
 	return created, resp, nil
 }
 
+// UpdateProductAttributeOptions are the options of [ProductAttributesService.Update].
+type UpdateProductAttributeOptions struct{}
+
 // Update replaces the writable fields of the entry with the given ID: an
 // empty Icon clears it. Value must be set, as DefectDojo requires it, but
 // DefectDojo ignores it: set it to the current value (another entry's value
@@ -211,7 +230,7 @@ func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribu
 // DefectDojo API: PUT /api/v2/product_platforms/{id}/
 // DefectDojo API: PUT /api/v2/product_lifecycles/{id}/
 // DefectDojo API: PUT /api/v2/product_origins/{id}/
-func (s *ProductAttributesService) Update(ctx context.Context, id int, a *ProductAttribute, opts ...RequestOption) (*ProductAttribute, *Response, error) {
+func (s *ProductAttributesService) Update(ctx context.Context, id int, a *ProductAttribute, opt *UpdateProductAttributeOptions, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	if err := requirePositive(s.kind+" ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -227,12 +246,15 @@ func (s *ProductAttributesService) Update(ctx context.Context, id int, a *Produc
 	return updated, resp, nil
 }
 
+// PatchProductAttributeOptions are the options of [ProductAttributesService.Patch].
+type PatchProductAttributeOptions struct{}
+
 // Patch changes the fields of the entry that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/product_platforms/{id}/
 // DefectDojo API: PATCH /api/v2/product_lifecycles/{id}/
 // DefectDojo API: PATCH /api/v2/product_origins/{id}/
-func (s *ProductAttributesService) Patch(ctx context.Context, id int, patch *ProductAttributePatch, opts ...RequestOption) (*ProductAttribute, *Response, error) {
+func (s *ProductAttributesService) Patch(ctx context.Context, id int, patch *ProductAttributePatch, opt *PatchProductAttributeOptions, opts ...RequestOption) (*ProductAttribute, *Response, error) {
 	if err := requirePositive(s.kind+" ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -247,17 +269,25 @@ func (s *ProductAttributesService) Patch(ctx context.Context, id int, patch *Pro
 	return updated, resp, nil
 }
 
+// DeleteProductAttributeOptions are the options of [ProductAttributesService.Delete].
+type DeleteProductAttributeOptions struct{}
+
 // Delete deletes an entry by its ID. Deleting an entry that products use is
 // a 409 ([ErrConflict]).
 //
 // DefectDojo API: DELETE /api/v2/product_platforms/{id}/
 // DefectDojo API: DELETE /api/v2/product_lifecycles/{id}/
 // DefectDojo API: DELETE /api/v2/product_origins/{id}/
-func (s *ProductAttributesService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *ProductAttributesService) Delete(ctx context.Context, id int, opt *DeleteProductAttributeOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive(s.kind+" ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, s.entryPath(id), nil, nil, opts)
+}
+
+// DeletePreviewProductAttributeOptions are the options of [ProductAttributesService.DeletePreview].
+type DeletePreviewProductAttributeOptions struct {
+	ListOptions
 }
 
 // DeletePreview returns a page of the objects that deleting the entry would
@@ -266,7 +296,7 @@ func (s *ProductAttributesService) Delete(ctx context.Context, id int, opts ...R
 // DefectDojo API: GET /api/v2/product_platforms/{id}/delete_preview/
 // DefectDojo API: GET /api/v2/product_lifecycles/{id}/delete_preview/
 // DefectDojo API: GET /api/v2/product_origins/{id}/delete_preview/
-func (s *ProductAttributesService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *ProductAttributesService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewProductAttributeOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive(s.kind+" ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -279,7 +309,7 @@ func (s *ProductAttributesService) DeletePreview(ctx context.Context, id int, op
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func (s *ProductAttributesService) entryPath(id int) string {

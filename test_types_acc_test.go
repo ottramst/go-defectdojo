@@ -12,14 +12,14 @@ func TestAccTestTypes(t *testing.T) {
 	client := accClient(t)
 	ctx := t.Context()
 
-	api, _, err := client.TestTypes.GetByName(ctx, "API Test")
+	api, _, err := client.TestTypes.GetByName(ctx, "API Test", nil)
 	if err != nil || api.ID != 1 || !api.Active {
 		t.Fatalf("GetByName(API Test) = %+v, %v; want the fixture with ID 1", api, err)
 	}
-	if _, _, err := client.TestTypes.GetByName(ctx, "api test"); !errors.Is(err, defectdojo.ErrNotFound) {
+	if _, _, err := client.TestTypes.GetByName(ctx, "api test", nil); !errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByName(other case) error = %v, want ErrNotFound", err)
 	}
-	got, _, err := client.TestTypes.Get(ctx, api.ID)
+	got, _, err := client.TestTypes.Get(ctx, api.ID, nil)
 	if err != nil || *got != *api {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, api)
 	}

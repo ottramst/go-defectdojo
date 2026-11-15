@@ -61,9 +61,9 @@ type ListDevelopmentEnvironmentsOptions struct {
 	ListOptions
 }
 
-// DevelopmentEnvironmentList is a page of development environments.
-type DevelopmentEnvironmentList struct {
-	DevelopmentEnvironments []*DevelopmentEnvironment
+// ListDevelopmentEnvironmentsResult is a page of development environments.
+type ListDevelopmentEnvironmentsResult struct {
+	Results []*DevelopmentEnvironment
 
 	// Count is the number of development environments.
 	Count int
@@ -72,7 +72,7 @@ type DevelopmentEnvironmentList struct {
 // List returns a page of development environments, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/development_environments/
-func (s *DevelopmentEnvironmentsService) List(ctx context.Context, opt *ListDevelopmentEnvironmentsOptions, opts ...RequestOption) (*DevelopmentEnvironmentList, *Response, error) {
+func (s *DevelopmentEnvironmentsService) List(ctx context.Context, opt *ListDevelopmentEnvironmentsOptions, opts ...RequestOption) (*ListDevelopmentEnvironmentsResult, *Response, error) {
 	path, err := addQuery("/api/v2/development_environments/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -82,7 +82,7 @@ func (s *DevelopmentEnvironmentsService) List(ctx context.Context, opt *ListDeve
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DevelopmentEnvironmentList{DevelopmentEnvironments: page.Results, Count: page.Count}, resp, nil
+	return &ListDevelopmentEnvironmentsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the development environments, starting at
@@ -103,14 +103,17 @@ func (s *DevelopmentEnvironmentsService) ListAll(ctx context.Context, opt *ListD
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.DevelopmentEnvironments, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Get].
+type GetDevelopmentEnvironmentOptions struct{}
 
 // Get returns a development environment by its ID.
 //
 // DefectDojo API: GET /api/v2/development_environments/{id}/
-func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
+func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opt *GetDevelopmentEnvironmentOptions, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
 	if err := requirePositive("development environment ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -122,6 +125,9 @@ func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opts .
 	return env, resp, nil
 }
 
+// GetDevelopmentEnvironmentByNameOptions are the options of [DevelopmentEnvironmentsService.GetByName].
+type GetDevelopmentEnvironmentByNameOptions struct{}
+
 // GetByName returns the development environment with exactly the given name,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
 // there is none, and an error matching [ErrAmbiguous] that names their IDs
@@ -129,7 +135,7 @@ func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opts .
 //
 // DefectDojo cannot filter development environments by name, so GetByName
 // pages through all of them; the returned response is the last page's.
-func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
+func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name string, opt *GetDevelopmentEnvironmentByNameOptions, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: development environment name must not be empty")
 	}
@@ -138,21 +144,21 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 		ids   []int
 		resp  *Response
 	)
-	opt := &ListDevelopmentEnvironmentsOptions{ListOptions: ListOptions{Limit: 100}}
+	listOpt := &ListDevelopmentEnvironmentsOptions{ListOptions: ListOptions{Limit: 100}}
 	for {
-		list, r, err := s.List(ctx, opt, opts...)
+		list, r, err := s.List(ctx, listOpt, opts...)
 		resp = r
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, env := range list.DevelopmentEnvironments {
+		for _, env := range list.Results {
 			if env.Name == name {
 				found = env
 				ids = append(ids, env.ID)
 			}
 		}
-		opt.Offset += len(list.DevelopmentEnvironments)
-		if len(list.DevelopmentEnvironments) == 0 || opt.Offset >= list.Count {
+		listOpt.Offset += len(list.Results)
+		if len(list.Results) == 0 || listOpt.Offset >= list.Count {
 			break
 		}
 	}
@@ -166,12 +172,15 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 	}
 }
 
+// CreateDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Create].
+type CreateDevelopmentEnvironmentOptions struct{}
+
 // Create creates a development environment. Its read-only ID is ignored.
 // DefectDojo accepts a name that another environment already has, but then
 // fails the imports that name it.
 //
 // DefectDojo API: POST /api/v2/development_environments/
-func (s *DevelopmentEnvironmentsService) Create(ctx context.Context, env *DevelopmentEnvironment, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
+func (s *DevelopmentEnvironmentsService) Create(ctx context.Context, env *DevelopmentEnvironment, opt *CreateDevelopmentEnvironmentOptions, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
 	body, err := newDevelopmentEnvironmentRequest(env)
 	if err != nil {
 		return nil, nil, err
@@ -184,11 +193,14 @@ func (s *DevelopmentEnvironmentsService) Create(ctx context.Context, env *Develo
 	return created, resp, nil
 }
 
+// UpdateDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Update].
+type UpdateDevelopmentEnvironmentOptions struct{}
+
 // Update replaces the writable fields of the development environment with the
 // given ID.
 //
 // DefectDojo API: PUT /api/v2/development_environments/{id}/
-func (s *DevelopmentEnvironmentsService) Update(ctx context.Context, id int, env *DevelopmentEnvironment, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
+func (s *DevelopmentEnvironmentsService) Update(ctx context.Context, id int, env *DevelopmentEnvironment, opt *UpdateDevelopmentEnvironmentOptions, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
 	if err := requirePositive("development environment ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -204,11 +216,14 @@ func (s *DevelopmentEnvironmentsService) Update(ctx context.Context, id int, env
 	return updated, resp, nil
 }
 
+// PatchDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Patch].
+type PatchDevelopmentEnvironmentOptions struct{}
+
 // Patch changes the fields of the development environment that are set in
 // patch.
 //
 // DefectDojo API: PATCH /api/v2/development_environments/{id}/
-func (s *DevelopmentEnvironmentsService) Patch(ctx context.Context, id int, patch *DevelopmentEnvironmentPatch, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
+func (s *DevelopmentEnvironmentsService) Patch(ctx context.Context, id int, patch *DevelopmentEnvironmentPatch, opt *PatchDevelopmentEnvironmentOptions, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
 	if err := requirePositive("development environment ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -223,15 +238,23 @@ func (s *DevelopmentEnvironmentsService) Patch(ctx context.Context, id int, patc
 	return updated, resp, nil
 }
 
+// DeleteDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Delete].
+type DeleteDevelopmentEnvironmentOptions struct{}
+
 // Delete deletes a development environment by its ID. Deleting an
 // environment that tests use is a 409 ([ErrConflict]).
 //
 // DefectDojo API: DELETE /api/v2/development_environments/{id}/
-func (s *DevelopmentEnvironmentsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *DevelopmentEnvironmentsService) Delete(ctx context.Context, id int, opt *DeleteDevelopmentEnvironmentOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("development environment ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, developmentEnvironmentPath(id), nil, nil, opts)
+}
+
+// DeletePreviewDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.DeletePreview].
+type DeletePreviewDevelopmentEnvironmentOptions struct {
+	ListOptions
 }
 
 // DeletePreview returns a page of the objects that deleting the development
@@ -239,7 +262,7 @@ func (s *DevelopmentEnvironmentsService) Delete(ctx context.Context, id int, opt
 // the tests that block the delete.
 //
 // DefectDojo API: GET /api/v2/development_environments/{id}/delete_preview/
-func (s *DevelopmentEnvironmentsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *DevelopmentEnvironmentsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewDevelopmentEnvironmentOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("development environment ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -252,7 +275,7 @@ func (s *DevelopmentEnvironmentsService) DeletePreview(ctx context.Context, id i
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func developmentEnvironmentPath(id int) string {

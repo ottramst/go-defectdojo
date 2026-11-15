@@ -141,9 +141,9 @@ type ListSLAConfigurationsOptions struct {
 	ListOptions
 }
 
-// SLAConfigurationList is a page of SLA configurations.
-type SLAConfigurationList struct {
-	SLAConfigurations []*SLAConfiguration
+// ListSLAConfigurationsResult is a page of SLA configurations.
+type ListSLAConfigurationsResult struct {
+	Results []*SLAConfiguration
 
 	// Count is the number of SLA configurations.
 	Count int
@@ -152,7 +152,7 @@ type SLAConfigurationList struct {
 // List returns a page of SLA configurations, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/sla_configurations/
-func (s *SLAConfigurationsService) List(ctx context.Context, opt *ListSLAConfigurationsOptions, opts ...RequestOption) (*SLAConfigurationList, *Response, error) {
+func (s *SLAConfigurationsService) List(ctx context.Context, opt *ListSLAConfigurationsOptions, opts ...RequestOption) (*ListSLAConfigurationsResult, *Response, error) {
 	path, err := addQuery("/api/v2/sla_configurations/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -162,7 +162,7 @@ func (s *SLAConfigurationsService) List(ctx context.Context, opt *ListSLAConfigu
 	if err != nil {
 		return nil, resp, err
 	}
-	return &SLAConfigurationList{SLAConfigurations: page.Results, Count: page.Count}, resp, nil
+	return &ListSLAConfigurationsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the SLA configurations, starting at
@@ -183,14 +183,17 @@ func (s *SLAConfigurationsService) ListAll(ctx context.Context, opt *ListSLAConf
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.SLAConfigurations, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetSLAConfigurationOptions are the options of [SLAConfigurationsService.Get].
+type GetSLAConfigurationOptions struct{}
 
 // Get returns an SLA configuration by its ID.
 //
 // DefectDojo API: GET /api/v2/sla_configurations/{id}/
-func (s *SLAConfigurationsService) Get(ctx context.Context, id int, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
+func (s *SLAConfigurationsService) Get(ctx context.Context, id int, opt *GetSLAConfigurationOptions, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
 	if err := requirePositive("SLA configuration ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -202,33 +205,39 @@ func (s *SLAConfigurationsService) Get(ctx context.Context, id int, opts ...Requ
 	return sla, resp, nil
 }
 
+// GetSLAConfigurationByNameOptions are the options of [SLAConfigurationsService.GetByName].
+type GetSLAConfigurationByNameOptions struct{}
+
 // GetByName returns the SLA configuration with exactly the given name,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
 // there is none.
 //
 // DefectDojo cannot filter SLA configurations by name, so GetByName pages
 // through all of them; the returned response is the last page's.
-func (s *SLAConfigurationsService) GetByName(ctx context.Context, name string, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
+func (s *SLAConfigurationsService) GetByName(ctx context.Context, name string, opt *GetSLAConfigurationByNameOptions, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: SLA configuration name must not be empty")
 	}
-	opt := &ListSLAConfigurationsOptions{ListOptions: ListOptions{Limit: 100}}
+	listOpt := &ListSLAConfigurationsOptions{ListOptions: ListOptions{Limit: 100}}
 	for {
-		list, resp, err := s.List(ctx, opt, opts...)
+		list, resp, err := s.List(ctx, listOpt, opts...)
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, sla := range list.SLAConfigurations {
+		for _, sla := range list.Results {
 			if sla.Name == name {
 				return sla, resp, nil
 			}
 		}
-		opt.Offset += len(list.SLAConfigurations)
-		if len(list.SLAConfigurations) == 0 || opt.Offset >= list.Count {
+		listOpt.Offset += len(list.Results)
+		if len(list.Results) == 0 || listOpt.Offset >= list.Count {
 			return nil, resp, fmt.Errorf("defectdojo: SLA configuration %q: %w", name, ErrNotFound)
 		}
 	}
 }
+
+// CreateSLAConfigurationOptions are the options of [SLAConfigurationsService.Create].
+type CreateSLAConfigurationOptions struct{}
 
 // Create creates an SLA configuration. A name that is taken is a 400
 // ([ErrBadRequest]) with a "name" field error.
@@ -237,7 +246,7 @@ func (s *SLAConfigurationsService) GetByName(ctx context.Context, name string, o
 // in DefectDojo, are false unless they are set.
 //
 // DefectDojo API: POST /api/v2/sla_configurations/
-func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfiguration, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
+func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfiguration, opt *CreateSLAConfigurationOptions, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
 	body, err := newSLAConfigurationRequest(sla)
 	if err != nil {
 		return nil, nil, err
@@ -249,6 +258,9 @@ func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfigura
 	}
 	return created, resp, nil
 }
+
+// UpdateSLAConfigurationOptions are the options of [SLAConfigurationsService.Update].
+type UpdateSLAConfigurationOptions struct{}
 
 // Update replaces the writable fields of the SLA configuration with the given
 // ID. Every writable field is sent: an empty Description clears it. Update an
@@ -263,7 +275,7 @@ func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfigura
 // [SLAConfigurationsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/sla_configurations/{id}/
-func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAConfiguration, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
+func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAConfiguration, opt *UpdateSLAConfigurationOptions, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
 	if err := requirePositive("SLA configuration ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -279,6 +291,9 @@ func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAC
 	return updated, resp, nil
 }
 
+// PatchSLAConfigurationOptions are the options of [SLAConfigurationsService.Patch].
+type PatchSLAConfigurationOptions struct{}
+
 // Patch changes the fields of the SLA configuration that are set in patch.
 // Days below 1 are rejected before sending.
 //
@@ -286,7 +301,7 @@ func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAC
 // SLA dates of an earlier change is a 400; see [IsSLARecalculating].
 //
 // DefectDojo API: PATCH /api/v2/sla_configurations/{id}/
-func (s *SLAConfigurationsService) Patch(ctx context.Context, id int, patch *SLAConfigurationPatch, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
+func (s *SLAConfigurationsService) Patch(ctx context.Context, id int, patch *SLAConfigurationPatch, opt *PatchSLAConfigurationOptions, opts ...RequestOption) (*SLAConfiguration, *Response, error) {
 	if err := requirePositive("SLA configuration ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -304,24 +319,32 @@ func (s *SLAConfigurationsService) Patch(ctx context.Context, id int, patch *SLA
 	return updated, resp, nil
 }
 
+// DeleteSLAConfigurationOptions are the options of [SLAConfigurationsService.Delete].
+type DeleteSLAConfigurationOptions struct{}
+
 // Delete deletes an SLA configuration by its ID.
 //
 // Deleting a configuration that a product uses is a 409 ([ErrConflict]), and
 // deleting "Default" (ID 1) is a 400 ([ErrBadRequest]).
 //
 // DefectDojo API: DELETE /api/v2/sla_configurations/{id}/
-func (s *SLAConfigurationsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *SLAConfigurationsService) Delete(ctx context.Context, id int, opt *DeleteSLAConfigurationOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("SLA configuration ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, slaConfigurationPath(id), nil, nil, opts)
 }
 
+// DeletePreviewSLAConfigurationOptions are the options of [SLAConfigurationsService.DeletePreview].
+type DeletePreviewSLAConfigurationOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the SLA
 // configuration would remove, the configuration itself included.
 //
 // DefectDojo API: GET /api/v2/sla_configurations/{id}/delete_preview/
-func (s *SLAConfigurationsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *SLAConfigurationsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewSLAConfigurationOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("SLA configuration ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -334,7 +357,7 @@ func (s *SLAConfigurationsService) DeletePreview(ctx context.Context, id int, op
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // IsSLARecalculating reports whether err is DefectDojo's 400 for an SLA change

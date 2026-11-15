@@ -269,9 +269,9 @@ func (patch *NotificationSettingsPatch) normalized() *NotificationSettingsPatch 
 	return &p
 }
 
-// ListNotificationsOptions are the options of [NotificationsService.List] and
+// ListNotificationSettingsOptions are the options of [NotificationsService.List] and
 // [NotificationsService.ListAll].
-type ListNotificationsOptions struct {
+type ListNotificationSettingsOptions struct {
 	ListOptions
 
 	// User and Product filter by ID. An ID that doesn't exist is a 400
@@ -283,9 +283,9 @@ type ListNotificationsOptions struct {
 	Template *bool `url:"template,omitempty"`
 }
 
-// NotificationSettingsList is a page of notification settings.
-type NotificationSettingsList struct {
-	NotificationSettings []*NotificationSettings
+// ListNotificationSettingsResult is a page of notification settings.
+type ListNotificationSettingsResult struct {
+	Results []*NotificationSettings
 
 	// Count is the number of rows that match the filters.
 	Count int
@@ -294,7 +294,7 @@ type NotificationSettingsList struct {
 // List returns a page of notification settings, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/notifications/
-func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationsOptions, opts ...RequestOption) (*NotificationSettingsList, *Response, error) {
+func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationSettingsOptions, opts ...RequestOption) (*ListNotificationSettingsResult, *Response, error) {
 	path, err := addQuery("/api/v2/notifications/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -304,7 +304,7 @@ func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationsO
 	if err != nil {
 		return nil, resp, err
 	}
-	return &NotificationSettingsList{NotificationSettings: page.Results, Count: page.Count}, resp, nil
+	return &ListNotificationSettingsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the notification settings, starting at
@@ -312,8 +312,8 @@ func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationsO
 //
 // Ranging over the iterator again starts over. On an error, the iterator
 // yields it once and stops.
-func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificationsOptions, opts ...RequestOption) iter.Seq2[*NotificationSettings, error] {
-	base := ListNotificationsOptions{}
+func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificationSettingsOptions, opts ...RequestOption) iter.Seq2[*NotificationSettings, error] {
+	base := ListNotificationSettingsOptions{}
 	if opt != nil {
 		base = *opt
 	}
@@ -324,14 +324,17 @@ func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificatio
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.NotificationSettings, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetNotificationSettingsOptions are the options of [NotificationsService.Get].
+type GetNotificationSettingsOptions struct{}
 
 // Get returns notification settings by their ID.
 //
 // DefectDojo API: GET /api/v2/notifications/{id}/
-func (s *NotificationsService) Get(ctx context.Context, id int, opts ...RequestOption) (*NotificationSettings, *Response, error) {
+func (s *NotificationsService) Get(ctx context.Context, id int, opt *GetNotificationSettingsOptions, opts ...RequestOption) (*NotificationSettings, *Response, error) {
 	if err := requirePositive("notification settings ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -343,53 +346,75 @@ func (s *NotificationsService) Get(ctx context.Context, id int, opts ...RequestO
 	return n, resp, nil
 }
 
-// GetByScope returns the notification settings of a scope: those of the user
-// and product with the given IDs (0 for none), or the template. It returns an
+// NotificationScope identifies a row of notification settings: the
+// system-wide settings (the zero value), a user's personal settings (User), a
+// user's settings for a product (User and Product), or the template for new
+// users (Template). It is a value type, compared with ==.
+type NotificationScope struct {
+	// User is the ID of the user, or 0 for none.
+	User int
+
+	// Product is the ID of the product, or 0 for none.
+	Product int
+
+	// Template selects the template for new users, which has no user or
+	// product.
+	Template bool
+}
+
+// GetNotificationSettingsByScopeOptions are the options of [NotificationsService.GetByScope].
+type GetNotificationSettingsByScopeOptions struct{}
+
+// GetByScope returns the notification settings of a scope. It returns an
 // error matching [ErrNotFound] when there is no such row, also when the user
 // or product doesn't exist, and an error matching [ErrAmbiguous] when there
 // are several.
 //
 // DefectDojo can't filter for rows without a user, so finding the
 // system-wide settings or the template lists the rows of every user.
-func (s *NotificationsService) GetByScope(ctx context.Context, user, product int, template bool, opts ...RequestOption) (*NotificationSettings, *Response, error) {
+func (s *NotificationsService) GetByScope(ctx context.Context, scope NotificationScope, opt *GetNotificationSettingsByScopeOptions, opts ...RequestOption) (*NotificationSettings, *Response, error) {
+	user, product, template := scope.User, scope.Product, scope.Template
 	if user < 0 || product < 0 {
 		return nil, nil, fmt.Errorf("defectdojo: notification settings user and product must not be negative, got %d and %d", user, product)
 	}
 	if template && (user != 0 || product != 0) {
 		return nil, nil, errors.New("defectdojo: the notification settings template has no user or product")
 	}
-	opt := &ListNotificationsOptions{ListOptions: ListOptions{Limit: 100}, User: user, Product: product, Template: &template}
+	listOpt := &ListNotificationSettingsOptions{ListOptions: ListOptions{Limit: 100}, User: user, Product: product, Template: &template}
 	var (
 		found *NotificationSettings
 		ids   []string
 		resp  *Response
 	)
 	for {
-		list, r, err := s.List(ctx, opt, opts...)
+		list, r, err := s.List(ctx, listOpt, opts...)
 		resp = r
 		if err != nil {
 			return nil, resp, missingFilterObject(err, "user", "product")
 		}
-		for _, n := range list.NotificationSettings {
+		for _, n := range list.Results {
 			if n.User == user && n.Product == product && n.Template == template {
 				found = n
 				ids = append(ids, strconv.Itoa(n.ID))
 			}
 		}
-		opt.Offset += len(list.NotificationSettings)
-		if len(list.NotificationSettings) == 0 || opt.Offset >= list.Count {
+		listOpt.Offset += len(list.Results)
+		if len(list.Results) == 0 || listOpt.Offset >= list.Count {
 			break
 		}
 	}
-	scope := fmt.Sprintf("user %d, product %d, template %t", user, product, template)
+	desc := fmt.Sprintf("user %d, product %d, template %t", user, product, template)
 	switch len(ids) {
 	case 0:
-		return nil, resp, fmt.Errorf("defectdojo: notification settings of %s: %w", scope, ErrNotFound)
+		return nil, resp, fmt.Errorf("defectdojo: notification settings of %s: %w", desc, ErrNotFound)
 	case 1:
 		return found, resp, nil
 	}
-	return nil, resp, fmt.Errorf("%w: several notification settings of %s: IDs %v", ErrAmbiguous, scope, ids)
+	return nil, resp, fmt.Errorf("%w: several notification settings of %s: IDs %v", ErrAmbiguous, desc, ids)
 }
+
+// CreateNotificationSettingsOptions are the options of [NotificationsService.Create].
+type CreateNotificationSettingsOptions struct{}
 
 // Create creates notification settings. Nil events are left out, so that
 // DefectDojo's default (alert) applies; an empty, non-nil event has no
@@ -398,7 +423,7 @@ func (s *NotificationsService) GetByScope(ctx context.Context, user, product int
 // template.
 //
 // DefectDojo API: POST /api/v2/notifications/
-func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettings, opts ...RequestOption) (*NotificationSettings, *Response, error) {
+func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettings, opt *CreateNotificationSettingsOptions, opts ...RequestOption) (*NotificationSettings, *Response, error) {
 	body, err := newNotificationSettingsRequest(n)
 	if err != nil {
 		return nil, nil, err
@@ -411,6 +436,9 @@ func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettin
 	return created, resp, nil
 }
 
+// UpdateNotificationSettingsOptions are the options of [NotificationsService.Update].
+type UpdateNotificationSettingsOptions struct{}
+
 // Update replaces the notification settings with the given ID. The user,
 // product and template are always sent: DefectDojo resets them when they are
 // left out. Nil events are left out, which resets them to DefectDojo's
@@ -421,7 +449,7 @@ func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettin
 // [NotificationsService.Patch].
 //
 // DefectDojo API: PUT /api/v2/notifications/{id}/
-func (s *NotificationsService) Update(ctx context.Context, id int, n *NotificationSettings, opts ...RequestOption) (*NotificationSettings, *Response, error) {
+func (s *NotificationsService) Update(ctx context.Context, id int, n *NotificationSettings, opt *UpdateNotificationSettingsOptions, opts ...RequestOption) (*NotificationSettings, *Response, error) {
 	if err := requirePositive("notification settings ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -437,11 +465,14 @@ func (s *NotificationsService) Update(ctx context.Context, id int, n *Notificati
 	return updated, resp, nil
 }
 
+// PatchNotificationSettingsOptions are the options of [NotificationsService.Patch].
+type PatchNotificationSettingsOptions struct{}
+
 // Patch changes the events of the notification settings that are set in
 // patch.
 //
 // DefectDojo API: PATCH /api/v2/notifications/{id}/
-func (s *NotificationsService) Patch(ctx context.Context, id int, patch *NotificationSettingsPatch, opts ...RequestOption) (*NotificationSettings, *Response, error) {
+func (s *NotificationsService) Patch(ctx context.Context, id int, patch *NotificationSettingsPatch, opt *PatchNotificationSettingsOptions, opts ...RequestOption) (*NotificationSettings, *Response, error) {
 	if err := requirePositive("notification settings ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -456,6 +487,9 @@ func (s *NotificationsService) Patch(ctx context.Context, id int, patch *Notific
 	return updated, resp, nil
 }
 
+// DeleteNotificationSettingsOptions are the options of [NotificationsService.Delete].
+type DeleteNotificationSettingsOptions struct{}
+
 // Delete deletes notification settings by their ID.
 //
 // Deleting a user's personal settings stops the user's notifications, unless
@@ -463,18 +497,23 @@ func (s *NotificationsService) Patch(ctx context.Context, id int, patch *Notific
 // with its defaults, when it next sends a notification.
 //
 // DefectDojo API: DELETE /api/v2/notifications/{id}/
-func (s *NotificationsService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *NotificationsService) Delete(ctx context.Context, id int, opt *DeleteNotificationSettingsOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("notification settings ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, notificationSettingsPath(id), nil, nil, opts)
 }
 
+// DeletePreviewNotificationSettingsOptions are the options of [NotificationsService.DeletePreview].
+type DeletePreviewNotificationSettingsOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the notification
 // settings would remove, the settings themselves included.
 //
 // DefectDojo API: GET /api/v2/notifications/{id}/delete_preview/
-func (s *NotificationsService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *NotificationsService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewNotificationSettingsOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("notification settings ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -487,7 +526,7 @@ func (s *NotificationsService) DeletePreview(ctx context.Context, id int, opt *L
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 func notificationSettingsPath(id int) string {

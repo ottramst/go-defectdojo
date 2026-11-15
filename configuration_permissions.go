@@ -48,9 +48,9 @@ type ListConfigurationPermissionsOptions struct {
 	Name     string `url:"name,omitempty"`
 }
 
-// ConfigurationPermissionList is a page of configuration permissions.
-type ConfigurationPermissionList struct {
-	ConfigurationPermissions []*ConfigurationPermission
+// ListConfigurationPermissionsResult is a page of configuration permissions.
+type ListConfigurationPermissionsResult struct {
+	Results []*ConfigurationPermission
 
 	// Count is the number of configuration permissions that match the
 	// filters.
@@ -60,7 +60,7 @@ type ConfigurationPermissionList struct {
 // List returns a page of configuration permissions.
 //
 // DefectDojo API: GET /api/v2/configuration_permissions/
-func (s *ConfigurationPermissionsService) List(ctx context.Context, opt *ListConfigurationPermissionsOptions, opts ...RequestOption) (*ConfigurationPermissionList, *Response, error) {
+func (s *ConfigurationPermissionsService) List(ctx context.Context, opt *ListConfigurationPermissionsOptions, opts ...RequestOption) (*ListConfigurationPermissionsResult, *Response, error) {
 	path, err := addQuery("/api/v2/configuration_permissions/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -70,7 +70,7 @@ func (s *ConfigurationPermissionsService) List(ctx context.Context, opt *ListCon
 	if err != nil {
 		return nil, resp, err
 	}
-	return &ConfigurationPermissionList{ConfigurationPermissions: page.Results, Count: page.Count}, resp, nil
+	return &ListConfigurationPermissionsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the configuration permissions, starting
@@ -90,14 +90,17 @@ func (s *ConfigurationPermissionsService) ListAll(ctx context.Context, opt *List
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.ConfigurationPermissions, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetConfigurationPermissionOptions are the options of [ConfigurationPermissionsService.Get].
+type GetConfigurationPermissionOptions struct{}
 
 // Get returns a configuration permission by its ID.
 //
 // DefectDojo API: GET /api/v2/configuration_permissions/{id}/
-func (s *ConfigurationPermissionsService) Get(ctx context.Context, id int, opts ...RequestOption) (*ConfigurationPermission, *Response, error) {
+func (s *ConfigurationPermissionsService) Get(ctx context.Context, id int, opt *GetConfigurationPermissionOptions, opts ...RequestOption) (*ConfigurationPermission, *Response, error) {
 	if err := requirePositive("configuration permission ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -109,11 +112,14 @@ func (s *ConfigurationPermissionsService) Get(ctx context.Context, id int, opts 
 	return p, resp, nil
 }
 
+// GetConfigurationPermissionByCodenameOptions are the options of [ConfigurationPermissionsService.GetByCodename].
+type GetConfigurationPermissionByCodenameOptions struct{}
+
 // GetByCodename returns the configuration permission with exactly the given
 // codename, such as "add_product_type". It returns an error matching
 // [ErrNotFound] when there is none, which includes permissions that the
 // system settings turn off.
-func (s *ConfigurationPermissionsService) GetByCodename(ctx context.Context, codename string, opts ...RequestOption) (*ConfigurationPermission, *Response, error) {
+func (s *ConfigurationPermissionsService) GetByCodename(ctx context.Context, codename string, opt *GetConfigurationPermissionByCodenameOptions, opts ...RequestOption) (*ConfigurationPermission, *Response, error) {
 	if codename == "" {
 		return nil, nil, errors.New("defectdojo: configuration permission codename must not be empty")
 	}
@@ -123,7 +129,7 @@ func (s *ConfigurationPermissionsService) GetByCodename(ctx context.Context, cod
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the codename again.
-	for _, p := range list.ConfigurationPermissions {
+	for _, p := range list.Results {
 		if p.Codename == codename {
 			return p, resp, nil
 		}

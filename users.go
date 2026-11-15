@@ -17,9 +17,9 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type UsersService service
 
-// UserCreate is the body of [UsersService.Create]: a user and its initial
+// CreateUserRequest is the body of [UsersService.Create]: a user and its initial
 // password.
-type UserCreate struct {
+type CreateUserRequest struct {
 	User
 
 	// Password is the user's initial password. It is checked against
@@ -106,9 +106,9 @@ type ListUsersOptions struct {
 	IsSuperuser *bool `url:"is_superuser,omitempty"`
 }
 
-// UserList is a page of users.
-type UserList struct {
-	Users []*User
+// ListUsersResult is a page of users.
+type ListUsersResult struct {
+	Results []*User
 
 	// Count is the number of users that match the filters.
 	Count int
@@ -117,7 +117,7 @@ type UserList struct {
 // List returns a page of users, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/users/
-func (s *UsersService) List(ctx context.Context, opt *ListUsersOptions, opts ...RequestOption) (*UserList, *Response, error) {
+func (s *UsersService) List(ctx context.Context, opt *ListUsersOptions, opts ...RequestOption) (*ListUsersResult, *Response, error) {
 	path, err := addQuery("/api/v2/users/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -127,7 +127,7 @@ func (s *UsersService) List(ctx context.Context, opt *ListUsersOptions, opts ...
 	if err != nil {
 		return nil, resp, err
 	}
-	return &UserList{Users: page.Results, Count: page.Count}, resp, nil
+	return &ListUsersResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the users, starting at opt.Offset. It
@@ -147,14 +147,17 @@ func (s *UsersService) ListAll(ctx context.Context, opt *ListUsersOptions, opts 
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Users, result.Count, nil
+		return result.Results, result.Count, nil
 	})
 }
+
+// GetUserOptions are the options of [UsersService.Get].
+type GetUserOptions struct{}
 
 // Get returns a user by its ID.
 //
 // DefectDojo API: GET /api/v2/users/{id}/
-func (s *UsersService) Get(ctx context.Context, id int, opts ...RequestOption) (*User, *Response, error) {
+func (s *UsersService) Get(ctx context.Context, id int, opt *GetUserOptions, opts ...RequestOption) (*User, *Response, error) {
 	if err := requirePositive("user ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -166,6 +169,9 @@ func (s *UsersService) Get(ctx context.Context, id int, opts ...RequestOption) (
 	return u, resp, nil
 }
 
+// GetUserByUsernameOptions are the options of [UsersService.GetByUsername].
+type GetUserByUsernameOptions struct{}
+
 // GetByUsername returns the user with exactly the given username, compared
 // case-sensitively: usernames that differ only in case can coexist. It
 // returns an error matching [ErrNotFound] when there is none.
@@ -173,27 +179,30 @@ func (s *UsersService) Get(ctx context.Context, id int, opts ...RequestOption) (
 // DefectDojo's username filter is a case-insensitive contains match, so
 // GetByUsername pages through the users it matches; the returned response is
 // the last page's.
-func (s *UsersService) GetByUsername(ctx context.Context, username string, opts ...RequestOption) (*User, *Response, error) {
+func (s *UsersService) GetByUsername(ctx context.Context, username string, opt *GetUserByUsernameOptions, opts ...RequestOption) (*User, *Response, error) {
 	if username == "" {
 		return nil, nil, errors.New("defectdojo: username must not be empty")
 	}
-	opt := &ListUsersOptions{ListOptions: ListOptions{Limit: 100}, Username: username}
+	listOpt := &ListUsersOptions{ListOptions: ListOptions{Limit: 100}, Username: username}
 	for {
-		list, resp, err := s.List(ctx, opt, opts...)
+		list, resp, err := s.List(ctx, listOpt, opts...)
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, u := range list.Users {
+		for _, u := range list.Results {
 			if u.Username == username {
 				return u, resp, nil
 			}
 		}
-		opt.Offset += len(list.Users)
-		if len(list.Users) == 0 || opt.Offset >= list.Count {
+		listOpt.Offset += len(list.Results)
+		if len(list.Results) == 0 || listOpt.Offset >= list.Count {
 			return nil, resp, fmt.Errorf("defectdojo: user %q: %w", username, ErrNotFound)
 		}
 	}
 }
+
+// CreateUserOptions are the options of [UsersService.Create].
+type CreateUserOptions struct{}
 
 // Create creates a user with the given initial password. Its read-only
 // fields are ignored.
@@ -206,7 +215,7 @@ func (s *UsersService) GetByUsername(ctx context.Context, username string, opts 
 // template if there is one.
 //
 // DefectDojo API: POST /api/v2/users/
-func (s *UsersService) Create(ctx context.Context, u *UserCreate, opts ...RequestOption) (*User, *Response, error) {
+func (s *UsersService) Create(ctx context.Context, u *CreateUserRequest, opt *CreateUserOptions, opts ...RequestOption) (*User, *Response, error) {
 	if u == nil {
 		return nil, nil, errors.New("defectdojo: user must not be nil")
 	}
@@ -223,6 +232,9 @@ func (s *UsersService) Create(ctx context.Context, u *UserCreate, opts ...Reques
 	return created, resp, nil
 }
 
+// UpdateUserOptions are the options of [UsersService.Update].
+type UpdateUserOptions struct{}
+
 // Update replaces the writable fields of the user with the given ID. Every
 // writable field is sent, except empty ConfigurationPermissions, which keep
 // the user's permissions; to remove them, use [UsersService.Patch]. A
@@ -234,7 +246,7 @@ func (s *UsersService) Create(ctx context.Context, u *UserCreate, opts ...Reques
 // update with a 400.
 //
 // DefectDojo API: PUT /api/v2/users/{id}/
-func (s *UsersService) Update(ctx context.Context, id int, u *User, opts ...RequestOption) (*User, *Response, error) {
+func (s *UsersService) Update(ctx context.Context, id int, u *User, opt *UpdateUserOptions, opts ...RequestOption) (*User, *Response, error) {
 	if err := requirePositive("user ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -250,10 +262,13 @@ func (s *UsersService) Update(ctx context.Context, id int, u *User, opts ...Requ
 	return updated, resp, nil
 }
 
+// PatchUserOptions are the options of [UsersService.Patch].
+type PatchUserOptions struct{}
+
 // Patch changes the fields of the user that are set in patch.
 //
 // DefectDojo API: PATCH /api/v2/users/{id}/
-func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opts ...RequestOption) (*User, *Response, error) {
+func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opt *PatchUserOptions, opts ...RequestOption) (*User, *Response, error) {
 	if err := requirePositive("user ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -274,6 +289,9 @@ func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opts
 	return updated, resp, nil
 }
 
+// DeleteUserOptions are the options of [UsersService.Delete].
+type DeleteUserOptions struct{}
+
 // Delete deletes a user by its ID, with its notification settings, alerts
 // and the notification webhooks it owns.
 //
@@ -285,18 +303,23 @@ func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opts
 // Deactivate such users instead (IsActive false).
 //
 // DefectDojo API: DELETE /api/v2/users/{id}/
-func (s *UsersService) Delete(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *UsersService) Delete(ctx context.Context, id int, opt *DeleteUserOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("user ID", id); err != nil {
 		return nil, err
 	}
 	return s.client.do(ctx, http.MethodDelete, userPath(id), nil, nil, opts)
 }
 
+// DeletePreviewUserOptions are the options of [UsersService.DeletePreview].
+type DeletePreviewUserOptions struct {
+	ListOptions
+}
+
 // DeletePreview returns a page of the objects that deleting the user would
 // remove, the user itself included.
 //
 // DefectDojo API: GET /api/v2/users/{id}/delete_preview/
-func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
+func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *DeletePreviewUserOptions, opts ...RequestOption) (*DeletePreviewResult, *Response, error) {
 	if err := requirePositive("user ID", id); err != nil {
 		return nil, nil, err
 	}
@@ -309,8 +332,11 @@ func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *ListOptio
 	if err != nil {
 		return nil, resp, err
 	}
-	return &DeletePreviewList{Objects: page.Results, Count: page.Count}, resp, nil
+	return &DeletePreviewResult{Results: page.Results, Count: page.Count}, resp, nil
 }
+
+// ResetUserAPITokenOptions are the options of [UsersService.ResetAPIToken].
+type ResetUserAPITokenOptions struct{}
 
 // ResetAPIToken replaces the API token of the user with the given ID with a
 // new one, which the user can see in the UI, and notifies the user. It needs
@@ -322,7 +348,7 @@ func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *ListOptio
 // response with a user; the endpoint takes no body and answers 204.)
 //
 // DefectDojo API: POST /api/v2/users/{id}/reset_api_token/
-func (s *UsersService) ResetAPIToken(ctx context.Context, id int, opts ...RequestOption) (*Response, error) {
+func (s *UsersService) ResetAPIToken(ctx context.Context, id int, opt *ResetUserAPITokenOptions, opts ...RequestOption) (*Response, error) {
 	if err := requirePositive("user ID", id); err != nil {
 		return nil, err
 	}
