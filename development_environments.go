@@ -21,8 +21,10 @@ type DevelopmentEnvironmentsService service
 type DevelopmentEnvironment struct {
 	ID int `json:"id"`
 
-	// Name is at most 200 characters. It isn't unique: several environments
-	// can have the same name.
+	// Name is at most 200 characters. It isn't unique, but keep it so:
+	// DefectDojo's imports find the environment of a scan by name
+	// ("Development" when none is given), and fail when several
+	// environments have it or, without auto-create, when none has.
 	Name string `json:"name"`
 }
 
@@ -165,7 +167,8 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 }
 
 // Create creates a development environment. Its read-only ID is ignored.
-// DefectDojo accepts a name that another environment already has.
+// DefectDojo accepts a name that another environment already has, but then
+// fails the imports that name it.
 //
 // DefectDojo API: POST /api/v2/development_environments/
 func (s *DevelopmentEnvironmentsService) Create(ctx context.Context, env *DevelopmentEnvironment, opts ...RequestOption) (*DevelopmentEnvironment, *Response, error) {
