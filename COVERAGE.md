@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**73 of 404 endpoints implemented.**
+**80 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -53,7 +53,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [product_platforms](#product_platforms) | 0 / 7 |
 | [product_types](#product_types) | 7 / 8 |
 | [products](#products) | 7 / 8 |
-| [regulations](#regulations) | 0 / 7 |
+| [regulations](#regulations) | 7 / 7 |
 | [reimport-scan](#reimport-scan) | 0 / 1 |
 | [request_response_pairs](#request_response_pairs) | 0 / 7 |
 | [risk_acceptance](#risk_acceptance) | 0 / 12 |
@@ -568,13 +568,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/regulations/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/regulations/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/regulations/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/regulations/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/regulations/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/regulations/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/regulations/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/regulations/` | ✅ | ✅ | `RegulationsService.List` |  |
+| POST | `/api/v2/regulations/` | ✅ | ✅ | `RegulationsService.Create` |  |
+| GET | `/api/v2/regulations/{id}/` | ✅ | ✅ | `RegulationsService.Get` |  |
+| PUT | `/api/v2/regulations/{id}/` | ✅ | ✅ | `RegulationsService.Update` |  |
+| PATCH | `/api/v2/regulations/{id}/` | ✅ | ✅ | `RegulationsService.Patch` |  |
+| DELETE | `/api/v2/regulations/{id}/` | ✅ | ✅ | `RegulationsService.Delete` |  |
+| GET | `/api/v2/regulations/{id}/delete_preview/` | ✅ | ✅ | `RegulationsService.DeletePreview` |  |
 
 ## reimport-scan
 

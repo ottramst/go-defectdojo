@@ -1,0 +1,9 @@
+{
+  "id": 29,
+  "name": "GDPR Test",
+  "acronym": "GDPR-T",
+  "category": "privacy",
+  "jurisdiction": "European Union",
+  "description": "A test regulation.",
+  "reference": "https://example.com/gdpr"
+}
