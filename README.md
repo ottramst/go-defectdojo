@@ -202,6 +202,9 @@ DefectDojo changes its API in minor releases, and the client follows without bre
   supported version does.
 - A value DefectDojo adds to a field with fixed values works before it has a constant.
 
+If DefectDojo changes its API in a way the client can't follow without breaking compiled code, the change
+ships in a minor release, under `BREAKING CHANGES` in the CHANGELOG. This is the only exception.
+
 DefectDojo's experimental API v3 is not part of v1. Upgrading from v0.x? See
 [Upgrading to v1](docs/upgrading-to-v1.md). Changes are listed in the [CHANGELOG](CHANGELOG.md).
 

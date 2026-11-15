@@ -94,9 +94,9 @@ functions, types, constants, options and struct fields is compatible: exported s
 break. The v1 conventions for new API are in [CLAUDE.md](CLAUDE.md) ("v1 API conventions").
 
 The `API compatibility` job of CI runs [gorelease](https://pkg.go.dev/golang.org/x/exp/cmd/gorelease) against
-the latest v1 release and fails on incompatible changes. The only exceptions are the ones in the
-[stability policy](README.md#stability), when DefectDojo changes its API and keeping the old shape isn't
-possible. Such a pull request adds the file `.github/api-break-allowed`, containing the latest release (for
+the latest v1 release and fails on incompatible changes. The only exception is the one in the
+[stability policy](README.md#stability): DefectDojo changes its API in a way the client can't follow
+without breaking compiled code. Such a pull request adds the file `.github/api-break-allowed`, containing the latest release (for
 example `v1.2.0`), and its CHANGELOG entry goes under `BREAKING CHANGES`. The check then warns instead of
 failing, on the pull request, on `main` and on later pull requests, until the next release makes the file
 stale; the release pull request deletes it.

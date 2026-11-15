@@ -69,16 +69,18 @@ Fields with fixed values have named string types, and their constants are typed:
 | `AnnouncementStyle` | `Announcement.Style`, `AnnouncementPatch.Style`, `ListAnnouncementsOptions.Style` |
 | `BusinessCriticality` | `Product.BusinessCriticality`, `ProductPatch.BusinessCriticality` |
 | `CICDInfrastructureType` | `CICDInfrastructure.InfrastructureType`, the list and lookup options |
-| `DeduplicationExecutionMode` (new) | `UserContactInfo.DeduplicationExecutionMode` |
+| `DeduplicationExecutionMode` (new constants) | `UserContactInfo.DeduplicationExecutionMode` |
 | `EngagementStatus`, `EngagementType` | `Engagement.Status` and `EngagementType`, `EngagementPatch`, `ListEngagementsOptions.Status` |
-| `JiraIssueType` (new) | `JiraInstance.DefaultIssueType`, `JiraInstancePatch.DefaultIssueType` |
+| `JiraIssueType` (new constants) | `JiraInstance.DefaultIssueType`, `JiraInstancePatch.DefaultIssueType` |
 | `NotificationChannel` | the notification events |
 | `NotificationWebhookStatus` | `NotificationWebhook.Status`, `ListNotificationWebhooksOptions.Status` |
 | `RegulationCategory` | `Regulation.Category`, `RegulationPatch.Category` |
-| `Severity` (new) | `SystemSettings.JiraMinimumSeverity`, `SystemSettingsPatch.JiraMinimumSeverity` |
+| `Severity` (new constants) | `SystemSettings.JiraMinimumSeverity`, `SystemSettingsPatch.JiraMinimumSeverity` |
 
 Constants and untyped literals still work (`Status: defectdojo.EngagementStatusCompleted`,
-`Status: "Completed"`). A `string` variable needs a conversion: `defectdojo.EngagementStatus(s)`. In
+`Status: "Completed"`). A `string` variable needs a conversion: `defectdojo.EngagementStatus(s)`. The other
+way round too: a constant used as a `string`, such as in `s == defectdojo.EngagementStatusCompleted` or
+`[]string{defectdojo.NotificationChannelMail}`, needs `string(...)`. In
 `…Patch` fields, `new(...)` and `Value(...)` infer `string` from a literal, so pass a typed constant or a
 conversion: `Status: new(defectdojo.EngagementStatusCompleted)`,
 `BusinessCriticality: defectdojo.Value(defectdojo.BusinessCriticalityHigh)`. A value DefectDojo adds in a
