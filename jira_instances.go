@@ -297,7 +297,7 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opts 
 	case 1:
 		return found, resp, nil
 	default:
-		return nil, resp, fmt.Errorf("defectdojo: %d Jira instances are named %q: IDs %v", len(ids), name, ids)
+		return nil, resp, fmt.Errorf("%w: %d Jira instances are named %q: IDs %v", ErrAmbiguous, len(ids), name, ids)
 	}
 }
 

@@ -23,6 +23,10 @@ import (
 // so check for [ErrForbidden] when authentication fails. [ErrLocked] means the
 // server is in read-only mode (DefectDojo 3.5.100 and later): it rejects every
 // change except to the system settings.
+//
+// [ErrAmbiguous] is no response status: lookups by a value that need not be
+// unique, such as a development environment's name, return an error that
+// matches it when several objects have the value.
 var (
 	ErrBadRequest      = errors.New("defectdojo: bad request")
 	ErrUnauthorized    = errors.New("defectdojo: unauthorized")
@@ -31,6 +35,7 @@ var (
 	ErrConflict        = errors.New("defectdojo: conflict")
 	ErrLocked          = errors.New("defectdojo: locked")
 	ErrTooManyRequests = errors.New("defectdojo: too many requests")
+	ErrAmbiguous       = errors.New("defectdojo: ambiguous")
 )
 
 const (
@@ -48,8 +53,12 @@ const (
 //	{"detail": "No Product_Type matches the given query."}
 //	{"name": ["product_ type with this name already exists."], "message": "name: product_ type with this name already exists."}
 type ErrorResponse struct {
-	// Response is the HTTP response. Its body has already been read into Body.
-	Response *http.Response
+	// Method and URL identify the request. The URL has no credentials.
+	Method string
+	URL    string
+
+	// Header holds the response headers, such as the Location of a redirect.
+	Header http.Header
 
 	// StatusCode is the HTTP status code of the response.
 	StatusCode int
@@ -67,6 +76,8 @@ type ErrorResponse struct {
 	Body []byte
 }
 
+// Error returns a description of the error, with the request method and URL.
+// Its format is not part of the API and may change.
 func (e *ErrorResponse) Error() string {
 	msg := e.Message
 	if msg == "" && len(e.Fields) > 0 {
@@ -76,19 +87,16 @@ func (e *ErrorResponse) Error() string {
 		}
 		msg = strings.Join(parts, "; ")
 	}
-	if msg == "" && e.Response != nil {
-		if loc := e.Response.Header.Get("Location"); loc != "" {
+	if msg == "" {
+		if loc := e.Header.Get("Location"); loc != "" {
 			msg = "redirected to " + loc
 		}
 	}
 	if msg == "" {
 		msg = http.StatusText(e.StatusCode)
 	}
-	if e.Response != nil && e.Response.Request != nil {
-		req := e.Response.Request
-		u := *req.URL
-		u.User = nil
-		return fmt.Sprintf("defectdojo: %s %s: %d %s", req.Method, u.Redacted(), e.StatusCode, msg)
+	if e.Method != "" && e.URL != "" {
+		return fmt.Sprintf("defectdojo: %s %s: %d %s", e.Method, e.URL, e.StatusCode, msg)
 	}
 	return fmt.Sprintf("defectdojo: %d %s", e.StatusCode, msg)
 }
@@ -124,14 +132,21 @@ func statusIs(code int, target error) bool {
 	return false
 }
 
-// CheckResponse returns an [*ErrorResponse] if the response has a non-2xx
-// status code, and nil otherwise. It reads the body of error responses.
-func CheckResponse(r *http.Response) error {
+// checkResponse returns an [*ErrorResponse] if the response has a non-2xx
+// status code, and nil otherwise. It reads the body of error responses. The
+// error keeps no reference to the request, whose headers hold the
+// credentials.
+func checkResponse(r *http.Response) error {
 	if r.StatusCode >= 200 && r.StatusCode <= 299 {
 		return nil
 	}
 
-	errResp := &ErrorResponse{Response: r, StatusCode: r.StatusCode}
+	errResp := &ErrorResponse{StatusCode: r.StatusCode, Header: r.Header}
+	if req := r.Request; req != nil && req.URL != nil {
+		u := *req.URL
+		u.User = nil
+		errResp.Method, errResp.URL = req.Method, u.Redacted()
+	}
 	data, err := io.ReadAll(io.LimitReader(r.Body, maxErrorBodySize))
 	if err == nil && len(data) > 0 {
 		errResp.Body = data

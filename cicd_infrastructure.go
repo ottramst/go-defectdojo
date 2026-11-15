@@ -196,7 +196,7 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrast
 	case 1:
 		return found, resp, nil
 	default:
-		return nil, resp, fmt.Errorf("defectdojo: %d CI/CD infrastructure objects of different types are named %q: IDs %v; give the type", len(ids), name, ids)
+		return nil, resp, fmt.Errorf("%w: %d CI/CD infrastructure objects of different types are named %q: IDs %v; give the type", ErrAmbiguous, len(ids), name, ids)
 	}
 }
 

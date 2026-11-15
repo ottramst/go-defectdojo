@@ -162,7 +162,7 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 	case 1:
 		return found, resp, nil
 	default:
-		return nil, resp, fmt.Errorf("defectdojo: %d development environments are named %q: IDs %v", len(ids), name, ids)
+		return nil, resp, fmt.Errorf("%w: %d development environments are named %q: IDs %v", ErrAmbiguous, len(ids), name, ids)
 	}
 }
 

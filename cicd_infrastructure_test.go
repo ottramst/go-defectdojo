@@ -109,7 +109,7 @@ func TestCICDInfrastructureService_GetByName(t *testing.T) {
 		t.Errorf("GetByName(build server) = %v, %v; want ID 2", ci, err)
 	}
 	_, _, err = client.CICDInfrastructure.GetByName(context.Background(), "Shared", "")
-	if err == nil || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[1 2]") {
+	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[1 2]") {
 		t.Errorf("GetByName(any type) error = %v, want an error naming IDs 1 and 2", err)
 	}
 	if _, _, err := client.CICDInfrastructure.GetByName(context.Background(), "Shared", defectdojo.CICDInfrastructureTypeOrchestration); !errors.Is(err, defectdojo.ErrNotFound) {

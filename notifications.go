@@ -387,7 +387,7 @@ func (s *NotificationsService) GetByScope(ctx context.Context, user, product int
 	case 1:
 		return found, resp, nil
 	}
-	return nil, resp, fmt.Errorf("defectdojo: several notification settings of %s: IDs %v", scope, ids)
+	return nil, resp, fmt.Errorf("%w: several notification settings of %s: IDs %v", ErrAmbiguous, scope, ids)
 }
 
 // Create creates notification settings. Nil events are left out, so that

@@ -75,7 +75,7 @@ func cleanup(t *testing.T, fn func(ctx context.Context) error) {
 
 func TestAccServerVersion(t *testing.T) {
 	client := accClient(t)
-	v, err := client.ServerVersion(t.Context())
+	v, _, err := client.ServerVersion(t.Context(), nil)
 	if err != nil {
 		t.Fatalf("ServerVersion() error = %v", err)
 	}
