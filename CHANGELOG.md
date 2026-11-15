@@ -1,4 +1,4 @@
-## Unreleased
+## v0.4.0
 
 FEATURES:
 
@@ -9,6 +9,10 @@ FEATURES:
 * New `ProductPlatforms`, `ProductLifecycles` and `ProductOrigins` services, one `ProductAttributesService` type for DefectDojo's three lookup tables of product attributes: `List`, `ListAll`, `Get`, `GetByValue`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`. The value can't change, so `ProductAttributePatch` has no field for it; deleting an entry that products use is a 409 ([#27](https://github.com/ottramst/go-defectdojo/issues/27))
 * New `Regulations` service: `List`, `ListAll`, `Get`, `GetByName`, `GetByAcronym`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, with the `RegulationCategory*` constants. Deleting a regulation silently removes it from the products it applies to ([#22](https://github.com/ottramst/go-defectdojo/issues/22))
 * New `TestTypes` service: `List`, `ListAll`, `Get` and `GetByName`. It only reads test types ([#28](https://github.com/ottramst/go-defectdojo/issues/28))
+
+NOTES:
+
+* Completes the v0.4.0 milestone (lookup objects), for terraform-provider-defectdojo v0.4.0. Tested against DefectDojo 3.4.304 and 3.5.103
 
 ## v0.3.0
 

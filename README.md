@@ -207,7 +207,7 @@ issue lists its work as sub-issues:
 | [v0.1.0](https://github.com/ottramst/go-defectdojo/milestone/1) | Foundation: client core, product types, products, engagements, user profile and authentication ✅ |
 | [v0.2.0](https://github.com/ottramst/go-defectdojo/milestone/2) | SLA configurations, users, notifications and notification webhooks ✅ |
 | [v0.3.0](https://github.com/ottramst/go-defectdojo/milestone/3) | System settings, Jira instances and Jira projects ✅ |
-| [v0.4.0](https://github.com/ottramst/go-defectdojo/milestone/4) | Lookup objects: regulations, note types, development environments, announcements, CI/CD infrastructure, product attributes, test types |
+| [v0.4.0](https://github.com/ottramst/go-defectdojo/milestone/4) | Lookup objects: regulations, note types, development environments, announcements, CI/CD infrastructure, product attributes, test types ✅ |
 | [v1.0.0](https://github.com/ottramst/go-defectdojo/milestone/5) | API freeze and compatibility guarantees |
 
 Findings, tests and imports, and DefectDojo's experimental API v3, are
