@@ -143,7 +143,7 @@ type ListSLAConfigurationsOptions struct {
 
 // ListSLAConfigurationsResult is a page of SLA configurations.
 type ListSLAConfigurationsResult struct {
-	Results []*SLAConfiguration
+	Results []SLAConfiguration
 
 	// Count is the number of SLA configurations.
 	Count int
@@ -157,7 +157,7 @@ func (s *SLAConfigurationsService) List(ctx context.Context, opt *ListSLAConfigu
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*SLAConfiguration]
+	var page listPage[SLAConfiguration]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -183,7 +183,7 @@ func (s *SLAConfigurationsService) ListAll(ctx context.Context, opt *ListSLAConf
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -224,7 +224,8 @@ func (s *SLAConfigurationsService) GetByName(ctx context.Context, name string, o
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, sla := range list.Results {
+		for i := range list.Results {
+			sla := &list.Results[i]
 			if sla.Name == name {
 				return sla, resp, nil
 			}
@@ -352,7 +353,7 @@ func (s *SLAConfigurationsService) DeletePreview(ctx context.Context, id int, op
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -362,7 +363,9 @@ func (s *SLAConfigurationsService) DeletePreview(ctx context.Context, id int, op
 
 // IsSLARecalculating reports whether err is DefectDojo's 400 for an SLA change
 // made while the SLA expiration dates of an earlier change are still being
-// recalculated.
+// recalculated. DefectDojo has no error code for it, so it matches the text
+// of DefectDojo's message: a best effort, which a DefectDojo release that
+// rewords the message breaks.
 //
 // Changing an SLA configuration's days or Enforce fields marks it and every
 // product using it as updating; changing a product's SLA configuration marks

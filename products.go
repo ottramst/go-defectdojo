@@ -16,14 +16,17 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type ProductsService service
 
+// BusinessCriticality is the business criticality of a product.
+type BusinessCriticality string
+
 // Business criticality values of [Product.BusinessCriticality].
 const (
-	BusinessCriticalityVeryHigh = "very high"
-	BusinessCriticalityHigh     = "high"
-	BusinessCriticalityMedium   = "medium"
-	BusinessCriticalityLow      = "low"
-	BusinessCriticalityVeryLow  = "very low"
-	BusinessCriticalityNone     = "none"
+	BusinessCriticalityVeryHigh BusinessCriticality = "very high"
+	BusinessCriticalityHigh     BusinessCriticality = "high"
+	BusinessCriticalityMedium   BusinessCriticality = "medium"
+	BusinessCriticalityLow      BusinessCriticality = "low"
+	BusinessCriticalityVeryLow  BusinessCriticality = "very low"
+	BusinessCriticalityNone     BusinessCriticality = "none"
 )
 
 // Product is a DefectDojo product. The same type is used for reads and
@@ -50,7 +53,7 @@ type Product struct {
 
 	// BusinessCriticality is one of the BusinessCriticality constants, or ""
 	// when unset.
-	BusinessCriticality string `json:"business_criticality"`
+	BusinessCriticality BusinessCriticality `json:"business_criticality"`
 
 	// Platform, Lifecycle and Origin are values of DefectDojo's lookup tables
 	// (product platforms, lifecycles and origins), such as "web",
@@ -140,28 +143,28 @@ type ProductMeta struct {
 // null. user_records and revenue are left out when nil, so that Update keeps
 // them, and prod_numeric_grade is always left out.
 type productRequest struct {
-	Name                          string   `json:"name"`
-	Description                   string   `json:"description"`
-	ProdType                      int      `json:"prod_type"`
-	BusinessCriticality           *string  `json:"business_criticality"`
-	Platform                      *string  `json:"platform"`
-	Lifecycle                     *string  `json:"lifecycle"`
-	Origin                        *string  `json:"origin"`
-	ExternalAudience              bool     `json:"external_audience"`
-	InternetAccessible            bool     `json:"internet_accessible"`
-	EnableProductTagInheritance   bool     `json:"enable_product_tag_inheritance"`
-	EnableSimpleRiskAcceptance    bool     `json:"enable_simple_risk_acceptance"`
-	EnableFullRiskAcceptance      bool     `json:"enable_full_risk_acceptance"`
-	DisableSLABreachNotifications bool     `json:"disable_sla_breach_notifications"`
-	ProductManager                *int     `json:"product_manager"`
-	TechnicalContact              *int     `json:"technical_contact"`
-	TeamManager                   *int     `json:"team_manager"`
-	SLAConfiguration              int      `json:"sla_configuration,omitempty"`
-	UserRecords                   *int     `json:"user_records,omitempty"`
-	Revenue                       *string  `json:"revenue,omitempty"`
-	AuthorizedUsers               []int    `json:"authorized_users"`
-	Regulations                   []int    `json:"regulations"`
-	Tags                          []string `json:"tags"`
+	Name                          string               `json:"name"`
+	Description                   string               `json:"description"`
+	ProdType                      int                  `json:"prod_type"`
+	BusinessCriticality           *BusinessCriticality `json:"business_criticality"`
+	Platform                      *string              `json:"platform"`
+	Lifecycle                     *string              `json:"lifecycle"`
+	Origin                        *string              `json:"origin"`
+	ExternalAudience              bool                 `json:"external_audience"`
+	InternetAccessible            bool                 `json:"internet_accessible"`
+	EnableProductTagInheritance   bool                 `json:"enable_product_tag_inheritance"`
+	EnableSimpleRiskAcceptance    bool                 `json:"enable_simple_risk_acceptance"`
+	EnableFullRiskAcceptance      bool                 `json:"enable_full_risk_acceptance"`
+	DisableSLABreachNotifications bool                 `json:"disable_sla_breach_notifications"`
+	ProductManager                *int                 `json:"product_manager"`
+	TechnicalContact              *int                 `json:"technical_contact"`
+	TeamManager                   *int                 `json:"team_manager"`
+	SLAConfiguration              int                  `json:"sla_configuration,omitempty"`
+	UserRecords                   *int                 `json:"user_records,omitempty"`
+	Revenue                       *string              `json:"revenue,omitempty"`
+	AuthorizedUsers               []int                `json:"authorized_users"`
+	Regulations                   []int                `json:"regulations"`
+	Tags                          []string             `json:"tags"`
 }
 
 // newProductRequest validates a product and returns its writable fields.
@@ -206,26 +209,26 @@ func newProductRequest(p *Product) (*productRequest, error) {
 // ProductPatch is the body of [ProductsService.Patch]. Only the fields that
 // are set are changed.
 type ProductPatch struct {
-	Name                          *string          `json:"name,omitempty"`
-	Description                   *string          `json:"description,omitempty"`
-	ProdType                      *int             `json:"prod_type,omitempty"`
-	BusinessCriticality           Nullable[string] `json:"business_criticality,omitzero"`
-	Platform                      Nullable[string] `json:"platform,omitzero"`
-	Lifecycle                     Nullable[string] `json:"lifecycle,omitzero"`
-	Origin                        Nullable[string] `json:"origin,omitzero"`
-	ProdNumericGrade              Nullable[int]    `json:"prod_numeric_grade,omitzero"`
-	UserRecords                   Nullable[int]    `json:"user_records,omitzero"`
-	Revenue                       Nullable[string] `json:"revenue,omitzero"`
-	ExternalAudience              *bool            `json:"external_audience,omitempty"`
-	InternetAccessible            *bool            `json:"internet_accessible,omitempty"`
-	EnableProductTagInheritance   *bool            `json:"enable_product_tag_inheritance,omitempty"`
-	EnableSimpleRiskAcceptance    *bool            `json:"enable_simple_risk_acceptance,omitempty"`
-	EnableFullRiskAcceptance      *bool            `json:"enable_full_risk_acceptance,omitempty"`
-	DisableSLABreachNotifications *bool            `json:"disable_sla_breach_notifications,omitempty"`
-	ProductManager                Nullable[int]    `json:"product_manager,omitzero"`
-	TechnicalContact              Nullable[int]    `json:"technical_contact,omitzero"`
-	TeamManager                   Nullable[int]    `json:"team_manager,omitzero"`
-	SLAConfiguration              *int             `json:"sla_configuration,omitempty"`
+	Name                          *string                       `json:"name,omitempty"`
+	Description                   *string                       `json:"description,omitempty"`
+	ProdType                      *int                          `json:"prod_type,omitempty"`
+	BusinessCriticality           Nullable[BusinessCriticality] `json:"business_criticality,omitzero"`
+	Platform                      Nullable[string]              `json:"platform,omitzero"`
+	Lifecycle                     Nullable[string]              `json:"lifecycle,omitzero"`
+	Origin                        Nullable[string]              `json:"origin,omitzero"`
+	ProdNumericGrade              Nullable[int]                 `json:"prod_numeric_grade,omitzero"`
+	UserRecords                   Nullable[int]                 `json:"user_records,omitzero"`
+	Revenue                       Nullable[string]              `json:"revenue,omitzero"`
+	ExternalAudience              *bool                         `json:"external_audience,omitempty"`
+	InternetAccessible            *bool                         `json:"internet_accessible,omitempty"`
+	EnableProductTagInheritance   *bool                         `json:"enable_product_tag_inheritance,omitempty"`
+	EnableSimpleRiskAcceptance    *bool                         `json:"enable_simple_risk_acceptance,omitempty"`
+	EnableFullRiskAcceptance      *bool                         `json:"enable_full_risk_acceptance,omitempty"`
+	DisableSLABreachNotifications *bool                         `json:"disable_sla_breach_notifications,omitempty"`
+	ProductManager                Nullable[int]                 `json:"product_manager,omitzero"`
+	TechnicalContact              Nullable[int]                 `json:"technical_contact,omitzero"`
+	TeamManager                   Nullable[int]                 `json:"team_manager,omitzero"`
+	SLAConfiguration              *int                          `json:"sla_configuration,omitempty"`
 
 	// AuthorizedUsers, Regulations and Tags replace the current entries; a
 	// pointer to an empty or nil slice removes them all.
@@ -252,7 +255,7 @@ type ListProductsOptions struct {
 
 // ListProductsResult is a page of products.
 type ListProductsResult struct {
-	Results []*Product
+	Results []Product
 
 	// Count is the number of products that match the filters.
 	Count int
@@ -266,7 +269,7 @@ func (s *ProductsService) List(ctx context.Context, opt *ListProductsOptions, op
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*Product]
+	var page listPage[Product]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -291,7 +294,7 @@ func (s *ProductsService) ListAll(ctx context.Context, opt *ListProductsOptions,
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -328,7 +331,8 @@ func (s *ProductsService) GetByName(ctx context.Context, name string, opt *GetPr
 	if err != nil {
 		return nil, resp, err
 	}
-	for _, p := range list.Results {
+	for i := range list.Results {
+		p := &list.Results[i]
 		if p.Name == name {
 			return p, resp, nil
 		}
@@ -453,7 +457,7 @@ func (s *ProductsService) DeletePreview(ctx context.Context, id int, opt *Delete
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

@@ -24,7 +24,7 @@ func TestTestTypesService_List(t *testing.T) {
 	if list.Count != 394 || len(list.Results) != 3 {
 		t.Fatalf("List() = %d of %d, want 3 of 394", len(list.Results), list.Count)
 	}
-	if want := (defectdojo.TestType{ID: 3, Name: "Pen Test", Active: true}); *list.Results[2] != want {
+	if want := (defectdojo.TestType{ID: 3, Name: "Pen Test", Active: true}); list.Results[2] != want {
 		t.Errorf("third test type = %+v, want %+v", list.Results[2], want)
 	}
 }

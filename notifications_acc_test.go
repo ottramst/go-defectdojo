@@ -1,6 +1,7 @@
 package defectdojo_test
 
 import (
+	"cmp"
 	"context"
 	"errors"
 	"net/http"
@@ -29,30 +30,30 @@ func TestAccNotifications_systemAndPersonal(t *testing.T) {
 		return err
 	})
 	patched, _, err := client.Notifications.Patch(ctx, system.ID, &defectdojo.NotificationSettingsPatch{
-		ProductAdded: new([]string{defectdojo.NotificationChannelMail, defectdojo.NotificationChannelAlert}),
-		SLABreach:    new([]string{}),
+		ProductAdded: new([]defectdojo.NotificationChannel{defectdojo.NotificationChannelMail, defectdojo.NotificationChannelAlert}),
+		SLABreach:    new([]defectdojo.NotificationChannel{}),
 		// A single channel, and the response holds it as a string.
 		ScanAddedEmpty: new(defectdojo.NotificationChannelAlert),
 	}, nil)
 	if err != nil {
 		t.Fatalf("Patch(system) error = %v", err)
 	}
-	if !sameStrings(patched.ProductAdded, []string{"mail", "alert"}) || len(patched.SLABreach) != 0 ||
-		!reflect.DeepEqual(patched.ScanAddedEmpty, defectdojo.NotificationChannels{"alert"}) || !reflect.DeepEqual(patched.Other, []string{"alert"}) {
+	if !sameStrings(patched.ProductAdded, []defectdojo.NotificationChannel{"mail", "alert"}) || len(patched.SLABreach) != 0 ||
+		!reflect.DeepEqual(patched.ScanAddedEmpty, []defectdojo.NotificationChannel{"alert"}) || !reflect.DeepEqual(patched.Other, []defectdojo.NotificationChannel{"alert"}) {
 		t.Errorf("Patch(system) = %+v", patched)
 	}
 	got, _, err := client.Notifications.Get(ctx, system.ID, nil)
-	if err != nil || !reflect.DeepEqual(got.ScanAddedEmpty, defectdojo.NotificationChannels{"alert"}) {
+	if err != nil || !reflect.DeepEqual(got.ScanAddedEmpty, []defectdojo.NotificationChannel{"alert"}) {
 		t.Errorf("Get(system) = %+v, %v; want scan_added_empty [alert]", got, err)
 	}
 
 	// A PUT resets the events it leaves out, and keeps the scope.
-	updated, _, err := client.Notifications.Update(ctx, system.ID, &defectdojo.NotificationSettings{Other: []string{"mail"}}, nil)
+	updated, _, err := client.Notifications.Update(ctx, system.ID, &defectdojo.NotificationSettings{Other: []defectdojo.NotificationChannel{"mail"}}, nil)
 	if err != nil {
 		t.Fatalf("Update(system) error = %v", err)
 	}
-	if updated.User != 0 || updated.Product != 0 || updated.Template || !reflect.DeepEqual(updated.Other, []string{"mail"}) ||
-		!reflect.DeepEqual(updated.ProductAdded, []string{"alert"}) {
+	if updated.User != 0 || updated.Product != 0 || updated.Template || !reflect.DeepEqual(updated.Other, []defectdojo.NotificationChannel{"mail"}) ||
+		!reflect.DeepEqual(updated.ProductAdded, []defectdojo.NotificationChannel{"alert"}) {
 		t.Errorf("Update(system) = %+v, want other [mail] and the rest reset to alert", updated)
 	}
 	// scan_added_empty, which DefectDojo would keep, is reset too.
@@ -105,8 +106,8 @@ func TestAccNotifications_product(t *testing.T) {
 
 	created, resp, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{
 		User: profile.User.ID, Product: product.ID,
-		EngagementAdded: []string{defectdojo.NotificationChannelMail},
-		ScanAddedEmpty:  defectdojo.NotificationChannels{defectdojo.NotificationChannelMail},
+		EngagementAdded: []defectdojo.NotificationChannel{defectdojo.NotificationChannelMail},
+		ScanAddedEmpty:  []defectdojo.NotificationChannel{defectdojo.NotificationChannelMail},
 	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
@@ -120,8 +121,8 @@ func TestAccNotifications_product(t *testing.T) {
 	})
 	// Events that are left out get DefectDojo's default.
 	if resp.StatusCode != http.StatusCreated || created.User != profile.User.ID || created.Product != product.ID ||
-		!reflect.DeepEqual(created.EngagementAdded, []string{"mail"}) || !reflect.DeepEqual(created.TestAdded, []string{"alert"}) ||
-		!reflect.DeepEqual(created.ScanAddedEmpty, defectdojo.NotificationChannels{"mail"}) {
+		!reflect.DeepEqual(created.EngagementAdded, []defectdojo.NotificationChannel{"mail"}) || !reflect.DeepEqual(created.TestAdded, []defectdojo.NotificationChannel{"alert"}) ||
+		!reflect.DeepEqual(created.ScanAddedEmpty, []defectdojo.NotificationChannel{"mail"}) {
 		t.Errorf("Create() = %+v (%d)", created, resp.StatusCode)
 	}
 
@@ -142,7 +143,7 @@ func TestAccNotifications_product(t *testing.T) {
 	}
 
 	preview, _, err := client.Notifications.DeletePreview(ctx, created.ID, nil)
-	if err != nil || !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
+	if err != nil || !slices.ContainsFunc(preview.Results, func(o defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
 		t.Errorf("DeletePreview() = %+v, %v", preview, err)
 	}
 	if _, err := client.Notifications.Delete(ctx, created.ID, nil); err != nil {
@@ -161,7 +162,7 @@ func TestAccNotifications_template(t *testing.T) {
 		t.Fatalf("a template exists already (ID %d); this test needs a server without one", existing.ID)
 	}
 	template, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{
-		Template: true, ProductAdded: []string{defectdojo.NotificationChannelSlack},
+		Template: true, ProductAdded: []defectdojo.NotificationChannel{defectdojo.NotificationChannelSlack},
 	}, nil)
 	if err != nil {
 		t.Fatalf("Create(template) error = %v", err)
@@ -186,9 +187,9 @@ func TestAccNotifications_template(t *testing.T) {
 		t.Errorf("Update(template) error = %v, want ErrBadRequest", err)
 	}
 	patched, _, err := client.Notifications.Patch(ctx, template.ID, &defectdojo.NotificationSettingsPatch{
-		ProductAdded: new([]string{defectdojo.NotificationChannelMail}),
+		ProductAdded: new([]defectdojo.NotificationChannel{defectdojo.NotificationChannelMail}),
 	}, nil)
-	if err != nil || !patched.Template || !reflect.DeepEqual(patched.ProductAdded, []string{"mail"}) {
+	if err != nil || !patched.Template || !reflect.DeepEqual(patched.ProductAdded, []defectdojo.NotificationChannel{"mail"}) {
 		t.Errorf("Patch(template) = %+v, %v", patched, err)
 	}
 	if byScope, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: 0, Product: 0, Template: true}, nil); err != nil || byScope.ID != template.ID {
@@ -204,7 +205,7 @@ func TestAccNotifications_template(t *testing.T) {
 	}
 	cleanupUser(t, client, u.ID)
 	personal, _, err := client.Notifications.GetByScope(ctx, defectdojo.NotificationScope{User: u.ID, Product: 0, Template: false}, nil)
-	if err != nil || !reflect.DeepEqual(personal.ProductAdded, []string{"mail"}) || personal.Template {
+	if err != nil || !reflect.DeepEqual(personal.ProductAdded, []defectdojo.NotificationChannel{"mail"}) || personal.Template {
 		t.Errorf("GetByScope(new user) = %+v, %v; want the template's events", personal, err)
 	}
 
@@ -213,7 +214,7 @@ func TestAccNotifications_template(t *testing.T) {
 	}
 }
 
-func sameStrings(a, b []string) bool {
+func sameStrings[T cmp.Ordered](a, b []T) bool {
 	a, b = slices.Clone(a), slices.Clone(b)
 	slices.Sort(a)
 	slices.Sort(b)

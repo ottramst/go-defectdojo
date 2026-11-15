@@ -238,7 +238,7 @@ func TestProductsService_Patch(t *testing.T) {
 		{
 			name: "clear nullable fields",
 			patch: &defectdojo.ProductPatch{
-				BusinessCriticality: defectdojo.Null[string](), Platform: defectdojo.Null[string](),
+				BusinessCriticality: defectdojo.Null[defectdojo.BusinessCriticality](), Platform: defectdojo.Null[string](),
 				ProdNumericGrade: defectdojo.Null[int](), Revenue: defectdojo.Null[string](), TeamManager: defectdojo.Null[int](),
 			},
 			want: `{"business_criticality":null,"platform":null,"prod_numeric_grade":null,"revenue":null,"team_manager":null}`,
@@ -311,7 +311,7 @@ func TestProductsService_DeletePreview(t *testing.T) {
 	if preview.Count != 7 || len(preview.Results) != 7 {
 		t.Fatalf("DeletePreview() = %d of %d, want 7 of 7", len(preview.Results), preview.Count)
 	}
-	if got := *preview.Results[6]; got.Model != "Engagement" || got.ID != 1 {
+	if got := preview.Results[6]; got.Model != "Engagement" || got.ID != 1 {
 		t.Errorf("Objects[6] = %+v, want the engagement", got)
 	}
 }

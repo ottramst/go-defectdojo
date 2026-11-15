@@ -17,22 +17,28 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type EngagementsService service
 
+// EngagementStatus is the status of an engagement.
+type EngagementStatus string
+
 // Engagement statuses, the values of [Engagement.Status].
 const (
-	EngagementStatusNotStarted         = "Not Started"
-	EngagementStatusBlocked            = "Blocked"
-	EngagementStatusCancelled          = "Cancelled" //nolint:misspell // DefectDojo's spelling
-	EngagementStatusCompleted          = "Completed"
-	EngagementStatusInProgress         = "In Progress"
-	EngagementStatusOnHold             = "On Hold"
-	EngagementStatusScheduled          = "Scheduled"
-	EngagementStatusWaitingForResource = "Waiting for Resource"
+	EngagementStatusNotStarted         EngagementStatus = "Not Started"
+	EngagementStatusBlocked            EngagementStatus = "Blocked"
+	EngagementStatusCancelled          EngagementStatus = "Cancelled" //nolint:misspell // DefectDojo's spelling
+	EngagementStatusCompleted          EngagementStatus = "Completed"
+	EngagementStatusInProgress         EngagementStatus = "In Progress"
+	EngagementStatusOnHold             EngagementStatus = "On Hold"
+	EngagementStatusScheduled          EngagementStatus = "Scheduled"
+	EngagementStatusWaitingForResource EngagementStatus = "Waiting for Resource"
 )
+
+// EngagementType is the type of an engagement.
+type EngagementType string
 
 // Engagement types, the values of [Engagement.EngagementType].
 const (
-	EngagementTypeInteractive = "Interactive"
-	EngagementTypeCICD        = "CI/CD"
+	EngagementTypeInteractive EngagementType = "Interactive"
+	EngagementTypeCICD        EngagementType = "CI/CD"
 )
 
 // Engagement is a DefectDojo engagement. The same type is used for reads and
@@ -76,12 +82,12 @@ type Engagement struct {
 	// Create uses EngagementStatusNotStarted and Update keeps the current
 	// status. Close and Reopen change it, and so does DefectDojo's automatic
 	// closing of engagements.
-	Status string `json:"status"`
+	Status EngagementStatus `json:"status"`
 
 	// EngagementType is EngagementTypeInteractive or EngagementTypeCICD.
 	// When it is empty, Create uses EngagementTypeInteractive and Update
 	// keeps the current type.
-	EngagementType string `json:"engagement_type"`
+	EngagementType EngagementType `json:"engagement_type"`
 
 	// Active is false once the engagement is closed. Only
 	// [EngagementsService.Close] and [EngagementsService.Reopen] change it.
@@ -154,35 +160,35 @@ type Engagement struct {
 // inherits its product's tags and Update keeps the current ones; an empty
 // list removes them all, inherited ones included.
 type engagementRequest struct {
-	Product                   int      `json:"product"`
-	Name                      *string  `json:"name"`
-	Description               *string  `json:"description"`
-	Reason                    *string  `json:"reason"`
-	Version                   *string  `json:"version"`
-	TargetStart               Date     `json:"target_start"`
-	TargetEnd                 Date     `json:"target_end"`
-	FirstContacted            Date     `json:"first_contacted"`
-	Status                    string   `json:"status,omitempty"`
-	EngagementType            string   `json:"engagement_type,omitempty"`
-	Tracker                   *string  `json:"tracker"`
-	TestStrategy              *string  `json:"test_strategy"`
-	SourceCodeManagementURI   *string  `json:"source_code_management_uri"`
-	BuildID                   *string  `json:"build_id"`
-	CommitHash                *string  `json:"commit_hash"`
-	BranchTag                 *string  `json:"branch_tag"`
-	ThreatModel               bool     `json:"threat_model"`
-	APITest                   bool     `json:"api_test"`
-	PenTest                   bool     `json:"pen_test"`
-	CheckList                 bool     `json:"check_list"`
-	DeduplicationOnEngagement bool     `json:"deduplication_on_engagement"`
-	Lead                      *int     `json:"lead"`
-	Requester                 *int     `json:"requester"`
-	Preset                    *int     `json:"preset"`
-	ReportType                *int     `json:"report_type"`
-	CICDSCMServer             *int     `json:"cicd_scm_server"`
-	CICDBuildServer           *int     `json:"cicd_build_server"`
-	CICDOrchestrationEngine   *int     `json:"cicd_orchestration_engine"`
-	Tags                      []string `json:"tags,omitzero"`
+	Product                   int              `json:"product"`
+	Name                      *string          `json:"name"`
+	Description               *string          `json:"description"`
+	Reason                    *string          `json:"reason"`
+	Version                   *string          `json:"version"`
+	TargetStart               Date             `json:"target_start"`
+	TargetEnd                 Date             `json:"target_end"`
+	FirstContacted            Date             `json:"first_contacted"`
+	Status                    EngagementStatus `json:"status,omitempty"`
+	EngagementType            EngagementType   `json:"engagement_type,omitempty"`
+	Tracker                   *string          `json:"tracker"`
+	TestStrategy              *string          `json:"test_strategy"`
+	SourceCodeManagementURI   *string          `json:"source_code_management_uri"`
+	BuildID                   *string          `json:"build_id"`
+	CommitHash                *string          `json:"commit_hash"`
+	BranchTag                 *string          `json:"branch_tag"`
+	ThreatModel               bool             `json:"threat_model"`
+	APITest                   bool             `json:"api_test"`
+	PenTest                   bool             `json:"pen_test"`
+	CheckList                 bool             `json:"check_list"`
+	DeduplicationOnEngagement bool             `json:"deduplication_on_engagement"`
+	Lead                      *int             `json:"lead"`
+	Requester                 *int             `json:"requester"`
+	Preset                    *int             `json:"preset"`
+	ReportType                *int             `json:"report_type"`
+	CICDSCMServer             *int             `json:"cicd_scm_server"`
+	CICDBuildServer           *int             `json:"cicd_build_server"`
+	CICDOrchestrationEngine   *int             `json:"cicd_orchestration_engine"`
+	Tags                      []string         `json:"tags,omitzero"`
 }
 
 // newEngagementRequest validates an engagement and returns its writable
@@ -242,30 +248,30 @@ type EngagementPatch struct {
 	TargetStart *Date `json:"target_start,omitempty"`
 	TargetEnd   *Date `json:"target_end,omitempty"`
 
-	Description               Nullable[string] `json:"description,omitzero"`
-	Reason                    Nullable[string] `json:"reason,omitzero"`
-	Version                   Nullable[string] `json:"version,omitzero"`
-	FirstContacted            Nullable[Date]   `json:"first_contacted,omitzero"`
-	Status                    *string          `json:"status,omitempty"`
-	EngagementType            *string          `json:"engagement_type,omitempty"`
-	Tracker                   Nullable[string] `json:"tracker,omitzero"`
-	TestStrategy              Nullable[string] `json:"test_strategy,omitzero"`
-	SourceCodeManagementURI   Nullable[string] `json:"source_code_management_uri,omitzero"`
-	BuildID                   Nullable[string] `json:"build_id,omitzero"`
-	CommitHash                Nullable[string] `json:"commit_hash,omitzero"`
-	BranchTag                 Nullable[string] `json:"branch_tag,omitzero"`
-	ThreatModel               *bool            `json:"threat_model,omitempty"`
-	APITest                   *bool            `json:"api_test,omitempty"`
-	PenTest                   *bool            `json:"pen_test,omitempty"`
-	CheckList                 *bool            `json:"check_list,omitempty"`
-	DeduplicationOnEngagement *bool            `json:"deduplication_on_engagement,omitempty"`
-	Lead                      Nullable[int]    `json:"lead,omitzero"`
-	Requester                 Nullable[int]    `json:"requester,omitzero"`
-	Preset                    Nullable[int]    `json:"preset,omitzero"`
-	ReportType                Nullable[int]    `json:"report_type,omitzero"`
-	CICDSCMServer             Nullable[int]    `json:"cicd_scm_server,omitzero"`
-	CICDBuildServer           Nullable[int]    `json:"cicd_build_server,omitzero"`
-	CICDOrchestrationEngine   Nullable[int]    `json:"cicd_orchestration_engine,omitzero"`
+	Description               Nullable[string]  `json:"description,omitzero"`
+	Reason                    Nullable[string]  `json:"reason,omitzero"`
+	Version                   Nullable[string]  `json:"version,omitzero"`
+	FirstContacted            Nullable[Date]    `json:"first_contacted,omitzero"`
+	Status                    *EngagementStatus `json:"status,omitempty"`
+	EngagementType            *EngagementType   `json:"engagement_type,omitempty"`
+	Tracker                   Nullable[string]  `json:"tracker,omitzero"`
+	TestStrategy              Nullable[string]  `json:"test_strategy,omitzero"`
+	SourceCodeManagementURI   Nullable[string]  `json:"source_code_management_uri,omitzero"`
+	BuildID                   Nullable[string]  `json:"build_id,omitzero"`
+	CommitHash                Nullable[string]  `json:"commit_hash,omitzero"`
+	BranchTag                 Nullable[string]  `json:"branch_tag,omitzero"`
+	ThreatModel               *bool             `json:"threat_model,omitempty"`
+	APITest                   *bool             `json:"api_test,omitempty"`
+	PenTest                   *bool             `json:"pen_test,omitempty"`
+	CheckList                 *bool             `json:"check_list,omitempty"`
+	DeduplicationOnEngagement *bool             `json:"deduplication_on_engagement,omitempty"`
+	Lead                      Nullable[int]     `json:"lead,omitzero"`
+	Requester                 Nullable[int]     `json:"requester,omitzero"`
+	Preset                    Nullable[int]     `json:"preset,omitzero"`
+	ReportType                Nullable[int]     `json:"report_type,omitzero"`
+	CICDSCMServer             Nullable[int]     `json:"cicd_scm_server,omitzero"`
+	CICDBuildServer           Nullable[int]     `json:"cicd_build_server,omitzero"`
+	CICDOrchestrationEngine   Nullable[int]     `json:"cicd_orchestration_engine,omitzero"`
 
 	// Tags replaces the tags; a pointer to an empty or nil slice removes
 	// them all, even those the product passes on (which a later write of
@@ -285,14 +291,14 @@ type ListEngagementsOptions struct {
 	Name string `url:"name,omitempty"`
 
 	// Status filters by one of the EngagementStatus constants.
-	Status string `url:"status,omitempty"`
+	Status EngagementStatus `url:"status,omitempty"`
 
 	Active *bool `url:"active,omitempty"`
 }
 
 // ListEngagementsResult is a page of engagements.
 type ListEngagementsResult struct {
-	Results []*Engagement
+	Results []Engagement
 
 	// Count is the number of engagements that match the filters.
 	Count int
@@ -306,7 +312,7 @@ func (s *EngagementsService) List(ctx context.Context, opt *ListEngagementsOptio
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*Engagement]
+	var page listPage[Engagement]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -331,7 +337,7 @@ func (s *EngagementsService) ListAll(ctx context.Context, opt *ListEngagementsOp
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -470,7 +476,7 @@ func (s *EngagementsService) DeletePreview(ctx context.Context, id int, opt *Del
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

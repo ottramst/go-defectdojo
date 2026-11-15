@@ -19,25 +19,28 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type NotificationWebhooksService service
 
+// NotificationWebhookStatus is the delivery status of a notification webhook.
+type NotificationWebhookStatus string
+
 // Statuses of [NotificationWebhook.Status]. DefectDojo sets them when
 // deliveries fail, and its UI when a webhook is deactivated or edited; the
 // API can't change them.
 const (
-	NotificationWebhookStatusActive = "active"
+	NotificationWebhookStatusActive NotificationWebhookStatus = "active"
 	// NotificationWebhookStatusActiveTemporary means a webhook was
 	// reactivated after a temporary failure, and fails permanently if the
 	// errors go on for a day.
-	NotificationWebhookStatusActiveTemporary = "active_tmp"
+	NotificationWebhookStatusActiveTemporary NotificationWebhookStatus = "active_tmp"
 	// NotificationWebhookStatusInactiveTemporary means a delivery failed
 	// with a 5xx or 429 response or a timeout, and DefectDojo pauses the
 	// webhook for about a minute.
-	NotificationWebhookStatusInactiveTemporary = "inactive_tmp"
+	NotificationWebhookStatusInactiveTemporary NotificationWebhookStatus = "inactive_tmp"
 	// NotificationWebhookStatusInactivePermanent means DefectDojo gave up on
 	// the webhook: after a 4xx response, a connection error, a day of
 	// temporary errors, or a deactivation in the UI. The API can't
 	// reactivate it; editing it in the UI does, or delete it and create it
 	// again.
-	NotificationWebhookStatusInactivePermanent = "inactive_permanent"
+	NotificationWebhookStatusInactivePermanent NotificationWebhookStatus = "inactive_permanent"
 )
 
 // NotificationWebhook is a DefectDojo notification webhook. The same type is
@@ -62,7 +65,7 @@ type NotificationWebhook struct {
 	HeaderValue string `json:"header_value"`
 
 	// Status is one of the NotificationWebhookStatus constants.
-	Status string `json:"status"`
+	Status NotificationWebhookStatus `json:"status"`
 
 	// FirstError and LastError are when deliveries started failing and last
 	// failed, and Note describes the last error or status change, such as
@@ -128,9 +131,9 @@ type ListNotificationWebhooksOptions struct {
 	ListOptions
 
 	// Name, URL and Status are exact, case-sensitive matches.
-	Name   string `url:"name,omitempty"`
-	URL    string `url:"url,omitempty"`
-	Status string `url:"status,omitempty"`
+	Name   string                    `url:"name,omitempty"`
+	URL    string                    `url:"url,omitempty"`
+	Status NotificationWebhookStatus `url:"status,omitempty"`
 
 	// Owner filters by the ID of the owner.
 	Owner int `url:"owner,omitempty"`
@@ -138,7 +141,7 @@ type ListNotificationWebhooksOptions struct {
 
 // ListNotificationWebhooksResult is a page of notification webhooks.
 type ListNotificationWebhooksResult struct {
-	Results []*NotificationWebhook
+	Results []NotificationWebhook
 
 	// Count is the number of notification webhooks that match the filters.
 	Count int
@@ -152,7 +155,7 @@ func (s *NotificationWebhooksService) List(ctx context.Context, opt *ListNotific
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*NotificationWebhook]
+	var page listPage[NotificationWebhook]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -180,7 +183,7 @@ func (s *NotificationWebhooksService) ListAll(ctx context.Context, opt *ListNoti
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -217,7 +220,8 @@ func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, w := range list.Results {
+	for i := range list.Results {
+		w := &list.Results[i]
 		if w.Name == name {
 			return w, resp, nil
 		}
@@ -324,7 +328,7 @@ func (s *NotificationWebhooksService) DeletePreview(ctx context.Context, id int,
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

@@ -170,7 +170,7 @@ func TestAccProducts(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Engagement" }) {
+	if !slices.ContainsFunc(preview.Results, func(o defectdojo.DeletedObject) bool { return o.Model == "Engagement" }) {
 		t.Errorf("DeletePreview() = %+v, want the engagement", preview.Results)
 	}
 

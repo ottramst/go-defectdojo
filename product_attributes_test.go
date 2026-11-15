@@ -37,7 +37,7 @@ func TestProductAttributesService_List(t *testing.T) {
 				t.Fatalf("List() = %d of %d, want 6 of 6", len(list.Results), list.Count)
 			}
 			want := defectdojo.ProductAttribute{ID: 1, Value: "web service", Name: "API", Icon: "plug", DisplayOrder: 10}
-			if *list.Results[0] != want {
+			if list.Results[0] != want {
 				t.Errorf("first entry = %+v, want %+v", list.Results[0], want)
 			}
 		})
@@ -237,7 +237,7 @@ func TestProductAttributesService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "Product_Platform", ID: 8, Name: "Kiosk"}) {
+	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Product_Platform", ID: 8, Name: "Kiosk"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

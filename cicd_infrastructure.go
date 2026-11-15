@@ -17,14 +17,17 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type CICDInfrastructureService service
 
+// CICDInfrastructureType is the type of a CI/CD infrastructure object.
+type CICDInfrastructureType string
+
 // The types of CI/CD infrastructure. An engagement's CICDSCMServer must be of
 // type CICDInfrastructureTypeSCMServer, its CICDBuildServer of type
 // CICDInfrastructureTypeBuildServer and its CICDOrchestrationEngine of type
 // CICDInfrastructureTypeOrchestration. DefectDojo checks the type.
 const (
-	CICDInfrastructureTypeSCMServer     = "scm_server"
-	CICDInfrastructureTypeBuildServer   = "build_server"
-	CICDInfrastructureTypeOrchestration = "orchestration"
+	CICDInfrastructureTypeSCMServer     CICDInfrastructureType = "scm_server"
+	CICDInfrastructureTypeBuildServer   CICDInfrastructureType = "build_server"
+	CICDInfrastructureTypeOrchestration CICDInfrastructureType = "orchestration"
 )
 
 // CICDInfrastructure is a DefectDojo CI/CD infrastructure object. The same
@@ -39,7 +42,7 @@ type CICDInfrastructure struct {
 	// InfrastructureType is a type of CI/CD infrastructure, such as the
 	// CICDInfrastructureType constants. It can't change after creation:
 	// DefectDojo ignores it in updates.
-	InfrastructureType string `json:"infrastructure_type"`
+	InfrastructureType CICDInfrastructureType `json:"infrastructure_type"`
 
 	// Description (at most 2000 characters) and URL (at most 2000) are
 	// optional; DefectDojo stores them as "" when unset. DefectDojo leaves
@@ -53,10 +56,10 @@ type CICDInfrastructure struct {
 // cicdInfrastructureRequest is the body of CI/CD infrastructure create and
 // update requests: the writable fields of a [CICDInfrastructure].
 type cicdInfrastructureRequest struct {
-	Name               string `json:"name"`
-	InfrastructureType string `json:"infrastructure_type"`
-	Description        string `json:"description"`
-	URL                string `json:"url"`
+	Name               string                 `json:"name"`
+	InfrastructureType CICDInfrastructureType `json:"infrastructure_type"`
+	Description        string                 `json:"description"`
+	URL                string                 `json:"url"`
 }
 
 // newCICDInfrastructureRequest validates a CI/CD infrastructure object and
@@ -97,12 +100,12 @@ type ListCICDInfrastructureOptions struct {
 	Name string `url:"name,omitempty"`
 
 	// InfrastructureType filters by type.
-	InfrastructureType string `url:"infrastructure_type,omitempty"`
+	InfrastructureType CICDInfrastructureType `url:"infrastructure_type,omitempty"`
 }
 
 // ListCICDInfrastructureResult is a page of CI/CD infrastructure objects.
 type ListCICDInfrastructureResult struct {
-	Results []*CICDInfrastructure
+	Results []CICDInfrastructure
 
 	// Count is the number of objects that match the filters.
 	Count int
@@ -116,7 +119,7 @@ func (s *CICDInfrastructureService) List(ctx context.Context, opt *ListCICDInfra
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*CICDInfrastructure]
+	var page listPage[CICDInfrastructure]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -141,7 +144,7 @@ func (s *CICDInfrastructureService) ListAll(ctx context.Context, opt *ListCICDIn
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -167,7 +170,7 @@ func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opt *GetCIC
 type GetCICDInfrastructureByNameOptions struct {
 	// InfrastructureType restricts the lookup to one type, one of the
 	// CICDInfrastructureType constants. Names are unique within a type.
-	InfrastructureType string
+	InfrastructureType CICDInfrastructureType
 }
 
 // GetByName returns the CI/CD infrastructure object with exactly the given
@@ -180,7 +183,7 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name string, 
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: CI/CD infrastructure name must not be empty")
 	}
-	var infrastructureType string
+	var infrastructureType CICDInfrastructureType
 	if opt != nil {
 		infrastructureType = opt.InfrastructureType
 	}
@@ -199,7 +202,8 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name string, 
 	// DefectDojo strips whitespace from the name filter, and may loosen the
 	// filters: check again. There is at most one object per type, so one
 	// page holds them.
-	for _, ci := range list.Results {
+	for i := range list.Results {
+		ci := &list.Results[i]
 		if ci.Name == name && (infrastructureType == "" || ci.InfrastructureType == infrastructureType) {
 			found = ci
 			ids = append(ids, ci.ID)
@@ -316,7 +320,7 @@ func (s *CICDInfrastructureService) DeletePreview(ctx context.Context, id int, o
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

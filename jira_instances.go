@@ -21,6 +21,19 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type JiraInstancesService service
 
+// JiraIssueType is a Jira issue type DefectDojo can create.
+type JiraIssueType string
+
+// The issue types DefectDojo can create for findings.
+const (
+	JiraIssueTypeTask     JiraIssueType = "Task"
+	JiraIssueTypeStory    JiraIssueType = "Story"
+	JiraIssueTypeEpic     JiraIssueType = "Epic"
+	JiraIssueTypeSpike    JiraIssueType = "Spike"
+	JiraIssueTypeBug      JiraIssueType = "Bug"
+	JiraIssueTypeSecurity JiraIssueType = "Security"
+)
+
 // JiraInstance is a DefectDojo Jira instance. The same type is used for reads
 // and writes; the read-only ID is ignored when writing. Its password is
 // write-only: see [CreateJiraInstanceRequest].
@@ -42,7 +55,7 @@ type JiraInstance struct {
 	// DefectDojo offers "Task", "Story", "Epic", "Spike", "Bug" and
 	// "Security", and DD_JIRA_EXTRA_ISSUE_TYPES adds more. The client leaves
 	// it out when it is empty, so DefectDojo's default applies on create.
-	DefaultIssueType string `json:"default_issue_type"`
+	DefaultIssueType JiraIssueType `json:"default_issue_type"`
 
 	// IssueTemplateDir is the folder of the Django templates that render
 	// issue descriptions, or "" for the default.
@@ -96,25 +109,25 @@ type CreateJiraInstanceRequest struct {
 type jiraInstanceRequest struct {
 	// ConfigurationName and DefaultIssueType are left out when empty:
 	// DefectDojo rejects "" and has defaults ("" and "Bug").
-	ConfigurationName              string  `json:"configuration_name,omitempty"`
-	URL                            string  `json:"url"`
-	Username                       string  `json:"username"`
-	Password                       string  `json:"password"`
-	DefaultIssueType               string  `json:"default_issue_type,omitempty"`
-	IssueTemplateDir               *string `json:"issue_template_dir"`
-	EpicNameID                     int     `json:"epic_name_id"`
-	OpenStatusKey                  int     `json:"open_status_key"`
-	CloseStatusKey                 int     `json:"close_status_key"`
-	InfoMappingSeverity            string  `json:"info_mapping_severity"`
-	LowMappingSeverity             string  `json:"low_mapping_severity"`
-	MediumMappingSeverity          string  `json:"medium_mapping_severity"`
-	HighMappingSeverity            string  `json:"high_mapping_severity"`
-	CriticalMappingSeverity        string  `json:"critical_mapping_severity"`
-	FindingText                    *string `json:"finding_text"`
-	AcceptedMappingResolution      *string `json:"accepted_mapping_resolution"`
-	FalsePositiveMappingResolution *string `json:"false_positive_mapping_resolution"`
-	GlobalJiraSLANotification      bool    `json:"global_jira_sla_notification"`
-	FindingJiraSync                bool    `json:"finding_jira_sync"`
+	ConfigurationName              string        `json:"configuration_name,omitempty"`
+	URL                            string        `json:"url"`
+	Username                       string        `json:"username"`
+	Password                       string        `json:"password"`
+	DefaultIssueType               JiraIssueType `json:"default_issue_type,omitempty"`
+	IssueTemplateDir               *string       `json:"issue_template_dir"`
+	EpicNameID                     int           `json:"epic_name_id"`
+	OpenStatusKey                  int           `json:"open_status_key"`
+	CloseStatusKey                 int           `json:"close_status_key"`
+	InfoMappingSeverity            string        `json:"info_mapping_severity"`
+	LowMappingSeverity             string        `json:"low_mapping_severity"`
+	MediumMappingSeverity          string        `json:"medium_mapping_severity"`
+	HighMappingSeverity            string        `json:"high_mapping_severity"`
+	CriticalMappingSeverity        string        `json:"critical_mapping_severity"`
+	FindingText                    *string       `json:"finding_text"`
+	AcceptedMappingResolution      *string       `json:"accepted_mapping_resolution"`
+	FalsePositiveMappingResolution *string       `json:"false_positive_mapping_resolution"`
+	GlobalJiraSLANotification      bool          `json:"global_jira_sla_notification"`
+	FindingJiraSync                bool          `json:"finding_jira_sync"`
 }
 
 // newJiraInstanceRequest validates a Jira instance and its password and
@@ -171,7 +184,7 @@ type JiraInstancePatch struct {
 	URL                            *string          `json:"url,omitempty"`
 	Username                       *string          `json:"username,omitempty"`
 	Password                       *string          `json:"password,omitempty"`
-	DefaultIssueType               *string          `json:"default_issue_type,omitempty"`
+	DefaultIssueType               *JiraIssueType   `json:"default_issue_type,omitempty"`
 	IssueTemplateDir               Nullable[string] `json:"issue_template_dir,omitzero"`
 	EpicNameID                     *int             `json:"epic_name_id,omitempty"`
 	OpenStatusKey                  *int             `json:"open_status_key,omitempty"`
@@ -199,7 +212,7 @@ type ListJiraInstancesOptions struct {
 
 // ListJiraInstancesResult is a page of Jira instances.
 type ListJiraInstancesResult struct {
-	Results []*JiraInstance
+	Results []JiraInstance
 
 	// Count is the number of Jira instances that match the filters.
 	Count int
@@ -213,7 +226,7 @@ func (s *JiraInstancesService) List(ctx context.Context, opt *ListJiraInstancesO
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*JiraInstance]
+	var page listPage[JiraInstance]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -238,7 +251,7 @@ func (s *JiraInstancesService) ListAll(ctx context.Context, opt *ListJiraInstanc
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -287,7 +300,8 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opt *
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, ji := range list.Results {
+		for i := range list.Results {
+			ji := &list.Results[i]
 			if ji.ConfigurationName == name {
 				found = ji
 				ids = append(ids, ji.ID)
@@ -415,7 +429,7 @@ func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *D
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

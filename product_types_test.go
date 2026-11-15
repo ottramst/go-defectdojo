@@ -255,7 +255,7 @@ func TestProductTypesService_DeletePreview(t *testing.T) {
 	if preview.Count != 3 || len(preview.Results) != 3 {
 		t.Fatalf("DeletePreview() = %d of %d, want 3 of 3", len(preview.Results), preview.Count)
 	}
-	if got := *preview.Results[1]; got != (defectdojo.DeletedObject{Model: "Product", ID: 2, Name: "Storefront"}) {
+	if got := preview.Results[1]; got != (defectdojo.DeletedObject{Model: "Product", ID: 2, Name: "Storefront"}) {
 		t.Errorf("Objects[1] = %+v", got)
 	}
 }

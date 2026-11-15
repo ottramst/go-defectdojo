@@ -66,3 +66,13 @@ func paginate[T any](ctx context.Context, from, size int, fetch pageFunc[T]) ite
 		}
 	}
 }
+
+// pointers returns pointers to the elements of s, for iterators over a page
+// whose results are values.
+func pointers[T any](s []T) []*T {
+	p := make([]*T, len(s))
+	for i := range s {
+		p[i] = &s[i]
+	}
+	return p
+}

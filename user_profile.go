@@ -62,6 +62,17 @@ type User struct {
 	PasswordLastReset time.Time `json:"password_last_reset,omitzero"`
 }
 
+// DeduplicationExecutionMode is how DefectDojo runs deduplication for a
+// user's imports.
+type DeduplicationExecutionMode string
+
+// The deduplication execution modes. "" means the instance default.
+const (
+	DeduplicationExecutionModeAsync     DeduplicationExecutionMode = "async"
+	DeduplicationExecutionModeAsyncWait DeduplicationExecutionMode = "async_wait"
+	DeduplicationExecutionModeSync      DeduplicationExecutionMode = "sync"
+)
+
 // UserContactInfo is the contact information and personal settings of a
 // user.
 type UserContactInfo struct {
@@ -82,9 +93,9 @@ type UserContactInfo struct {
 	// as deduplication, before answering.
 	BlockExecution bool `json:"block_execution"`
 
-	// DeduplicationExecutionMode is "async", "async_wait", "sync", or "" for
-	// the instance default.
-	DeduplicationExecutionMode string `json:"deduplication_execution_mode"`
+	// DeduplicationExecutionMode is one of the DeduplicationExecutionMode
+	// constants, or "" for the instance default.
+	DeduplicationExecutionMode DeduplicationExecutionMode `json:"deduplication_execution_mode"`
 
 	ForcePasswordReset bool `json:"force_password_reset"`
 

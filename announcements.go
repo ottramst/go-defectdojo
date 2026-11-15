@@ -18,12 +18,15 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type AnnouncementsService service
 
+// AnnouncementStyle is the style of the announcement banner.
+type AnnouncementStyle string
+
 // The styles of the announcement banner. DefectDojo checks the style.
 const (
-	AnnouncementStyleInfo    = "info"
-	AnnouncementStyleSuccess = "success"
-	AnnouncementStyleWarning = "warning"
-	AnnouncementStyleDanger  = "danger"
+	AnnouncementStyleInfo    AnnouncementStyle = "info"
+	AnnouncementStyleSuccess AnnouncementStyle = "success"
+	AnnouncementStyleWarning AnnouncementStyle = "warning"
+	AnnouncementStyleDanger  AnnouncementStyle = "danger"
 )
 
 // Announcement is the DefectDojo announcement. The same type is used for
@@ -38,7 +41,7 @@ type Announcement struct {
 
 	// Style is a banner style, such as the AnnouncementStyle constants.
 	// DefectDojo defaults it to AnnouncementStyleInfo.
-	Style string `json:"style"`
+	Style AnnouncementStyle `json:"style"`
 
 	// Dismissable lets users dismiss the announcement.
 	Dismissable bool `json:"dismissable"`
@@ -49,8 +52,8 @@ type Announcement struct {
 type announcementRequest struct {
 	Message string `json:"message"`
 	// Style is left out when empty, for DefectDojo's default; "" is a 400.
-	Style       string `json:"style,omitempty"`
-	Dismissable bool   `json:"dismissable"`
+	Style       AnnouncementStyle `json:"style,omitempty"`
+	Dismissable bool              `json:"dismissable"`
 }
 
 // newAnnouncementRequest validates an announcement and returns its writable
@@ -68,9 +71,9 @@ func newAnnouncementRequest(a *Announcement) (*announcementRequest, error) {
 // AnnouncementPatch is the body of [AnnouncementsService.Patch]. Only the
 // fields that are set are changed.
 type AnnouncementPatch struct {
-	Message     *string `json:"message,omitempty"`
-	Style       *string `json:"style,omitempty"`
-	Dismissable *bool   `json:"dismissable,omitempty"`
+	Message     *string            `json:"message,omitempty"`
+	Style       *AnnouncementStyle `json:"style,omitempty"`
+	Dismissable *bool              `json:"dismissable,omitempty"`
 }
 
 // ListAnnouncementsOptions are the options of [AnnouncementsService.List] and
@@ -83,7 +86,7 @@ type ListAnnouncementsOptions struct {
 
 	// Style filters by style, one of the AnnouncementStyle constants. An
 	// unknown style is a 400 ([ErrBadRequest]).
-	Style string `url:"style,omitempty"`
+	Style AnnouncementStyle `url:"style,omitempty"`
 
 	// Dismissable filters by whether users can dismiss the announcement.
 	Dismissable *bool `url:"dismissable,omitempty"`
@@ -91,7 +94,7 @@ type ListAnnouncementsOptions struct {
 
 // ListAnnouncementsResult is a page of announcements: the announcement, or none.
 type ListAnnouncementsResult struct {
-	Results []*Announcement
+	Results []Announcement
 
 	// Count is the number of announcements, 0 or 1.
 	Count int
@@ -106,7 +109,7 @@ func (s *AnnouncementsService) List(ctx context.Context, opt *ListAnnouncementsO
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*Announcement]
+	var page listPage[Announcement]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -130,7 +133,7 @@ func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListAnnouncemen
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -147,7 +150,7 @@ func (s *AnnouncementsService) Current(ctx context.Context, opt *CurrentAnnounce
 	if len(list.Results) == 0 {
 		return nil, resp, fmt.Errorf("defectdojo: announcement: %w", ErrNotFound)
 	}
-	return list.Results[0], resp, nil
+	return &list.Results[0], resp, nil
 }
 
 // GetAnnouncementOptions are the options of [AnnouncementsService.Get].
@@ -276,7 +279,7 @@ func (s *AnnouncementsService) DeletePreview(ctx context.Context, id int, opt *D
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

@@ -94,7 +94,7 @@ type ListNoteTypesOptions struct {
 
 // ListNoteTypesResult is a page of note types.
 type ListNoteTypesResult struct {
-	Results []*NoteType
+	Results []NoteType
 
 	// Count is the number of note types that match the filters.
 	Count int
@@ -108,7 +108,7 @@ func (s *NoteTypesService) List(ctx context.Context, opt *ListNoteTypesOptions, 
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*NoteType]
+	var page listPage[NoteType]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -133,7 +133,7 @@ func (s *NoteTypesService) ListAll(ctx context.Context, opt *ListNoteTypesOption
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -170,7 +170,8 @@ func (s *NoteTypesService) GetByName(ctx context.Context, name string, opt *GetN
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, nt := range list.Results {
+	for i := range list.Results {
+		nt := &list.Results[i]
 		if nt.Name == name {
 			return nt, resp, nil
 		}
@@ -282,7 +283,7 @@ func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *Delet
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -313,7 +314,8 @@ func (s *NoteTypesService) CountNotes(ctx context.Context, id int, opt *CountNot
 		if err != nil {
 			return 0, resp, err
 		}
-		for _, o := range page.Results {
+		for i := range page.Results {
+			o := &page.Results[i]
 			if o.Model == "Notes" {
 				count++
 			}

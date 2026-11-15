@@ -16,17 +16,20 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type RegulationsService service
 
+// RegulationCategory is the category of a regulation.
+type RegulationCategory string
+
 // The categories of regulations. DefectDojo checks the category; newer
 // versions may add some.
 const (
-	RegulationCategoryPrivacy    = "privacy"
-	RegulationCategoryFinance    = "finance"
-	RegulationCategoryEducation  = "education"
-	RegulationCategoryMedical    = "medical"
-	RegulationCategoryCorporate  = "corporate"
-	RegulationCategorySecurity   = "security"
-	RegulationCategoryGovernment = "government"
-	RegulationCategoryOther      = "other"
+	RegulationCategoryPrivacy    RegulationCategory = "privacy"
+	RegulationCategoryFinance    RegulationCategory = "finance"
+	RegulationCategoryEducation  RegulationCategory = "education"
+	RegulationCategoryMedical    RegulationCategory = "medical"
+	RegulationCategoryCorporate  RegulationCategory = "corporate"
+	RegulationCategorySecurity   RegulationCategory = "security"
+	RegulationCategoryGovernment RegulationCategory = "government"
+	RegulationCategoryOther      RegulationCategory = "other"
 )
 
 // Regulation is a DefectDojo regulation. The same type is used for reads and
@@ -41,7 +44,7 @@ type Regulation struct {
 
 	// Category is a regulation category, such as the RegulationCategory
 	// constants; DefectDojo checks it.
-	Category string `json:"category"`
+	Category RegulationCategory `json:"category"`
 
 	// Jurisdiction is the territory the regulation applies to, at most 64
 	// characters.
@@ -56,12 +59,12 @@ type Regulation struct {
 // regulationRequest is the body of regulation create and update requests: the
 // writable fields of a [Regulation].
 type regulationRequest struct {
-	Name         string `json:"name"`
-	Acronym      string `json:"acronym"`
-	Category     string `json:"category"`
-	Jurisdiction string `json:"jurisdiction"`
-	Description  string `json:"description"`
-	Reference    string `json:"reference"`
+	Name         string             `json:"name"`
+	Acronym      string             `json:"acronym"`
+	Category     RegulationCategory `json:"category"`
+	Jurisdiction string             `json:"jurisdiction"`
+	Description  string             `json:"description"`
+	Reference    string             `json:"reference"`
 }
 
 // newRegulationRequest validates a regulation and returns its writable fields.
@@ -92,12 +95,12 @@ func newRegulationRequest(r *Regulation) (*regulationRequest, error) {
 // RegulationPatch is the body of [RegulationsService.Patch]. Only the fields
 // that are set are changed; an empty Description or Reference clears it.
 type RegulationPatch struct {
-	Name         *string `json:"name,omitempty"`
-	Acronym      *string `json:"acronym,omitempty"`
-	Category     *string `json:"category,omitempty"`
-	Jurisdiction *string `json:"jurisdiction,omitempty"`
-	Description  *string `json:"description,omitempty"`
-	Reference    *string `json:"reference,omitempty"`
+	Name         *string             `json:"name,omitempty"`
+	Acronym      *string             `json:"acronym,omitempty"`
+	Category     *RegulationCategory `json:"category,omitempty"`
+	Jurisdiction *string             `json:"jurisdiction,omitempty"`
+	Description  *string             `json:"description,omitempty"`
+	Reference    *string             `json:"reference,omitempty"`
 }
 
 // ListRegulationsOptions are the options of [RegulationsService.List] and
@@ -112,7 +115,7 @@ type ListRegulationsOptions struct {
 
 // ListRegulationsResult is a page of regulations.
 type ListRegulationsResult struct {
-	Results []*Regulation
+	Results []Regulation
 
 	// Count is the number of regulations that match the filters.
 	Count int
@@ -126,7 +129,7 @@ func (s *RegulationsService) List(ctx context.Context, opt *ListRegulationsOptio
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*Regulation]
+	var page listPage[Regulation]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -151,7 +154,7 @@ func (s *RegulationsService) ListAll(ctx context.Context, opt *ListRegulationsOp
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -188,7 +191,8 @@ func (s *RegulationsService) GetByName(ctx context.Context, name string, opt *Ge
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, r := range list.Results {
+	for i := range list.Results {
+		r := &list.Results[i]
 		if r.Name == name {
 			return r, resp, nil
 		}
@@ -215,7 +219,8 @@ func (s *RegulationsService) GetByAcronym(ctx context.Context, acronym string, o
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, r := range list.Results {
+		for i := range list.Results {
+			r := &list.Results[i]
 			if r.Acronym == acronym {
 				return r, resp, nil
 			}
@@ -323,7 +328,7 @@ func (s *RegulationsService) DeletePreview(ctx context.Context, id int, opt *Del
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

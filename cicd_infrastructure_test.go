@@ -232,7 +232,7 @@ func TestCICDInfrastructureService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "CICDInfrastructure", ID: 8, Name: "Jenkins"}) {
+	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "CICDInfrastructure", ID: 8, Name: "Jenkins"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

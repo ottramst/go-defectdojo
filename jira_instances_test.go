@@ -46,7 +46,7 @@ func TestJiraInstancesService_List(t *testing.T) {
 	if err != nil {
 		t.Fatalf("List() error = %v", err)
 	}
-	if list.Count != 1 || len(list.Results) != 1 || !reflect.DeepEqual(*list.Results[0], acmeJira) {
+	if list.Count != 1 || len(list.Results) != 1 || !reflect.DeepEqual(list.Results[0], acmeJira) {
 		t.Errorf("List() = %+v, want the Acme Jira fixture", list)
 	}
 }

@@ -104,7 +104,7 @@ func TestAccProductTypes(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Product" }) {
+	if !slices.ContainsFunc(preview.Results, func(o defectdojo.DeletedObject) bool { return o.Model == "Product" }) {
 		t.Errorf("DeletePreview() = %+v, want the product", preview.Results)
 	}
 

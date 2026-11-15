@@ -63,7 +63,7 @@ type ListDevelopmentEnvironmentsOptions struct {
 
 // ListDevelopmentEnvironmentsResult is a page of development environments.
 type ListDevelopmentEnvironmentsResult struct {
-	Results []*DevelopmentEnvironment
+	Results []DevelopmentEnvironment
 
 	// Count is the number of development environments.
 	Count int
@@ -77,7 +77,7 @@ func (s *DevelopmentEnvironmentsService) List(ctx context.Context, opt *ListDeve
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DevelopmentEnvironment]
+	var page listPage[DevelopmentEnvironment]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -103,7 +103,7 @@ func (s *DevelopmentEnvironmentsService) ListAll(ctx context.Context, opt *ListD
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -151,7 +151,8 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, env := range list.Results {
+		for i := range list.Results {
+			env := &list.Results[i]
 			if env.Name == name {
 				found = env
 				ids = append(ids, env.ID)
@@ -270,7 +271,7 @@ func (s *DevelopmentEnvironmentsService) DeletePreview(ctx context.Context, id i
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

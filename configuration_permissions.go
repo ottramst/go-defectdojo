@@ -25,7 +25,8 @@ type ConfigurationPermissionsService service
 // look permissions up by Codename. Which permissions exist depends on the
 // system settings: the jira_instance permissions only with Jira enabled,
 // github_conf only with GitHub enabled, and engagement_survey and question
-// only with questionnaires enabled.
+// only with questionnaires enabled. DefectDojo 3.6 removes the tool_type and
+// tool_configuration permissions with their endpoints.
 type ConfigurationPermission struct {
 	ID int `json:"id"`
 
@@ -50,7 +51,7 @@ type ListConfigurationPermissionsOptions struct {
 
 // ListConfigurationPermissionsResult is a page of configuration permissions.
 type ListConfigurationPermissionsResult struct {
-	Results []*ConfigurationPermission
+	Results []ConfigurationPermission
 
 	// Count is the number of configuration permissions that match the
 	// filters.
@@ -65,7 +66,7 @@ func (s *ConfigurationPermissionsService) List(ctx context.Context, opt *ListCon
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*ConfigurationPermission]
+	var page listPage[ConfigurationPermission]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -90,7 +91,7 @@ func (s *ConfigurationPermissionsService) ListAll(ctx context.Context, opt *List
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -129,7 +130,8 @@ func (s *ConfigurationPermissionsService) GetByCodename(ctx context.Context, cod
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the codename again.
-	for _, p := range list.Results {
+	for i := range list.Results {
+		p := &list.Results[i]
 		if p.Codename == codename {
 			return p, resp, nil
 		}

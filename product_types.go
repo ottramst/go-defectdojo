@@ -108,7 +108,7 @@ type ListProductTypesOptions struct {
 
 // ListProductTypesResult is a page of product types.
 type ListProductTypesResult struct {
-	Results []*ProductType
+	Results []ProductType
 
 	// Count is the number of product types that match the filters.
 	Count int
@@ -122,7 +122,7 @@ func (s *ProductTypesService) List(ctx context.Context, opt *ListProductTypesOpt
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*ProductType]
+	var page listPage[ProductType]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -147,7 +147,7 @@ func (s *ProductTypesService) ListAll(ctx context.Context, opt *ListProductTypes
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -184,7 +184,8 @@ func (s *ProductTypesService) GetByName(ctx context.Context, name string, opt *G
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, pt := range list.Results {
+	for i := range list.Results {
+		pt := &list.Results[i]
 		if pt.Name == name {
 			return pt, resp, nil
 		}
@@ -301,7 +302,7 @@ type DeletedObject struct {
 
 // DeletePreviewResult is a page of the objects a delete would remove.
 type DeletePreviewResult struct {
-	Results []*DeletedObject
+	Results []DeletedObject
 
 	// Count is the number of objects the delete would remove, including the
 	// object itself.
@@ -328,7 +329,7 @@ func (s *ProductTypesService) DeletePreview(ctx context.Context, id int, opt *De
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
