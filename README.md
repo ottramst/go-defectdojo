@@ -9,8 +9,8 @@
 An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/django-DefectDojo) REST API v2.
 
 > [!NOTE]
-> go-defectdojo is pre-1.0: the API may still change between minor versions. Breaking changes are
-> listed in the [CHANGELOG](CHANGELOG.md). See the [roadmap](#roadmap) for what is planned.
+> go-defectdojo is stable from v1.0.0: see [Stability](#stability) for what that promises, and
+> [Upgrading to v1](docs/upgrading-to-v1.md) if you used v0.x.
 
 ## Features
 
@@ -229,7 +229,7 @@ edition. DefectDojo Pro features are not tested.
 
 ## Roadmap
 
-The path to v1.0 is tracked in [milestones](https://github.com/ottramst/go-defectdojo/milestones) and
+The path to v1.0, and what comes after, is tracked in [milestones](https://github.com/ottramst/go-defectdojo/milestones) and
 on the [DefectDojo roadmap board](https://github.com/users/ottramst/projects/4), together with
 [terraform-provider-defectdojo](https://github.com/ottramst/terraform-provider-defectdojo). Each epic
 issue lists its work as sub-issues:
@@ -240,7 +240,7 @@ issue lists its work as sub-issues:
 | [v0.2.0](https://github.com/ottramst/go-defectdojo/milestone/2) | SLA configurations, users, notifications and notification webhooks ✅ |
 | [v0.3.0](https://github.com/ottramst/go-defectdojo/milestone/3) | System settings, Jira instances and Jira projects ✅ |
 | [v0.4.0](https://github.com/ottramst/go-defectdojo/milestone/4) | Lookup objects: regulations, note types, development environments, announcements, CI/CD infrastructure, product attributes, test types ✅ |
-| [v1.0.0](https://github.com/ottramst/go-defectdojo/milestone/5) | API freeze and compatibility guarantees |
+| [v1.0.0](https://github.com/ottramst/go-defectdojo/milestone/5) | API freeze and compatibility guarantees ✅ |
 
 Findings, tests and imports, and DefectDojo's experimental API v3, are
 [backlog epics](https://github.com/ottramst/go-defectdojo/issues?q=is%3Aissue+is%3Aopen+label%3Aepic+no%3Amilestone).

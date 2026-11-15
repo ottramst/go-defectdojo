@@ -22,7 +22,9 @@
 // # Stability
 //
 // From v1.0.0, the package follows semantic versioning: code that compiles
-// against a v1 release keeps compiling against later v1 releases. Adding
+// against a v1 release keeps compiling against later v1 releases, with one
+// exception, described in the README: a DefectDojo API change that the client
+// can't follow compatibly ships in a minor release, as a breaking change. Adding
 // fields, methods, options, types and constants is compatible. Exported
 // structs have an unexported field, so they can't be compared with == or
 // written as unkeyed literals; the value types [Date], [Nullable] and
