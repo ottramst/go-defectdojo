@@ -21,10 +21,10 @@ type DevelopmentEnvironmentsService service
 type DevelopmentEnvironment struct {
 	ID int `json:"id"`
 
-	// Name is at most 200 characters. It isn't unique, but keep it so:
-	// DefectDojo's imports find the environment of a scan by name
-	// ("Development" when none is given), and fail when several
-	// environments have it or, without auto-create, when none has.
+	// Name is at most 200 characters. DefectDojo doesn't require it to be
+	// unique, but keep it unique: DefectDojo's imports find the environment
+	// of a scan by name ("Development" when none is given), and fail when
+	// several environments have it or, without auto-create, when none has.
 	Name string `json:"name"`
 }
 

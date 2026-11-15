@@ -1,0 +1,6 @@
+{
+  "id": 1,
+  "message": "Maintenance on <b>Saturday</b>.",
+  "style": "warning",
+  "dismissable": true
+}

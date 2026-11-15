@@ -35,6 +35,7 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 
 | API | Status |
 | --- | --- |
+| Announcements | CRUD, partial update, the current announcement, delete preview ✅ |
 | Authentication | API token for a username and password ✅ |
 | Product types | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Products | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |

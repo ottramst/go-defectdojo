@@ -2,6 +2,7 @@
 
 FEATURES:
 
+* New `Announcements` service: `List`, `ListAll`, `Current`, `Get`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, with the `AnnouncementStyle*` constants. DefectDojo keeps one announcement, always with the ID 1; a change doesn't reach users who dismissed it, so delete and create it to show it to everyone ([#25](https://github.com/ottramst/go-defectdojo/issues/25))
 * New `DevelopmentEnvironments` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`. Names aren't unique, so `GetByName` returns an error when several environments have the name; deleting an environment that tests use is a 409 ([#24](https://github.com/ottramst/go-defectdojo/issues/24))
 * New `NoteTypes` service: `List`, `ListAll`, `Get`, `GetByName`, `Create`, `Update`, `Patch`, `Delete`, `DeletePreview` and `CountNotes`. Deleting a note type deletes every note of the type, which `CountNotes` counts. `Create` sends every field, so `IsActive` and `IsMandatory`, which DefectDojo defaults to `true`, are `false` unless they are set ([#23](https://github.com/ottramst/go-defectdojo/issues/23))
 * New `Regulations` service: `List`, `ListAll`, `Get`, `GetByName`, `GetByAcronym`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, with the `RegulationCategory*` constants. Deleting a regulation silently removes it from the products it applies to ([#22](https://github.com/ottramst/go-defectdojo/issues/22))

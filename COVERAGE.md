@@ -6,11 +6,11 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**94 of 404 endpoints implemented.**
+**101 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
-| [announcements](#announcements) | 0 / 7 |
+| [announcements](#announcements) | 7 / 7 |
 | [api-token-auth](#api-token-auth) | 1 / 1 |
 | [api-tokens](#api-tokens) | 0 / 1 |
 | [asset_api_scan_configurations](#asset_api_scan_configurations) | 0 / 7 |
@@ -77,13 +77,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/announcements/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/announcements/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/announcements/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/announcements/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/announcements/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/announcements/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/announcements/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/announcements/` | ✅ | ✅ | `AnnouncementsService.List` |  |
+| POST | `/api/v2/announcements/` | ✅ | ✅ | `AnnouncementsService.Create` |  |
+| GET | `/api/v2/announcements/{id}/` | ✅ | ✅ | `AnnouncementsService.Get` |  |
+| PUT | `/api/v2/announcements/{id}/` | ✅ | ✅ | `AnnouncementsService.Update` |  |
+| PATCH | `/api/v2/announcements/{id}/` | ✅ | ✅ | `AnnouncementsService.Patch` |  |
+| DELETE | `/api/v2/announcements/{id}/` | ✅ | ✅ | `AnnouncementsService.Delete` |  |
+| GET | `/api/v2/announcements/{id}/delete_preview/` | ✅ | ✅ | `AnnouncementsService.DeletePreview` |  |
 
 ## api-token-auth
 
