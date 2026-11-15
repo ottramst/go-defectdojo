@@ -39,7 +39,8 @@ type Regulation struct {
 	Name    string `json:"name"`
 	Acronym string `json:"acronym"`
 
-	// Category is one of the RegulationCategory constants.
+	// Category is a regulation category, such as the RegulationCategory
+	// constants; DefectDojo checks it.
 	Category string `json:"category"`
 
 	// Jurisdiction is the territory the regulation applies to, at most 64

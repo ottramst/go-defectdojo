@@ -54,6 +54,12 @@ func TestAccRegulations(t *testing.T) {
 		}
 	}
 
+	// The client leaves the category check to DefectDojo.
+	_, _, err = client.Regulations.Create(ctx, &defectdojo.Regulation{Name: name + "y", Acronym: acronym + "y", Category: "Privacy", Jurisdiction: "J"})
+	if errResp := new(defectdojo.ErrorResponse); !errors.As(err, &errResp) || !errors.Is(err, defectdojo.ErrBadRequest) || len(errResp.Fields["category"]) == 0 {
+		t.Errorf("Create(unknown category) error = %v, want a 400 with a category field error", err)
+	}
+
 	got, _, err := client.Regulations.Get(ctx, created.ID)
 	if err != nil || *got != want {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
