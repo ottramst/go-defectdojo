@@ -1,0 +1,19 @@
+{
+  "count": 8,
+  "next": "http://localhost:8080/api/v2/development_environments/?limit=3&offset=3",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Development"
+    },
+    {
+      "id": 2,
+      "name": "Staging"
+    },
+    {
+      "id": 3,
+      "name": "Production"
+    }
+  ]
+}

@@ -47,6 +47,7 @@ An idiomatic Go client for the [OWASP DefectDojo](https://github.com/DefectDojo/
 | Notification webhooks | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Notification settings | CRUD, partial update, list with an iterator, lookup by scope (system, template, user, product), delete preview ✅ |
 | System settings | get, partial update ✅ |
+| Development environments | CRUD, partial update, list with an iterator, lookup by name, delete preview ✅ |
 | Jira instances | CRUD, partial update, list with an iterator, lookup by name, delete preview, count of the Jira projects using one ✅ |
 | Jira projects | CRUD, partial update, list with an iterator, delete preview ✅ |
 | Note types | CRUD, partial update, list with an iterator, lookup by name, delete preview, count of the notes a delete would remove ✅ |
