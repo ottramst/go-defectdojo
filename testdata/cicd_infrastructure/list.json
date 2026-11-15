@@ -1,0 +1,21 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 7,
+      "name": "GitHub",
+      "description": "",
+      "url": "",
+      "infrastructure_type": "scm_server"
+    },
+    {
+      "id": 8,
+      "name": "Jenkins",
+      "description": "The main build server.",
+      "url": "https://jenkins.example.com",
+      "infrastructure_type": "build_server"
+    }
+  ]
+}

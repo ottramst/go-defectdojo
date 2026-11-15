@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**101 of 404 endpoints implemented.**
+**108 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -16,7 +16,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [asset_api_scan_configurations](#asset_api_scan_configurations) | 0 / 7 |
 | [assets](#assets) | 0 / 8 |
 | [celery](#celery) | 0 / 4 |
-| [cicd_infrastructure](#cicd_infrastructure) | 0 / 7 |
+| [cicd_infrastructure](#cicd_infrastructure) | 7 / 7 |
 | [configuration_permissions](#configuration_permissions) | 2 / 2 |
 | [development_environments](#development_environments) | 7 / 7 |
 | [endpoint_meta_import](#endpoint_meta_import) | 0 / 1 |
@@ -135,13 +135,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/cicd_infrastructure/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/cicd_infrastructure/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/cicd_infrastructure/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/cicd_infrastructure/` | ✅ | ✅ | `CICDInfrastructureService.List` |  |
+| POST | `/api/v2/cicd_infrastructure/` | ✅ | ✅ | `CICDInfrastructureService.Create` |  |
+| GET | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ | `CICDInfrastructureService.Get` |  |
+| PUT | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ | `CICDInfrastructureService.Update` |  |
+| PATCH | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ | `CICDInfrastructureService.Patch` |  |
+| DELETE | `/api/v2/cicd_infrastructure/{id}/` | ✅ | ✅ | `CICDInfrastructureService.Delete` |  |
+| GET | `/api/v2/cicd_infrastructure/{id}/delete_preview/` | ✅ | ✅ | `CICDInfrastructureService.DeletePreview` |  |
 
 ## configuration_permissions
 

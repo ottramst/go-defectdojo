@@ -1,0 +1,7 @@
+{
+  "id": 8,
+  "name": "Jenkins",
+  "description": "The main build server.",
+  "url": "https://jenkins.example.com",
+  "infrastructure_type": "build_server"
+}
