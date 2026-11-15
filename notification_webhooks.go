@@ -198,8 +198,6 @@ func (s *NotificationWebhooksService) ListAll(ctx context.Context, opt *ListNoti
 // GetNotificationWebhookOptions are the options of [NotificationWebhooksService.Get].
 type GetNotificationWebhookOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a notification webhook by its ID.
@@ -219,8 +217,6 @@ func (s *NotificationWebhooksService) Get(ctx context.Context, id int, opt *GetN
 
 // GetNotificationWebhookByNameOptions are the options of [NotificationWebhooksService.GetByName].
 type GetNotificationWebhookByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -248,8 +244,6 @@ func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string
 // CreateNotificationWebhookOptions are the options of [NotificationWebhooksService.Create].
 type CreateNotificationWebhookOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a notification webhook. Its read-only fields are ignored. A
@@ -272,8 +266,6 @@ func (s *NotificationWebhooksService) Create(ctx context.Context, w *Notificatio
 
 // UpdateNotificationWebhookOptions are the options of [NotificationWebhooksService.Update].
 type UpdateNotificationWebhookOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -303,8 +295,6 @@ func (s *NotificationWebhooksService) Update(ctx context.Context, id int, w *Not
 // PatchNotificationWebhookOptions are the options of [NotificationWebhooksService.Patch].
 type PatchNotificationWebhookOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the notification webhook that are set in
@@ -328,8 +318,6 @@ func (s *NotificationWebhooksService) Patch(ctx context.Context, id int, patch *
 
 // DeleteNotificationWebhookOptions are the options of [NotificationWebhooksService.Delete].
 type DeleteNotificationWebhookOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

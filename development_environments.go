@@ -118,8 +118,6 @@ func (s *DevelopmentEnvironmentsService) ListAll(ctx context.Context, opt *ListD
 // GetDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Get].
 type GetDevelopmentEnvironmentOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a development environment by its ID.
@@ -139,8 +137,6 @@ func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opt *G
 
 // GetDevelopmentEnvironmentByNameOptions are the options of [DevelopmentEnvironmentsService.GetByName].
 type GetDevelopmentEnvironmentByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -192,8 +188,6 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 // CreateDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Create].
 type CreateDevelopmentEnvironmentOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a development environment. Its read-only ID is ignored.
@@ -216,8 +210,6 @@ func (s *DevelopmentEnvironmentsService) Create(ctx context.Context, env *Develo
 
 // UpdateDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Update].
 type UpdateDevelopmentEnvironmentOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -244,8 +236,6 @@ func (s *DevelopmentEnvironmentsService) Update(ctx context.Context, id int, env
 // PatchDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Patch].
 type PatchDevelopmentEnvironmentOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the development environment that are set in
@@ -269,8 +259,6 @@ func (s *DevelopmentEnvironmentsService) Patch(ctx context.Context, id int, patc
 
 // DeleteDevelopmentEnvironmentOptions are the options of [DevelopmentEnvironmentsService.Delete].
 type DeleteDevelopmentEnvironmentOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

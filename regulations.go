@@ -169,8 +169,6 @@ func (s *RegulationsService) ListAll(ctx context.Context, opt *ListRegulationsOp
 // GetRegulationOptions are the options of [RegulationsService.Get].
 type GetRegulationOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a regulation by its ID.
@@ -190,8 +188,6 @@ func (s *RegulationsService) Get(ctx context.Context, id int, opt *GetRegulation
 
 // GetRegulationByNameOptions are the options of [RegulationsService.GetByName].
 type GetRegulationByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -218,8 +214,6 @@ func (s *RegulationsService) GetByName(ctx context.Context, name string, opt *Ge
 
 // GetRegulationByAcronymOptions are the options of [RegulationsService.GetByAcronym].
 type GetRegulationByAcronymOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -255,8 +249,6 @@ func (s *RegulationsService) GetByAcronym(ctx context.Context, acronym string, o
 // CreateRegulationOptions are the options of [RegulationsService.Create].
 type CreateRegulationOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a regulation. Its read-only ID is ignored. A name or acronym
@@ -279,8 +271,6 @@ func (s *RegulationsService) Create(ctx context.Context, r *Regulation, opt *Cre
 
 // UpdateRegulationOptions are the options of [RegulationsService.Update].
 type UpdateRegulationOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -307,8 +297,6 @@ func (s *RegulationsService) Update(ctx context.Context, id int, r *Regulation, 
 // PatchRegulationOptions are the options of [RegulationsService.Patch].
 type PatchRegulationOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the regulation that are set in patch.
@@ -331,8 +319,6 @@ func (s *RegulationsService) Patch(ctx context.Context, id int, patch *Regulatio
 
 // DeleteRegulationOptions are the options of [RegulationsService.Delete].
 type DeleteRegulationOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

@@ -148,8 +148,6 @@ func (s *NoteTypesService) ListAll(ctx context.Context, opt *ListNoteTypesOption
 // GetNoteTypeOptions are the options of [NoteTypesService.Get].
 type GetNoteTypeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a note type by its ID.
@@ -169,8 +167,6 @@ func (s *NoteTypesService) Get(ctx context.Context, id int, opt *GetNoteTypeOpti
 
 // GetNoteTypeByNameOptions are the options of [NoteTypesService.GetByName].
 type GetNoteTypeByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -198,8 +194,6 @@ func (s *NoteTypesService) GetByName(ctx context.Context, name string, opt *GetN
 // CreateNoteTypeOptions are the options of [NoteTypesService.Create].
 type CreateNoteTypeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a note type. Its read-only ID is ignored. A name that is
@@ -224,8 +218,6 @@ func (s *NoteTypesService) Create(ctx context.Context, nt *NoteType, opt *Create
 
 // UpdateNoteTypeOptions are the options of [NoteTypesService.Update].
 type UpdateNoteTypeOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -252,8 +244,6 @@ func (s *NoteTypesService) Update(ctx context.Context, id int, nt *NoteType, opt
 // PatchNoteTypeOptions are the options of [NoteTypesService.Patch].
 type PatchNoteTypeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the note type that are set in patch.
@@ -276,8 +266,6 @@ func (s *NoteTypesService) Patch(ctx context.Context, id int, patch *NoteTypePat
 
 // DeleteNoteTypeOptions are the options of [NoteTypesService.Delete].
 type DeleteNoteTypeOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -327,8 +315,6 @@ func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *Delet
 
 // CountNoteTypeNotesOptions are the options of [NoteTypesService.CountNotes].
 type CountNoteTypeNotesOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

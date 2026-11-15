@@ -85,6 +85,10 @@ type Client struct {
 }
 
 type service struct {
+	// It makes the service types non-comparable, as the other exported
+	// structs.
+	_ [0]func()
+
 	client *Client
 }
 

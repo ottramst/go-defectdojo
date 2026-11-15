@@ -307,8 +307,6 @@ func checkPasswordLengths(minimum, maximum *int) error {
 // GetSystemSettingsOptions are the options of [SystemSettingsService.Get].
 type GetSystemSettingsOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns the system settings. DefectDojo lists them as a single object;
@@ -329,8 +327,6 @@ func (s *SystemSettingsService) Get(ctx context.Context, opt *GetSystemSettingsO
 
 // PatchSystemSettingsOptions are the options of [SystemSettingsService.Patch].
 type PatchSystemSettingsOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

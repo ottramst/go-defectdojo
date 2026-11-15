@@ -311,8 +311,6 @@ func (s *JiraProjectsService) ListAll(ctx context.Context, opt *ListJiraProjects
 // GetJiraProjectOptions are the options of [JiraProjectsService.Get].
 type GetJiraProjectOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a Jira project by its ID.
@@ -332,8 +330,6 @@ func (s *JiraProjectsService) Get(ctx context.Context, id int, opt *GetJiraProje
 
 // CreateJiraProjectOptions are the options of [JiraProjectsService.Create].
 type CreateJiraProjectOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -365,8 +361,6 @@ func (s *JiraProjectsService) Create(ctx context.Context, p *JiraProject, opt *C
 // UpdateJiraProjectOptions are the options of [JiraProjectsService.Update].
 type UpdateJiraProjectOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Update replaces the writable fields of the Jira project with the given ID.
@@ -396,8 +390,6 @@ func (s *JiraProjectsService) Update(ctx context.Context, id int, p *JiraProject
 
 // PatchJiraProjectOptions are the options of [JiraProjectsService.Patch].
 type PatchJiraProjectOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -432,8 +424,6 @@ func (s *JiraProjectsService) Patch(ctx context.Context, id int, patch *JiraProj
 
 // DeleteJiraProjectOptions are the options of [JiraProjectsService.Delete].
 type DeleteJiraProjectOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

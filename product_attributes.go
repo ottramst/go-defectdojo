@@ -157,8 +157,6 @@ func (s *ProductAttributesService) ListAll(ctx context.Context, opt *ListProduct
 // GetProductAttributeOptions are the options of [ProductAttributesService.Get].
 type GetProductAttributeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns an entry by its ID.
@@ -180,8 +178,6 @@ func (s *ProductAttributesService) Get(ctx context.Context, id int, opt *GetProd
 
 // GetProductAttributeByValueOptions are the options of [ProductAttributesService.GetByValue].
 type GetProductAttributeByValueOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -219,8 +215,6 @@ func (s *ProductAttributesService) GetByValue(ctx context.Context, value string,
 // CreateProductAttributeOptions are the options of [ProductAttributesService.Create].
 type CreateProductAttributeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates an entry. Its read-only ID is ignored. A value that is taken
@@ -244,8 +238,6 @@ func (s *ProductAttributesService) Create(ctx context.Context, a *ProductAttribu
 
 // UpdateProductAttributeOptions are the options of [ProductAttributesService.Update].
 type UpdateProductAttributeOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -276,8 +268,6 @@ func (s *ProductAttributesService) Update(ctx context.Context, id int, a *Produc
 // PatchProductAttributeOptions are the options of [ProductAttributesService.Patch].
 type PatchProductAttributeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the entry that are set in patch.
@@ -302,8 +292,6 @@ func (s *ProductAttributesService) Patch(ctx context.Context, id int, patch *Pro
 
 // DeleteProductAttributeOptions are the options of [ProductAttributesService.Delete].
 type DeleteProductAttributeOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

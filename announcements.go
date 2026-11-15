@@ -148,8 +148,6 @@ func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListAnnouncemen
 // CurrentAnnouncementOptions are the options of [AnnouncementsService.Current].
 type CurrentAnnouncementOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Current returns the announcement. It returns an error matching
@@ -167,8 +165,6 @@ func (s *AnnouncementsService) Current(ctx context.Context, opt *CurrentAnnounce
 
 // GetAnnouncementOptions are the options of [AnnouncementsService.Get].
 type GetAnnouncementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -189,8 +185,6 @@ func (s *AnnouncementsService) Get(ctx context.Context, id int, opt *GetAnnounce
 
 // CreateAnnouncementOptions are the options of [AnnouncementsService.Create].
 type CreateAnnouncementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -217,8 +211,6 @@ func (s *AnnouncementsService) Create(ctx context.Context, a *Announcement, opt 
 
 // UpdateAnnouncementOptions are the options of [AnnouncementsService.Update].
 type UpdateAnnouncementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -249,8 +241,6 @@ func (s *AnnouncementsService) Update(ctx context.Context, id int, a *Announceme
 // PatchAnnouncementOptions are the options of [AnnouncementsService.Patch].
 type PatchAnnouncementOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the announcement that are set in patch. An
@@ -277,8 +267,6 @@ func (s *AnnouncementsService) Patch(ctx context.Context, id int, patch *Announc
 
 // DeleteAnnouncementOptions are the options of [AnnouncementsService.Delete].
 type DeleteAnnouncementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

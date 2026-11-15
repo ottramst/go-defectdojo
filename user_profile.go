@@ -112,8 +112,6 @@ type UserContactInfo struct {
 // GetUserProfileOptions are the options of [UserProfileService.Get].
 type GetUserProfileOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns the user the client authenticates as.

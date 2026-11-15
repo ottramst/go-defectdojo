@@ -357,8 +357,6 @@ func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificatio
 // GetNotificationSettingsOptions are the options of [NotificationsService.Get].
 type GetNotificationSettingsOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns notification settings by their ID.
@@ -394,8 +392,6 @@ type NotificationScope struct {
 
 // GetNotificationSettingsByScopeOptions are the options of [NotificationsService.GetByScope].
 type GetNotificationSettingsByScopeOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -451,8 +447,6 @@ func (s *NotificationsService) GetByScope(ctx context.Context, scope Notificatio
 // CreateNotificationSettingsOptions are the options of [NotificationsService.Create].
 type CreateNotificationSettingsOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates notification settings. Nil events are left out, so that
@@ -477,8 +471,6 @@ func (s *NotificationsService) Create(ctx context.Context, n *NotificationSettin
 
 // UpdateNotificationSettingsOptions are the options of [NotificationsService.Update].
 type UpdateNotificationSettingsOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -511,8 +503,6 @@ func (s *NotificationsService) Update(ctx context.Context, id int, n *Notificati
 // PatchNotificationSettingsOptions are the options of [NotificationsService.Patch].
 type PatchNotificationSettingsOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the events of the notification settings that are set in
@@ -536,8 +526,6 @@ func (s *NotificationsService) Patch(ctx context.Context, id int, patch *Notific
 
 // DeleteNotificationSettingsOptions are the options of [NotificationsService.Delete].
 type DeleteNotificationSettingsOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

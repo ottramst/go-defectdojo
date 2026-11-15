@@ -352,8 +352,6 @@ func (s *EngagementsService) ListAll(ctx context.Context, opt *ListEngagementsOp
 // GetEngagementOptions are the options of [EngagementsService.Get].
 type GetEngagementOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns an engagement by its ID.
@@ -373,8 +371,6 @@ func (s *EngagementsService) Get(ctx context.Context, id int, opt *GetEngagement
 
 // CreateEngagementOptions are the options of [EngagementsService.Create].
 type CreateEngagementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -400,8 +396,6 @@ func (s *EngagementsService) Create(ctx context.Context, e *Engagement, opt *Cre
 
 // UpdateEngagementOptions are the options of [EngagementsService.Update].
 type UpdateEngagementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -431,8 +425,6 @@ func (s *EngagementsService) Update(ctx context.Context, id int, e *Engagement, 
 
 // PatchEngagementOptions are the options of [EngagementsService.Patch].
 type PatchEngagementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -464,8 +456,6 @@ func (s *EngagementsService) Patch(ctx context.Context, id int, patch *Engagemen
 
 // DeleteEngagementOptions are the options of [EngagementsService.Delete].
 type DeleteEngagementOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -517,8 +507,6 @@ func (s *EngagementsService) DeletePreview(ctx context.Context, id int, opt *Del
 // CloseEngagementOptions are the options of [EngagementsService.Close].
 type CloseEngagementOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Close closes the engagement: its Status becomes EngagementStatusCompleted
@@ -535,8 +523,6 @@ func (s *EngagementsService) Close(ctx context.Context, id int, opt *CloseEngage
 // ReopenEngagementOptions are the options of [EngagementsService.Reopen].
 type ReopenEngagementOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Reopen reopens the engagement: its Status becomes
@@ -552,8 +538,6 @@ func (s *EngagementsService) Reopen(ctx context.Context, id int, opt *ReopenEnga
 
 // CountEngagementTestsOptions are the options of [EngagementsService.CountTests].
 type CountEngagementTestsOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

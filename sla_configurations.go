@@ -198,8 +198,6 @@ func (s *SLAConfigurationsService) ListAll(ctx context.Context, opt *ListSLAConf
 // GetSLAConfigurationOptions are the options of [SLAConfigurationsService.Get].
 type GetSLAConfigurationOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns an SLA configuration by its ID.
@@ -219,8 +217,6 @@ func (s *SLAConfigurationsService) Get(ctx context.Context, id int, opt *GetSLAC
 
 // GetSLAConfigurationByNameOptions are the options of [SLAConfigurationsService.GetByName].
 type GetSLAConfigurationByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -256,8 +252,6 @@ func (s *SLAConfigurationsService) GetByName(ctx context.Context, name string, o
 // CreateSLAConfigurationOptions are the options of [SLAConfigurationsService.Create].
 type CreateSLAConfigurationOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates an SLA configuration. A name that is taken is a 400
@@ -282,8 +276,6 @@ func (s *SLAConfigurationsService) Create(ctx context.Context, sla *SLAConfigura
 
 // UpdateSLAConfigurationOptions are the options of [SLAConfigurationsService.Update].
 type UpdateSLAConfigurationOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -319,8 +311,6 @@ func (s *SLAConfigurationsService) Update(ctx context.Context, id int, sla *SLAC
 // PatchSLAConfigurationOptions are the options of [SLAConfigurationsService.Patch].
 type PatchSLAConfigurationOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the SLA configuration that are set in patch.
@@ -350,8 +340,6 @@ func (s *SLAConfigurationsService) Patch(ctx context.Context, id int, patch *SLA
 
 // DeleteSLAConfigurationOptions are the options of [SLAConfigurationsService.Delete].
 type DeleteSLAConfigurationOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

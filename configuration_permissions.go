@@ -104,8 +104,6 @@ func (s *ConfigurationPermissionsService) ListAll(ctx context.Context, opt *List
 // GetConfigurationPermissionOptions are the options of [ConfigurationPermissionsService.Get].
 type GetConfigurationPermissionOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a configuration permission by its ID.
@@ -125,8 +123,6 @@ func (s *ConfigurationPermissionsService) Get(ctx context.Context, id int, opt *
 
 // GetConfigurationPermissionByCodenameOptions are the options of [ConfigurationPermissionsService.GetByCodename].
 type GetConfigurationPermissionByCodenameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

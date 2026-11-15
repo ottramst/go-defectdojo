@@ -26,8 +26,6 @@ type AuthService service
 // TokenOptions are the options of [AuthService.Token].
 type TokenOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Token returns the API v2 token of the user with the given username and

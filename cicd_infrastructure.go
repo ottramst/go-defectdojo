@@ -159,8 +159,6 @@ func (s *CICDInfrastructureService) ListAll(ctx context.Context, opt *ListCICDIn
 // GetCICDInfrastructureOptions are the options of [CICDInfrastructureService.Get].
 type GetCICDInfrastructureOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a CI/CD infrastructure object by its ID.
@@ -236,8 +234,6 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name string, 
 // CreateCICDInfrastructureOptions are the options of [CICDInfrastructureService.Create].
 type CreateCICDInfrastructureOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a CI/CD infrastructure object. Its read-only ID is ignored.
@@ -260,8 +256,6 @@ func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastr
 
 // UpdateCICDInfrastructureOptions are the options of [CICDInfrastructureService.Update].
 type UpdateCICDInfrastructureOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -292,8 +286,6 @@ func (s *CICDInfrastructureService) Update(ctx context.Context, id int, ci *CICD
 // PatchCICDInfrastructureOptions are the options of [CICDInfrastructureService.Patch].
 type PatchCICDInfrastructureOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the CI/CD infrastructure object that are set in
@@ -317,8 +309,6 @@ func (s *CICDInfrastructureService) Patch(ctx context.Context, id int, patch *CI
 
 // DeleteCICDInfrastructureOptions are the options of [CICDInfrastructureService.Delete].
 type DeleteCICDInfrastructureOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

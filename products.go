@@ -311,8 +311,6 @@ func (s *ProductsService) ListAll(ctx context.Context, opt *ListProductsOptions,
 // GetProductOptions are the options of [ProductsService.Get].
 type GetProductOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a product by its ID.
@@ -332,8 +330,6 @@ func (s *ProductsService) Get(ctx context.Context, id int, opt *GetProductOption
 
 // GetProductByNameOptions are the options of [ProductsService.GetByName].
 type GetProductByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -361,8 +357,6 @@ func (s *ProductsService) GetByName(ctx context.Context, name string, opt *GetPr
 // CreateProductOptions are the options of [ProductsService.Create].
 type CreateProductOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a product. Its read-only fields are ignored. A name that is
@@ -388,8 +382,6 @@ func (s *ProductsService) Create(ctx context.Context, p *Product, opt *CreatePro
 
 // UpdateProductOptions are the options of [ProductsService.Update].
 type UpdateProductOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -421,8 +413,6 @@ func (s *ProductsService) Update(ctx context.Context, id int, p *Product, opt *U
 // PatchProductOptions are the options of [ProductsService.Patch].
 type PatchProductOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the product that are set in patch.
@@ -451,8 +441,6 @@ func (s *ProductsService) Patch(ctx context.Context, id int, patch *ProductPatch
 
 // DeleteProductOptions are the options of [ProductsService.Delete].
 type DeleteProductOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -503,8 +491,6 @@ func (s *ProductsService) DeletePreview(ctx context.Context, id int, opt *Delete
 
 // CountProductEngagementsOptions are the options of [ProductsService.CountEngagements].
 type CountProductEngagementsOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

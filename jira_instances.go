@@ -268,8 +268,6 @@ func (s *JiraInstancesService) ListAll(ctx context.Context, opt *ListJiraInstanc
 // GetJiraInstanceOptions are the options of [JiraInstancesService.Get].
 type GetJiraInstanceOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a Jira instance by its ID.
@@ -289,8 +287,6 @@ func (s *JiraInstancesService) Get(ctx context.Context, id int, opt *GetJiraInst
 
 // GetJiraInstanceByNameOptions are the options of [JiraInstancesService.GetByName].
 type GetJiraInstanceByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -343,8 +339,6 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opt *
 // CreateJiraInstanceOptions are the options of [JiraInstancesService.Create].
 type CreateJiraInstanceOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a Jira instance. DefectDojo doesn't test the connection.
@@ -369,8 +363,6 @@ func (s *JiraInstancesService) Create(ctx context.Context, ji *CreateJiraInstanc
 
 // UpdateJiraInstanceOptions are the options of [JiraInstancesService.Update].
 type UpdateJiraInstanceOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -399,8 +391,6 @@ func (s *JiraInstancesService) Update(ctx context.Context, id int, ji *CreateJir
 // PatchJiraInstanceOptions are the options of [JiraInstancesService.Patch].
 type PatchJiraInstanceOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the Jira instance that are set in patch. A
@@ -425,8 +415,6 @@ func (s *JiraInstancesService) Patch(ctx context.Context, id int, patch *JiraIns
 
 // DeleteJiraInstanceOptions are the options of [JiraInstancesService.Delete].
 type DeleteJiraInstanceOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -475,8 +463,6 @@ func (s *JiraInstancesService) DeletePreview(ctx context.Context, id int, opt *D
 
 // CountJiraInstanceJiraProjectsOptions are the options of [JiraInstancesService.CountJiraProjects].
 type CountJiraInstanceJiraProjectsOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

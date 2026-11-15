@@ -162,8 +162,6 @@ func (s *UsersService) ListAll(ctx context.Context, opt *ListUsersOptions, opts 
 // GetUserOptions are the options of [UsersService.Get].
 type GetUserOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a user by its ID.
@@ -183,8 +181,6 @@ func (s *UsersService) Get(ctx context.Context, id int, opt *GetUserOptions, opt
 
 // GetUserByUsernameOptions are the options of [UsersService.GetByUsername].
 type GetUserByUsernameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -221,8 +217,6 @@ func (s *UsersService) GetByUsername(ctx context.Context, username string, opt *
 // CreateUserOptions are the options of [UsersService.Create].
 type CreateUserOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Create creates a user with the given initial password. Its read-only
@@ -256,8 +250,6 @@ func (s *UsersService) Create(ctx context.Context, u *CreateUserRequest, opt *Cr
 // UpdateUserOptions are the options of [UsersService.Update].
 type UpdateUserOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Update replaces the writable fields of the user with the given ID. Every
@@ -290,8 +282,6 @@ func (s *UsersService) Update(ctx context.Context, id int, u *User, opt *UpdateU
 // PatchUserOptions are the options of [UsersService.Patch].
 type PatchUserOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Patch changes the fields of the user that are set in patch.
@@ -320,8 +310,6 @@ func (s *UsersService) Patch(ctx context.Context, id int, patch *UserPatch, opt 
 
 // DeleteUserOptions are the options of [UsersService.Delete].
 type DeleteUserOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
@@ -372,8 +360,6 @@ func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *DeletePre
 
 // ResetUserAPITokenOptions are the options of [UsersService.ResetAPIToken].
 type ResetUserAPITokenOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 

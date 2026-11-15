@@ -98,8 +98,6 @@ func (s *TestTypesService) ListAll(ctx context.Context, opt *ListTestTypesOption
 // GetTestTypeOptions are the options of [TestTypesService.Get].
 type GetTestTypeOptions struct {
 	_ [0]func()
-
-	_ [0]func()
 }
 
 // Get returns a test type by its ID.
@@ -119,8 +117,6 @@ func (s *TestTypesService) Get(ctx context.Context, id int, opt *GetTestTypeOpti
 
 // GetTestTypeByNameOptions are the options of [TestTypesService.GetByName].
 type GetTestTypeByNameOptions struct {
-	_ [0]func()
-
 	_ [0]func()
 }
 
