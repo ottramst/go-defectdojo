@@ -10,10 +10,24 @@
 //	}
 //	productTypes, _, err := client.ProductTypes.List(ctx, nil)
 //
-// Every service method takes a [context.Context] first and returns the
-// decoded result (if DefectDojo returns one), the [Response] and an error. API
-// errors are returned as [*ErrorResponse] and can be matched with [errors.Is]
-// against sentinel errors such as [ErrNotFound].
+// Every service method takes a [context.Context] first and an options struct,
+// which can be nil, before the variadic [RequestOption]s, and returns the
+// decoded result (if DefectDojo returns one), the [Response] and an error:
+//
+//	product, resp, err := client.Products.Get(ctx, 42, nil)
+//
+// API errors are returned as [*ErrorResponse] and can be matched with
+// [errors.Is] against sentinel errors such as [ErrNotFound].
+//
+// # Stability
+//
+// From v1.0.0, the package follows semantic versioning: code that compiles
+// against a v1 release keeps compiling against later v1 releases. Adding
+// fields, methods, options, types and constants is compatible. Exported
+// structs have an unexported field, so they can't be compared with == or
+// written as unkeyed literals; the value types [Date], [Nullable] and
+// [NotificationScope] are the exceptions. Fields and methods of what
+// DefectDojo renames or removes are kept, as described in the README.
 package defectdojo
 
 import (
@@ -85,7 +99,7 @@ type Client struct {
 }
 
 type service struct {
-	// It makes the service types non-comparable, as the other exported
+	// It makes the service types non-comparable, like the other exported
 	// structs.
 	_ [0]func()
 

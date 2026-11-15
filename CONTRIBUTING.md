@@ -82,13 +82,45 @@ is out. To support it:
 - Add an entry to `CHANGELOG.md` under `## Unreleased` (`BREAKING CHANGES`, `FEATURES`,
   `ENHANCEMENTS`, `BUG FIXES` or `NOTES`).
 - CI must pass: the `CI gate` check covers lint, build and unit tests on every supported Go version,
-  the contract test, `COVERAGE.md`, and the acceptance test matrix.
+  the API compatibility check, the contract test, `COVERAGE.md`, and the acceptance test matrix.
+
+## Compatibility
+
+From v1.0.0, the module follows [semantic versioning](https://semver.org/). A change that can break code
+using the module, such as removing or renaming an exported identifier, changing a signature or a field type,
+or adding a method to an interface, needs a new major version with a `/v2` module path. Adding methods,
+functions, types, constants, options and struct fields is compatible: exported structs have an unexported
+`_ [0]func()` field, so they can't be compared or written as unkeyed literals, which adding a field would
+break. The v1 conventions for new API are in [CLAUDE.md](CLAUDE.md) ("v1 API conventions").
+
+The `API compatibility` job of CI runs [gorelease](https://pkg.go.dev/golang.org/x/exp/cmd/gorelease) against
+the latest v1 release and fails on incompatible changes. The only exception is the one in the
+[stability policy](README.md#stability): DefectDojo changes its API in a way the client can't follow
+without breaking compiled code. Such a pull request adds the file `.github/api-break-allowed`, containing the latest release (for
+example `v1.2.0`), and its CHANGELOG entry goes under `BREAKING CHANGES`. The check then warns instead of
+failing, on the pull request, on `main` and on later pull requests, until the next release makes the file
+stale; the release pull request deletes it.
+
+To run the check locally on a clean checkout:
+
+```bash
+(cd tools/gorelease && go build -o /tmp/gorelease golang.org/x/exp/cmd/gorelease)
+/tmp/gorelease -base=v1.0.0   # the latest v1 release
+```
 
 ## Releases
 
-Maintainers release by pushing a `vX.Y.Z` tag. Before tagging, move the `## Unreleased` entries in
-`CHANGELOG.md` under a new `## vX.Y.Z` heading; the release workflow publishes that section as the
-GitHub release notes and warms the Go module proxy so pkg.go.dev picks up the version. Tag the client
+Maintainers release by pushing a `vX.Y.Z` tag:
+
+1. Pick the version: a patch release for bug fixes, a minor release for new features or supported
+   DefectDojo versions. `gorelease` suggests one.
+2. In a release pull request, move the `## Unreleased` entries in `CHANGELOG.md` under a new `## vX.Y.Z`
+   heading, and delete `.github/api-break-allowed` if it exists.
+3. After it is merged, tag the merge commit and push the tag. The release workflow publishes the
+   `## vX.Y.Z` section as the GitHub release notes and warms the Go module proxy, so that pkg.go.dev picks
+   up the version.
+
+Never push a tag only to test the workflow: versions cannot be removed from the Go module proxy. Tag the client
 before every release of
 [terraform-provider-defectdojo](https://github.com/ottramst/terraform-provider-defectdojo) that needs
 its changes.

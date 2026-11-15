@@ -184,6 +184,30 @@ returns.
 
 More examples are in the [package documentation](https://pkg.go.dev/github.com/ottramst/go-defectdojo#pkg-examples).
 
+## Stability
+
+From v1.0.0, go-defectdojo follows [semantic versioning](https://semver.org/): code that compiles
+against a v1 release keeps compiling against later v1 releases. Breaking changes need a new major
+version (`/v2`), and CI checks every pull request against the latest release. Adding fields, methods,
+options, types and constants is not a breaking change: exported structs can't be compared with `==` or
+written as unkeyed literals, so new fields never break your code.
+
+DefectDojo changes its API in minor releases, and the client follows without breaking compiled code:
+
+- A field DefectDojo **renames** gets a new field; the old one is deprecated and kept until v2, empty on
+  versions without it. A field DefectDojo **retypes** under the same name gets a new field too.
+- A field DefectDojo **removes** is kept, empty on versions without it.
+- A method whose endpoint DefectDojo **removes** keeps compiling and returns DefectDojo's error on versions
+  without the endpoint. Its documentation says which versions have it, and it is deprecated once no
+  supported version does.
+- A value DefectDojo adds to a field with fixed values works before it has a constant.
+
+If DefectDojo changes its API in a way the client can't follow without breaking compiled code, the change
+ships in a minor release, under `BREAKING CHANGES` in the CHANGELOG. This is the only exception.
+
+DefectDojo's experimental API v3 is not part of v1. Upgrading from v0.x? See
+[Upgrading to v1](docs/upgrading-to-v1.md). Changes are listed in the [CHANGELOG](CHANGELOG.md).
+
 ## Compatibility
 
 | | Supported |
@@ -196,7 +220,8 @@ More examples are in the [package documentation](https://pkg.go.dev/github.com/o
 DefectDojo ships a minor release every month and patches every week, and supports only its latest
 release. The client supports, and tests in CI, the latest patch of the two newest minor releases;
 [`.github/defectdojo-versions.json`](.github/defectdojo-versions.json) lists them. Older versions get
-best-effort support. A nightly canary job runs the tests against DefectDojo's development build, and
+best-effort support. Moving the supported versions forward is a minor release of the client, and so is
+raising the `go` directive when a new Go release ships. A nightly canary job runs the tests against DefectDojo's development build, and
 a weekly job opens an issue when a new minor release is out.
 
 DefectDojo 2.x is not supported: 3.0 removed the role-based access endpoints from the open-source

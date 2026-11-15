@@ -24,6 +24,10 @@ FEATURES:
 * `ListAnnouncementsOptions` filters announcements by `Message`, `Style` and `Dismissable` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `ErrAmbiguous`, which the errors of `CICDInfrastructure.GetByName`, `DevelopmentEnvironments.GetByName`, `JiraInstances.GetByName` and `Notifications.GetByScope` match when several objects have the value ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 
+NOTES:
+
+* The README, the package documentation and CONTRIBUTING.md describe the v1 stability policy, and [Upgrading to v1](https://github.com/ottramst/go-defectdojo/blob/main/docs/upgrading-to-v1.md) lists every change from v0.4.0. CI checks the API against the latest v1 release with gorelease, from v1.0.0 on ([#31](https://github.com/ottramst/go-defectdojo/issues/31))
+
 ## v0.4.0
 
 FEATURES:
