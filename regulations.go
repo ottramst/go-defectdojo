@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"iter"
 	"net/http"
-	"slices"
 	"strconv"
 )
 
@@ -17,7 +16,8 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type RegulationsService service
 
-// The categories of regulations.
+// The categories of regulations. DefectDojo checks the category; newer
+// versions may add some.
 const (
 	RegulationCategoryPrivacy    = "privacy"
 	RegulationCategoryFinance    = "finance"
@@ -28,18 +28,6 @@ const (
 	RegulationCategoryGovernment = "government"
 	RegulationCategoryOther      = "other"
 )
-
-// RegulationCategories lists the categories of regulations.
-var RegulationCategories = []string{
-	RegulationCategoryPrivacy,
-	RegulationCategoryFinance,
-	RegulationCategoryEducation,
-	RegulationCategoryMedical,
-	RegulationCategoryCorporate,
-	RegulationCategorySecurity,
-	RegulationCategoryGovernment,
-	RegulationCategoryOther,
-}
 
 // Regulation is a DefectDojo regulation. The same type is used for reads and
 // writes: the read-only ID is ignored when writing.
@@ -87,8 +75,8 @@ func newRegulationRequest(r *Regulation) (*regulationRequest, error) {
 		return nil, errors.New("defectdojo: regulation Acronym must not be empty")
 	case r.Jurisdiction == "":
 		return nil, errors.New("defectdojo: regulation Jurisdiction must not be empty")
-	case !slices.Contains(RegulationCategories, r.Category):
-		return nil, fmt.Errorf("defectdojo: regulation Category %q is not one of %v", r.Category, RegulationCategories)
+	case r.Category == "":
+		return nil, errors.New("defectdojo: regulation Category must not be empty")
 	}
 	return &regulationRequest{
 		Name:         r.Name,
