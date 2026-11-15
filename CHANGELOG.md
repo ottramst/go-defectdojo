@@ -1,3 +1,9 @@
+## Unreleased
+
+FEATURES:
+
+* New `Regulations` service: `List`, `ListAll`, `Get`, `GetByName`, `GetByAcronym`, `Create`, `Update`, `Patch`, `Delete` and `DeletePreview`, with the `RegulationCategory*` constants. Deleting a regulation silently removes it from the products it applies to ([#22](https://github.com/ottramst/go-defectdojo/issues/22))
+
 ## v0.3.0
 
 FEATURES:

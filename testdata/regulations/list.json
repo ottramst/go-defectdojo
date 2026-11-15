@@ -1,0 +1,25 @@
+{
+  "count": 26,
+  "next": "http://localhost:8080/api/v2/regulations/?limit=2&offset=2",
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "name": "Payment Card Industry Data Security Standard",
+      "acronym": "PCI DSS",
+      "category": "finance",
+      "jurisdiction": "United States",
+      "description": "The Payment Card Industry Data Security Standard (PCI DSS) is a proprietary information security standard for organizations that handle branded credit cards from the major card schemes including Visa, MasterCard, American Express, Discover, and JCB.",
+      "reference": "http://en.wikipedia.org/wiki/Payment_Card_Industry_Data_Security_Standard"
+    },
+    {
+      "id": 2,
+      "name": "Health Insurance Portability and Accountability Act",
+      "acronym": "HIPAA",
+      "category": "medical",
+      "jurisdiction": "United States",
+      "description": "The Health Insurance Portability and Accountability Act of 1996 (HIPAA) was enacted by the United States Congress and signed by President Bill Clinton in 1996. It has been known as the Kennedy–Kassebaum Act or Kassebaum-Kennedy Act after two of its leading sponsors. Title I of HIPAA protects health insurance coverage for workers and their families when they change or lose their jobs. Title II of HIPAA, known as the Administrative Simplification (AS) provisions, requires the establishment of national standards for electronic health care transactions and national identifiers for providers, health insurance plans, and employers.",
+      "reference": "http://en.wikipedia.org/wiki/Health_Insurance_Portability_and_Accountability_Act"
+    }
+  ]
+}
