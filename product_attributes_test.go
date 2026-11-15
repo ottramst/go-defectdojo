@@ -92,15 +92,14 @@ func TestProductAttributesService_Get(t *testing.T) {
 func TestProductAttributesService_GetByValue(t *testing.T) {
 	mux, client := setup(t)
 	mux.HandleFunc("GET /api/v2/product_lifecycles/", func(w http.ResponseWriter, r *http.Request) {
-		// There are no filters: GetByValue reads pages of 100.
-		offset, _ := strconv.Atoi(r.URL.Query().Get("offset"))
-		wantQuery := "limit=100"
-		if offset > 0 {
-			wantQuery += "&offset=" + strconv.Itoa(offset)
+		// There are no filters: GetByValue reads 100 entries, then the whole
+		// table in one page when it is larger.
+		limit, _ := strconv.Atoi(r.URL.Query().Get("limit"))
+		if r.URL.Query().Has("offset") || (limit != 100 && limit != 150) {
+			t.Errorf("unexpected query %q", r.URL.RawQuery)
 		}
-		testQuery(t, r, wantQuery)
 		results := ""
-		for i := offset; i < min(offset+100, 150); i++ {
+		for i := range min(limit, 150) {
 			if results != "" {
 				results += ","
 			}
@@ -110,11 +109,22 @@ func TestProductAttributesService_GetByValue(t *testing.T) {
 	})
 	a, _, err := client.ProductLifecycles.GetByValue(context.Background(), "v-120")
 	if err != nil || a.ID != 121 {
-		t.Errorf("GetByValue() = %v, %v; want ID 121 from the second page", a, err)
+		t.Errorf("GetByValue() = %v, %v; want ID 121 from the whole table", a, err)
 	}
 	_, _, err = client.ProductLifecycles.GetByValue(context.Background(), "V-120")
 	if !errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "product lifecycle") {
 		t.Errorf("GetByValue(other case) error = %v, want ErrNotFound naming the product lifecycle", err)
+	}
+}
+
+func TestProductAttributesService_GetByValue_small(t *testing.T) {
+	mux, client := setup(t)
+	mux.HandleFunc("GET /api/v2/product_platforms/", func(w http.ResponseWriter, r *http.Request) {
+		testQuery(t, r, "limit=100")
+		writeJSON(t, w, http.StatusOK, fixture(t, "product_attributes/list.json"))
+	})
+	if a, _, err := client.ProductPlatforms.GetByValue(context.Background(), "kiosk"); err != nil || a.ID != 8 {
+		t.Errorf("GetByValue() = %v, %v; want ID 8 from one request", a, err)
 	}
 }
 

@@ -124,6 +124,8 @@ var contracts = []contract{
 	{value: productAttributeRequest{}, schema: "ProductOriginRequest", request: true},
 	{value: ProductAttributePatch{}, schema: "PatchedProductOriginRequest", request: true},
 	{value: listPage[ProductAttribute]{}, schema: "PaginatedProductOriginList"},
+	{value: TestType{}, schema: "TestType"},
+	{value: listPage[TestType]{}, schema: "PaginatedTestTypeList"},
 	{value: SystemSettings{}, schema: "SystemSettings", since: map[string]string{"read_only_mode": "3.5.100"}},
 	{value: SystemSettingsPatch{}, schema: "PatchedSystemSettingsRequest", request: true, since: map[string]string{"read_only_mode": "3.5.100"}},
 	{value: listPage[SystemSettings]{}, schema: "PaginatedSystemSettingsList"},
