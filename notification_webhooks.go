@@ -209,7 +209,8 @@ func (s *NotificationWebhooksService) GetByName(ctx context.Context, name string
 	if err != nil {
 		return nil, resp, err
 	}
-	// The filter is exact today; check again in case a version loosens it.
+	// DefectDojo strips whitespace from the filter, and may loosen it: check
+	// the name again.
 	for _, w := range list.NotificationWebhooks {
 		if w.Name == name {
 			return w, resp, nil

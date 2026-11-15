@@ -162,7 +162,8 @@ func (s *NoteTypesService) GetByName(ctx context.Context, name string, opts ...R
 	if err != nil {
 		return nil, resp, err
 	}
-	// The filter is exact today; check again in case a version loosens it.
+	// DefectDojo strips whitespace from the filter, and may loosen it: check
+	// the name again.
 	for _, nt := range list.NoteTypes {
 		if nt.Name == name {
 			return nt, resp, nil
