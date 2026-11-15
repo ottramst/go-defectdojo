@@ -180,7 +180,8 @@ func (s *RegulationsService) GetByName(ctx context.Context, name string, opts ..
 	if err != nil {
 		return nil, resp, err
 	}
-	// The filter is exact today; check again in case a version loosens it.
+	// DefectDojo strips whitespace from the filter, and may loosen it: check
+	// the name again.
 	for _, r := range list.Regulations {
 		if r.Name == name {
 			return r, resp, nil

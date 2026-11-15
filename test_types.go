@@ -114,7 +114,8 @@ func (s *TestTypesService) GetByName(ctx context.Context, name string, opts ...R
 	if err != nil {
 		return nil, resp, err
 	}
-	// The filter is exact today; check again in case a version loosens it.
+	// DefectDojo strips whitespace from the filter, and may loosen it: check
+	// the name again.
 	for _, tt := range list.TestTypes {
 		if tt.Name == name {
 			return tt, resp, nil

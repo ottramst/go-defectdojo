@@ -181,8 +181,9 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrast
 		found *CICDInfrastructure
 		ids   []int
 	)
-	// The filters are exact today; check again in case a version loosens
-	// them. There is at most one object per type, so one page holds them.
+	// DefectDojo strips whitespace from the name filter, and may loosen the
+	// filters: check again. There is at most one object per type, so one
+	// page holds them.
 	for _, ci := range list.CICDInfrastructure {
 		if ci.Name == name && (infrastructureType == "" || ci.InfrastructureType == infrastructureType) {
 			found = ci
