@@ -1,0 +1,49 @@
+{
+  "count": 6,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 1,
+      "value": "web service",
+      "name": "API",
+      "icon": "plug",
+      "display_order": 10
+    },
+    {
+      "id": 2,
+      "value": "desktop",
+      "name": "Desktop",
+      "icon": "desktop",
+      "display_order": 20
+    },
+    {
+      "id": 3,
+      "value": "iot",
+      "name": "Internet of Things",
+      "icon": "shuffle",
+      "display_order": 30
+    },
+    {
+      "id": 4,
+      "value": "mobile",
+      "name": "Mobile",
+      "icon": "mobile",
+      "display_order": 40
+    },
+    {
+      "id": 5,
+      "value": "web",
+      "name": "Web",
+      "icon": "rectangle-list",
+      "display_order": 50
+    },
+    {
+      "id": 8,
+      "value": "kiosk",
+      "name": "Kiosk",
+      "icon": "tv",
+      "display_order": 60
+    }
+  ]
+}

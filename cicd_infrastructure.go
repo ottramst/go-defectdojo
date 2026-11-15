@@ -220,8 +220,9 @@ func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastr
 // Update replaces the writable fields of the CI/CD infrastructure object with
 // the given ID: an empty Description or URL clears it. InfrastructureType must
 // be set (the schema requires it), but DefectDojo ignores it on an existing
-// object: set it to the current type. A name that another object of the type has is a 409
-// ([ErrConflict]), not the 400 of [CICDInfrastructureService.Create].
+// object: set it to the current type. A name that another object of the
+// type has is a 409 ([ErrConflict]), not the 400 of
+// [CICDInfrastructureService.Create].
 //
 // DefectDojo API: PUT /api/v2/cicd_infrastructure/{id}/
 func (s *CICDInfrastructureService) Update(ctx context.Context, id int, ci *CICDInfrastructure, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {

@@ -70,6 +70,9 @@ type Client struct {
 	Notifications            *NotificationsService
 	NotificationWebhooks     *NotificationWebhooksService
 	Products                 *ProductsService
+	ProductLifecycles        *ProductAttributesService
+	ProductOrigins           *ProductAttributesService
+	ProductPlatforms         *ProductAttributesService
 	ProductTypes             *ProductTypesService
 	Regulations              *RegulationsService
 	SLAConfigurations        *SLAConfigurationsService
@@ -189,6 +192,9 @@ func (c *Client) initServices() {
 	c.Notifications = (*NotificationsService)(&c.common)
 	c.NotificationWebhooks = (*NotificationWebhooksService)(&c.common)
 	c.Products = (*ProductsService)(&c.common)
+	c.ProductPlatforms = &ProductAttributesService{client: c, path: "/api/v2/product_platforms/", kind: "product platform"}
+	c.ProductLifecycles = &ProductAttributesService{client: c, path: "/api/v2/product_lifecycles/", kind: "product lifecycle"}
+	c.ProductOrigins = &ProductAttributesService{client: c, path: "/api/v2/product_origins/", kind: "product origin"}
 	c.ProductTypes = (*ProductTypesService)(&c.common)
 	c.Regulations = (*RegulationsService)(&c.common)
 	c.SLAConfigurations = (*SLAConfigurationsService)(&c.common)
