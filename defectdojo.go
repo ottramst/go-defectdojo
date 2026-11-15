@@ -63,6 +63,7 @@ type Client struct {
 	Engagements              *EngagementsService
 	JiraInstances            *JiraInstancesService
 	JiraProjects             *JiraProjectsService
+	NoteTypes                *NoteTypesService
 	Notifications            *NotificationsService
 	NotificationWebhooks     *NotificationWebhooksService
 	Products                 *ProductsService
@@ -178,6 +179,7 @@ func (c *Client) initServices() {
 	c.Engagements = (*EngagementsService)(&c.common)
 	c.JiraInstances = (*JiraInstancesService)(&c.common)
 	c.JiraProjects = (*JiraProjectsService)(&c.common)
+	c.NoteTypes = (*NoteTypesService)(&c.common)
 	c.Notifications = (*NotificationsService)(&c.common)
 	c.NotificationWebhooks = (*NotificationWebhooksService)(&c.common)
 	c.Products = (*ProductsService)(&c.common)

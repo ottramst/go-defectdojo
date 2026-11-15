@@ -3,6 +3,7 @@ package defectdojo_test
 import (
 	"context"
 	"errors"
+	"maps"
 	"net/http"
 	"slices"
 	"testing"
@@ -159,7 +160,7 @@ func TestAccEngagements(t *testing.T) {
 	if n, _, err := client.Engagements.CountTests(ctx, created.ID); err != nil || n != 0 {
 		t.Errorf("CountTests() = %d, %v; want 0", n, err)
 	}
-	createTest(t, client, created.ID)
+	createTest(t, client, created.ID, nil)
 	if n, _, err := client.Engagements.CountTests(ctx, created.ID); err != nil || n != 1 {
 		t.Errorf("CountTests() = %d, %v; want 1", n, err)
 	}
@@ -256,12 +257,18 @@ func createProductIn(t *testing.T, client *defectdojo.Client, productTypeID int,
 }
 
 // createTest creates a test in the engagement through the raw API; the
-// client has no tests service. It is deleted with the engagement.
-func createTest(t *testing.T, client *defectdojo.Client, engagementID int) {
+// client has no tests service. extra adds fields, such as "environment". It
+// returns the test's ID; the test is deleted with the engagement.
+func createTest(t *testing.T, client *defectdojo.Client, engagementID int, extra map[string]any) int {
 	t.Helper()
 	body := map[string]any{
 		"engagement": engagementID, "test_type": 1, "title": "acceptance test",
 		"target_start": "2026-01-01T00:00:00Z", "target_end": "2026-01-02T00:00:00Z",
 	}
-	rawRequest(t, client, http.MethodPost, "/api/v2/tests/", body, nil)
+	maps.Copy(body, extra)
+	var created struct {
+		ID int `json:"id"`
+	}
+	rawRequest(t, client, http.MethodPost, "/api/v2/tests/", body, &created)
+	return created.ID
 }

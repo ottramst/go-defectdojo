@@ -1,0 +1,23 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "id": 5,
+      "name": "Code Review",
+      "description": "Notes from a code review.",
+      "is_single": false,
+      "is_active": false,
+      "is_mandatory": false
+    },
+    {
+      "id": 6,
+      "name": "Sign-off",
+      "description": "The release sign-off.",
+      "is_single": true,
+      "is_active": false,
+      "is_mandatory": true
+    }
+  ]
+}
