@@ -86,8 +86,8 @@ later release works before it has a constant.
 
 ## Structs
 
-Every exported struct, except the value types `Date`, `Nullable[T]` and `NotificationScope`, has an
-unexported field. Literals must name their fields (`defectdojo.ProductType{Name: "Web"}`), and structs
+Every exported struct, including the service types such as `ProductsService`, except the value types
+`Date`, `Nullable[T]` and `NotificationScope`, has an unexported field. Literals must name their fields (`defectdojo.ProductType{Name: "Web"}`), and structs
 can't be compared with `==` or used as map keys: compare them with `reflect.DeepEqual`, or compare their
 fields. In return, a field added in a later v1 release can't break such code. `%+v` output now starts with
 `_:[]`.
