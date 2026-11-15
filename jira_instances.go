@@ -259,8 +259,9 @@ func (s *JiraInstancesService) Get(ctx context.Context, id int, opts ...RequestO
 
 // GetByName returns the Jira instance whose ConfigurationName is exactly the
 // given name, compared case-sensitively. It returns an error matching
-// [ErrNotFound] when there is none, and an error naming their IDs when
-// several instances have the name, which DefectDojo allows.
+// [ErrNotFound] when there is none, and an error matching [ErrAmbiguous] that
+// names their IDs when several instances have the name, which DefectDojo
+// allows.
 //
 // DefectDojo can't filter Jira instances by name, so GetByName pages through
 // all of them; the returned response is the last page's.
@@ -297,7 +298,7 @@ func (s *JiraInstancesService) GetByName(ctx context.Context, name string, opts 
 	case 1:
 		return found, resp, nil
 	default:
-		return nil, resp, fmt.Errorf("defectdojo: %d Jira instances are named %q: IDs %v", len(ids), name, ids)
+		return nil, resp, fmt.Errorf("%w: %d Jira instances are named %q: IDs %v", ErrAmbiguous, len(ids), name, ids)
 	}
 }
 

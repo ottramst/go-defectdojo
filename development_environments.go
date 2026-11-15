@@ -124,8 +124,8 @@ func (s *DevelopmentEnvironmentsService) Get(ctx context.Context, id int, opts .
 
 // GetByName returns the development environment with exactly the given name,
 // compared case-sensitively. It returns an error matching [ErrNotFound] when
-// there is none, and an error naming their IDs when several environments have
-// the name.
+// there is none, and an error matching [ErrAmbiguous] that names their IDs
+// when several environments have the name.
 //
 // DefectDojo cannot filter development environments by name, so GetByName
 // pages through all of them; the returned response is the last page's.
@@ -162,7 +162,7 @@ func (s *DevelopmentEnvironmentsService) GetByName(ctx context.Context, name str
 	case 1:
 		return found, resp, nil
 	default:
-		return nil, resp, fmt.Errorf("defectdojo: %d development environments are named %q: IDs %v", len(ids), name, ids)
+		return nil, resp, fmt.Errorf("%w: %d development environments are named %q: IDs %v", ErrAmbiguous, len(ids), name, ids)
 	}
 }
 

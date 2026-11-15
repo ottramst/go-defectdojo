@@ -124,7 +124,7 @@ func TestJiraInstancesService_GetByName(t *testing.T) {
 		t.Errorf("GetByName(acme) error = %v, want ErrNotFound", err)
 	}
 	_, _, err := client.JiraInstances.GetByName(ctx, "twice")
-	if err == nil || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[2 3]") {
+	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[2 3]") {
 		t.Errorf("GetByName(twice) error = %v, want an error naming IDs 2 and 3", err)
 	}
 	if _, _, err := client.JiraInstances.GetByName(ctx, ""); err == nil {

@@ -1,3 +1,16 @@
+## Unreleased
+
+BREAKING CHANGES:
+
+* `Response` no longer embeds `*http.Response`, whose body was already read and closed: it has `StatusCode`, `Status` and `Header`. For other details of the HTTP exchange, wrap the transport of the client passed to `WithHTTPClient` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `ErrorResponse` no longer has a `Response` field, whose request held the API token: it has `Method`, `URL` (without credentials) and `Header` instead. The format of `Error()` is not part of the API ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `CheckResponse` is no longer exported; `Client.Do` returns the `*ErrorResponse` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `Client.ServerVersion` takes a nil-able `*ServerVersionOptions` and also returns the `*Response`, nil when the version is cached ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+
+FEATURES:
+
+* `ErrAmbiguous`, which the errors of `CICDInfrastructure.GetByName`, `DevelopmentEnvironments.GetByName`, `JiraInstances.GetByName` and `Notifications.GetByScope` match when several objects have the value ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+
 ## v0.4.0
 
 FEATURES:

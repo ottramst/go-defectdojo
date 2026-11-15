@@ -30,7 +30,7 @@ func TestAccSystemSettings(t *testing.T) {
 		return err
 	})
 
-	version, err := client.ServerVersion(ctx)
+	version, _, err := client.ServerVersion(ctx, nil)
 	if err != nil {
 		t.Fatalf("ServerVersion() error = %v", err)
 	}

@@ -312,16 +312,25 @@ func (c *Client) NewRequest(ctx context.Context, method, path string, body any, 
 	return req, nil
 }
 
-// Response wraps the [http.Response] returned by DefectDojo. Its body has
-// already been read and closed.
+// Response is the status and headers of a DefectDojo response. [Client.Do]
+// has already read and closed its body. For other details of the HTTP
+// exchange, such as the TLS connection state, wrap the transport of the
+// [http.Client] passed to [WithHTTPClient].
 type Response struct {
-	*http.Response
+	// StatusCode is the HTTP status code, such as 200.
+	StatusCode int
+
+	// Status is the HTTP status line, such as "200 OK".
+	Status string
+
+	// Header holds the response headers.
+	Header http.Header
 }
 
 // Deprecated returns the value of the X-Deprecated header, which DefectDojo
 // sets on endpoints that are scheduled for removal, and "" otherwise.
 func (r *Response) Deprecated() string {
-	if r == nil || r.Response == nil {
+	if r == nil {
 		return ""
 	}
 	return r.Header.Get("X-Deprecated")
@@ -345,8 +354,8 @@ func (c *Client) Do(req *http.Request, v any) (*Response, error) {
 		_ = resp.Body.Close()
 	}()
 
-	response := &Response{Response: resp}
-	if err := CheckResponse(resp); err != nil {
+	response := &Response{StatusCode: resp.StatusCode, Status: resp.Status, Header: resp.Header}
+	if err := checkResponse(resp); err != nil {
 		return response, err
 	}
 

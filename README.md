@@ -84,7 +84,7 @@ if err != nil {
 productTypes, _, err := client.ProductTypes.List(ctx, nil)
 ```
 
-Methods return the decoded result, the `*defectdojo.Response` (which wraps `*http.Response`) and an
+Methods return the decoded result, the `*defectdojo.Response` (its status and headers) and an
 error. Methods for endpoints without a response body, such as `Delete`, return only the
 `*defectdojo.Response` and the error.
 
@@ -142,6 +142,10 @@ if errors.As(err, &errResp) {
 DefectDojo answers a missing or invalid token with **403 Forbidden** (`ErrForbidden`), not 401, and a
 name that is taken with **400 Bad Request** and a field error, not 409. While its read-only mode is on
 (3.5.100 and later), every change except to the system settings is **423 Locked** (`ErrLocked`).
+`ErrorResponse` also has the request's `Method` and `URL` (without credentials) and the response
+`Header`; it keeps no reference to the request or its token. A lookup by a value that need not be unique,
+such as a development environment's name, returns an error matching `ErrAmbiguous` when several objects
+have it.
 
 ### Timeouts, retries and custom transports
 
@@ -172,8 +176,9 @@ if _, err := client.Do(req, &profile); err != nil {
 ```
 
 The path is the escaped API path, including its trailing slash. Responses with a non-2xx status,
-including redirects, return an `*ErrorResponse`. Deprecated endpoints set the `X-Deprecated` header,
-which `Response.Deprecated()` returns.
+including redirects, return an `*ErrorResponse`. The `*Response` holds the status and headers; the body
+has already been read. Deprecated endpoints set the `X-Deprecated` header, which `Response.Deprecated()`
+returns.
 
 More examples are in the [package documentation](https://pkg.go.dev/github.com/ottramst/go-defectdojo#pkg-examples).
 

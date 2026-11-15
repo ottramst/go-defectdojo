@@ -3,6 +3,7 @@ package defectdojo_test
 import (
 	"context"
 	"errors"
+	"fmt"
 	"net/http"
 	"net/url"
 	"reflect"
@@ -130,6 +131,38 @@ func TestErrorResponse_redactsUserInfo(t *testing.T) {
 	_, _, err = client.ProductTypes.Get(context.Background(), 1)
 	if err == nil || strings.Contains(err.Error(), "secret") {
 		t.Errorf("Error() = %v, want an error without the password", err)
+	}
+	var errResp *defectdojo.ErrorResponse
+	if !errors.As(err, &errResp) {
+		t.Fatalf("error = %v, want an *ErrorResponse", err)
+	}
+	if errResp.Method != http.MethodGet || !strings.HasSuffix(errResp.URL, "/api/v2/product_types/1/") || strings.Contains(errResp.URL, "user") {
+		t.Errorf("Method, URL = %q, %q; want GET and the URL without user info", errResp.Method, errResp.URL)
+	}
+}
+
+// The error holds no reference to the request, whose Authorization header
+// holds the token: printing it whole must not reveal the token.
+func TestErrorResponse_holdsNoCredentials(t *testing.T) {
+	mux, base := setup(t)
+	mux.HandleFunc("GET /api/v2/product_types/1/", func(w http.ResponseWriter, _ *http.Request) {
+		w.Header().Set("X-Request-Id", "abc")
+		writeJSON(t, w, http.StatusNotFound, []byte(notFound))
+	})
+	client, err := defectdojo.NewClient(base.BaseURL().String(), defectdojo.WithAPIToken("token-secret"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	_, _, err = client.ProductTypes.Get(context.Background(), 1)
+	var errResp *defectdojo.ErrorResponse
+	if !errors.As(err, &errResp) {
+		t.Fatalf("error = %v, want an *ErrorResponse", err)
+	}
+	if dump := fmt.Sprintf("%#v", errResp); strings.Contains(dump, "token-secret") {
+		t.Errorf("%%#v of the error holds the token: %s", dump)
+	}
+	if errResp.Header.Get("X-Request-Id") != "abc" {
+		t.Errorf("Header = %v, want the response headers", errResp.Header)
 	}
 }
 

@@ -163,7 +163,7 @@ func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opts ...Req
 // GetByName returns the CI/CD infrastructure object with exactly the given
 // name and type. Names are unique within a type; with an empty
 // infrastructureType, any type matches, and several matches are an error
-// naming their IDs. It returns an error matching [ErrNotFound] when there is
+// matching [ErrAmbiguous] that names their IDs. It returns an error matching [ErrNotFound] when there is
 // none, and a 400 ([ErrBadRequest]) for an unknown infrastructureType.
 func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrastructureType string, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	if name == "" {
@@ -196,7 +196,7 @@ func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrast
 	case 1:
 		return found, resp, nil
 	default:
-		return nil, resp, fmt.Errorf("defectdojo: %d CI/CD infrastructure objects of different types are named %q: IDs %v; give the type", len(ids), name, ids)
+		return nil, resp, fmt.Errorf("%w: %d CI/CD infrastructure objects of different types are named %q: IDs %v; give the type", ErrAmbiguous, len(ids), name, ids)
 	}
 }
 

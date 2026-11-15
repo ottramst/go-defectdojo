@@ -168,7 +168,7 @@ func TestNotificationsService_GetByScope_several(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"count":2,"results":[{"id":2,"user":null},{"id":9,"user":null}]}`))
 	})
 	_, _, err := client.Notifications.GetByScope(context.Background(), 0, 0, false)
-	if err == nil || errors.Is(err, defectdojo.ErrNotFound) {
+	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) {
 		t.Errorf("GetByScope() error = %v, want an error naming the rows", err)
 	}
 }

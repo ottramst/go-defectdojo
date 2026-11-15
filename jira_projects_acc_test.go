@@ -147,7 +147,7 @@ func TestAccJiraProjects(t *testing.T) {
 func checkSuppressSLANotificationComments(t *testing.T, client *defectdojo.Client, id, instanceID, productID int) {
 	t.Helper()
 	ctx := t.Context()
-	version, err := client.ServerVersion(ctx)
+	version, _, err := client.ServerVersion(ctx, nil)
 	if err != nil {
 		t.Fatalf("ServerVersion() error = %v", err)
 	}

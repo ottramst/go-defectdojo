@@ -15,13 +15,17 @@ func TestClient_ServerVersion(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"openapi":"3.0.3","info":{"title":"DefectDojo API v2","version":"3.5.103"},"paths":{}}`))
 	})
 
-	for range 2 {
-		v, err := client.ServerVersion(context.Background())
+	for i := range 2 {
+		v, resp, err := client.ServerVersion(context.Background(), nil)
 		if err != nil {
 			t.Fatalf("ServerVersion() error = %v", err)
 		}
 		if v != "3.5.103" {
 			t.Errorf("ServerVersion() = %q, want 3.5.103", v)
+		}
+		// The cached version comes without a response.
+		if cached := i > 0; (resp == nil) != cached {
+			t.Errorf("call %d: ServerVersion() response = %v, want nil only when cached", i+1, resp)
 		}
 	}
 	if calls != 1 {
@@ -40,12 +44,12 @@ func TestClient_ServerVersion_errors(t *testing.T) {
 		writeJSON(t, w, http.StatusOK, []byte(`{"info":{}}`))
 	})
 
-	if _, err := client.ServerVersion(context.Background()); err == nil {
+	if _, _, err := client.ServerVersion(context.Background(), nil); err == nil {
 		t.Error("ServerVersion(503) error = nil, want error")
 	}
 	// Failures are not cached.
 	fail = false
-	if _, err := client.ServerVersion(context.Background()); err == nil {
+	if _, _, err := client.ServerVersion(context.Background(), nil); err == nil {
 		t.Error("ServerVersion(no version) error = nil, want error")
 	}
 }

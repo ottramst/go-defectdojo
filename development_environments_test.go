@@ -116,7 +116,7 @@ func TestDevelopmentEnvironmentsService_GetByName(t *testing.T) {
 	}
 	// Names aren't unique: several matches, on any page, are an error.
 	_, _, err = client.DevelopmentEnvironments.GetByName(context.Background(), "twice")
-	if err == nil || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[11 141]") {
+	if !errors.Is(err, defectdojo.ErrAmbiguous) || errors.Is(err, defectdojo.ErrNotFound) || !strings.Contains(err.Error(), "[11 141]") {
 		t.Errorf("GetByName(twice) error = %v, want an error naming IDs 11 and 141", err)
 	}
 }
