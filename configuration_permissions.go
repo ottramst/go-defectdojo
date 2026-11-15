@@ -122,7 +122,7 @@ func (s *ConfigurationPermissionsService) GetByCodename(ctx context.Context, cod
 		return nil, resp, err
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
-	// the name again.
+	// the codename again.
 	for _, p := range list.ConfigurationPermissions {
 		if p.Codename == codename {
 			return p, resp, nil
