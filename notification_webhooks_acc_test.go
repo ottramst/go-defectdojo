@@ -69,7 +69,7 @@ func TestAccNotificationWebhooks(t *testing.T) {
 
 	// The status can't be changed through the API: DefectDojo ignores it.
 	req, err := client.NewRequest(ctx, http.MethodPatch, "/api/v2/notification_webhooks/"+strconv.Itoa(created.ID)+"/",
-		map[string]string{"status": defectdojo.NotificationWebhookStatusInactivePermanent, "header_value": "Bearer rotated"})
+		map[string]string{"status": string(defectdojo.NotificationWebhookStatusInactivePermanent), "header_value": "Bearer rotated"})
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -100,7 +100,7 @@ func TestAccNotificationWebhooks(t *testing.T) {
 	}
 
 	preview, _, err := client.NotificationWebhooks.DeletePreview(ctx, created.ID, nil)
-	if err != nil || !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notification_Webhooks" }) {
+	if err != nil || !slices.ContainsFunc(preview.Results, func(o defectdojo.DeletedObject) bool { return o.Model == "Notification_Webhooks" }) {
 		t.Errorf("DeletePreview() = %+v, %v; want the webhook", preview, err)
 	}
 

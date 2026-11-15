@@ -113,7 +113,7 @@ func TestAccSLAConfigurations(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "SLA_Configuration" }) {
+	if !slices.ContainsFunc(preview.Results, func(o defectdojo.DeletedObject) bool { return o.Model == "SLA_Configuration" }) {
 		t.Errorf("DeletePreview() = %+v, want the SLA configuration", preview.Results)
 	}
 

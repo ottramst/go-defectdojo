@@ -46,7 +46,7 @@ type ListTestTypesOptions struct {
 
 // ListTestTypesResult is a page of test types.
 type ListTestTypesResult struct {
-	Results []*TestType
+	Results []TestType
 
 	// Count is the number of test types that match the filters.
 	Count int
@@ -60,7 +60,7 @@ func (s *TestTypesService) List(ctx context.Context, opt *ListTestTypesOptions, 
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*TestType]
+	var page listPage[TestType]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -85,7 +85,7 @@ func (s *TestTypesService) ListAll(ctx context.Context, opt *ListTestTypesOption
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -122,7 +122,8 @@ func (s *TestTypesService) GetByName(ctx context.Context, name string, opt *GetT
 	}
 	// DefectDojo strips whitespace from the filter, and may loosen it: check
 	// the name again.
-	for _, tt := range list.Results {
+	for i := range list.Results {
+		tt := &list.Results[i]
 		if tt.Name == name {
 			return tt, resp, nil
 		}

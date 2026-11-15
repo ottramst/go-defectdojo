@@ -29,15 +29,18 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type NotificationsService service
 
+// NotificationChannel is a channel DefectDojo notifies on.
+type NotificationChannel string
+
 // Notification channels, the values of the event fields of
 // [NotificationSettings]. Slack, Microsoft Teams, mail and webhooks also need
 // to be enabled in the system settings.
 const (
-	NotificationChannelSlack    = "slack"
-	NotificationChannelMSTeams  = "msteams"
-	NotificationChannelMail     = "mail"
-	NotificationChannelWebhooks = "webhooks"
-	NotificationChannelAlert    = "alert"
+	NotificationChannelSlack    NotificationChannel = "slack"
+	NotificationChannelMSTeams  NotificationChannel = "msteams"
+	NotificationChannelMail     NotificationChannel = "mail"
+	NotificationChannelWebhooks NotificationChannel = "webhooks"
+	NotificationChannelAlert    NotificationChannel = "alert"
 )
 
 // NotificationSettings is a DefectDojo notification settings row. The same
@@ -81,59 +84,70 @@ type NotificationSettings struct {
 	// There can be one.
 	Template bool `json:"template"`
 
-	ProductTypeAdded         []string `json:"product_type_added"`
-	ProductAdded             []string `json:"product_added"`
-	EngagementAdded          []string `json:"engagement_added"`
-	TestAdded                []string `json:"test_added"`
-	ScanAdded                []string `json:"scan_added"`
-	JiraUpdate               []string `json:"jira_update"`
-	UpcomingEngagement       []string `json:"upcoming_engagement"`
-	StaleEngagement          []string `json:"stale_engagement"`
-	AutoCloseEngagement      []string `json:"auto_close_engagement"`
-	CloseEngagement          []string `json:"close_engagement"`
-	UserMentioned            []string `json:"user_mentioned"`
-	CodeReview               []string `json:"code_review"`
-	ReviewRequested          []string `json:"review_requested"`
-	Other                    []string `json:"other"`
-	SLABreach                []string `json:"sla_breach"`
-	SLABreachCombined        []string `json:"sla_breach_combined"`
-	RiskAcceptanceExpiration []string `json:"risk_acceptance_expiration"`
+	ProductTypeAdded         []NotificationChannel `json:"product_type_added"`
+	ProductAdded             []NotificationChannel `json:"product_added"`
+	EngagementAdded          []NotificationChannel `json:"engagement_added"`
+	TestAdded                []NotificationChannel `json:"test_added"`
+	ScanAdded                []NotificationChannel `json:"scan_added"`
+	JiraUpdate               []NotificationChannel `json:"jira_update"`
+	UpcomingEngagement       []NotificationChannel `json:"upcoming_engagement"`
+	StaleEngagement          []NotificationChannel `json:"stale_engagement"`
+	AutoCloseEngagement      []NotificationChannel `json:"auto_close_engagement"`
+	CloseEngagement          []NotificationChannel `json:"close_engagement"`
+	UserMentioned            []NotificationChannel `json:"user_mentioned"`
+	CodeReview               []NotificationChannel `json:"code_review"`
+	ReviewRequested          []NotificationChannel `json:"review_requested"`
+	Other                    []NotificationChannel `json:"other"`
+	SLABreach                []NotificationChannel `json:"sla_breach"`
+	SLABreachCombined        []NotificationChannel `json:"sla_breach_combined"`
+	RiskAcceptanceExpiration []NotificationChannel `json:"risk_acceptance_expiration"`
 
 	// ScanAddedEmpty holds at most one channel when it is written through
 	// the API (DefectDojo's API takes a single choice for it, unlike the
 	// other events); DefectDojo's UI can set several. Its default is no
 	// channel.
-	ScanAddedEmpty NotificationChannels `json:"scan_added_empty"`
+	ScanAddedEmpty []NotificationChannel `json:"scan_added_empty"`
 }
 
-// NotificationChannels is a list of notification channels. It decodes a JSON
-// list, and also a single channel as a string ("" for none), which DefectDojo
-// returns for [NotificationSettings.ScanAddedEmpty] in the response to a
-// write.
-type NotificationChannels []string
-
-// UnmarshalJSON decodes a JSON list of channels, a single channel, or "" or
-// null for none.
-func (c *NotificationChannels) UnmarshalJSON(data []byte) error {
-	if string(data) == "null" {
-		*c = nil
-		return nil
+// UnmarshalJSON decodes notification settings. DefectDojo returns
+// scan_added_empty as a list, and as a single channel ("" for none) in the
+// response to a write.
+func (n *NotificationSettings) UnmarshalJSON(data []byte) error {
+	type plain NotificationSettings
+	v := struct {
+		*plain
+		// It shadows the field of plain, which has the same JSON name.
+		ScanAddedEmpty json.RawMessage `json:"scan_added_empty"`
+	}{plain: (*plain)(n)}
+	if err := json.Unmarshal(data, &v); err != nil {
+		return err
 	}
-	var channel string
+	channels, err := decodeChannels(v.ScanAddedEmpty)
+	if err != nil {
+		return err
+	}
+	n.ScanAddedEmpty = channels
+	return nil
+}
+
+// decodeChannels decodes a JSON list of channels, a single channel, or "" or
+// null for none (nil for a missing value or null).
+func decodeChannels(data json.RawMessage) ([]NotificationChannel, error) {
+	if len(data) == 0 || string(data) == "null" {
+		return nil, nil
+	}
+	var channel NotificationChannel
 	if err := json.Unmarshal(data, &channel); err == nil {
 		if channel == "" {
-			*c = NotificationChannels{}
-		} else {
-			*c = NotificationChannels{channel}
+			return []NotificationChannel{}, nil
 		}
-		return nil
+		return []NotificationChannel{channel}, nil
 	}
-	var channels []string
+	var channels []NotificationChannel
 	if err := json.Unmarshal(data, &channels); err != nil {
-		return fmt.Errorf("defectdojo: notification channels must be a list or a string: %w", err)
+		return nil, fmt.Errorf("defectdojo: notification channels must be a list or a string: %w", err)
 	}
-	*c = channels
-	return nil
+	return channels, nil
 }
 
 // notificationSettingsRequest is the body of notification settings create
@@ -144,28 +158,28 @@ type notificationSettingsRequest struct {
 	Product  *int `json:"product"`
 	Template bool `json:"template"`
 
-	ProductTypeAdded         []string `json:"product_type_added,omitzero"`
-	ProductAdded             []string `json:"product_added,omitzero"`
-	EngagementAdded          []string `json:"engagement_added,omitzero"`
-	TestAdded                []string `json:"test_added,omitzero"`
-	ScanAdded                []string `json:"scan_added,omitzero"`
-	JiraUpdate               []string `json:"jira_update,omitzero"`
-	UpcomingEngagement       []string `json:"upcoming_engagement,omitzero"`
-	StaleEngagement          []string `json:"stale_engagement,omitzero"`
-	AutoCloseEngagement      []string `json:"auto_close_engagement,omitzero"`
-	CloseEngagement          []string `json:"close_engagement,omitzero"`
-	UserMentioned            []string `json:"user_mentioned,omitzero"`
-	CodeReview               []string `json:"code_review,omitzero"`
-	ReviewRequested          []string `json:"review_requested,omitzero"`
-	Other                    []string `json:"other,omitzero"`
-	SLABreach                []string `json:"sla_breach,omitzero"`
-	SLABreachCombined        []string `json:"sla_breach_combined,omitzero"`
-	RiskAcceptanceExpiration []string `json:"risk_acceptance_expiration,omitzero"`
+	ProductTypeAdded         []NotificationChannel `json:"product_type_added,omitzero"`
+	ProductAdded             []NotificationChannel `json:"product_added,omitzero"`
+	EngagementAdded          []NotificationChannel `json:"engagement_added,omitzero"`
+	TestAdded                []NotificationChannel `json:"test_added,omitzero"`
+	ScanAdded                []NotificationChannel `json:"scan_added,omitzero"`
+	JiraUpdate               []NotificationChannel `json:"jira_update,omitzero"`
+	UpcomingEngagement       []NotificationChannel `json:"upcoming_engagement,omitzero"`
+	StaleEngagement          []NotificationChannel `json:"stale_engagement,omitzero"`
+	AutoCloseEngagement      []NotificationChannel `json:"auto_close_engagement,omitzero"`
+	CloseEngagement          []NotificationChannel `json:"close_engagement,omitzero"`
+	UserMentioned            []NotificationChannel `json:"user_mentioned,omitzero"`
+	CodeReview               []NotificationChannel `json:"code_review,omitzero"`
+	ReviewRequested          []NotificationChannel `json:"review_requested,omitzero"`
+	Other                    []NotificationChannel `json:"other,omitzero"`
+	SLABreach                []NotificationChannel `json:"sla_breach,omitzero"`
+	SLABreachCombined        []NotificationChannel `json:"sla_breach_combined,omitzero"`
+	RiskAcceptanceExpiration []NotificationChannel `json:"risk_acceptance_expiration,omitzero"`
 
 	// ScanAddedEmpty is a single channel, or "" for none. It is always
 	// sent: DefectDojo has no default for it in requests, so a PUT that
 	// leaves it out would keep it.
-	ScanAddedEmpty string `json:"scan_added_empty"`
+	ScanAddedEmpty NotificationChannel `json:"scan_added_empty"`
 }
 
 // newNotificationSettingsRequest validates notification settings and returns
@@ -208,7 +222,7 @@ func newNotificationSettingsRequest(n *NotificationSettings) (*notificationSetti
 
 // singleChannel returns the channel of scan_added_empty as DefectDojo's API
 // takes it: "" for none, or the one channel.
-func singleChannel(channels NotificationChannels) (string, error) {
+func singleChannel(channels []NotificationChannel) (NotificationChannel, error) {
 	switch len(channels) {
 	case 0:
 		return "", nil
@@ -223,26 +237,26 @@ func singleChannel(channels NotificationChannels) (string, error) {
 // removes every channel. The user, product and template, which identify a
 // row, can't be changed.
 type NotificationSettingsPatch struct {
-	ProductTypeAdded         *[]string `json:"product_type_added,omitempty"`
-	ProductAdded             *[]string `json:"product_added,omitempty"`
-	EngagementAdded          *[]string `json:"engagement_added,omitempty"`
-	TestAdded                *[]string `json:"test_added,omitempty"`
-	ScanAdded                *[]string `json:"scan_added,omitempty"`
-	JiraUpdate               *[]string `json:"jira_update,omitempty"`
-	UpcomingEngagement       *[]string `json:"upcoming_engagement,omitempty"`
-	StaleEngagement          *[]string `json:"stale_engagement,omitempty"`
-	AutoCloseEngagement      *[]string `json:"auto_close_engagement,omitempty"`
-	CloseEngagement          *[]string `json:"close_engagement,omitempty"`
-	UserMentioned            *[]string `json:"user_mentioned,omitempty"`
-	CodeReview               *[]string `json:"code_review,omitempty"`
-	ReviewRequested          *[]string `json:"review_requested,omitempty"`
-	Other                    *[]string `json:"other,omitempty"`
-	SLABreach                *[]string `json:"sla_breach,omitempty"`
-	SLABreachCombined        *[]string `json:"sla_breach_combined,omitempty"`
-	RiskAcceptanceExpiration *[]string `json:"risk_acceptance_expiration,omitempty"`
+	ProductTypeAdded         *[]NotificationChannel `json:"product_type_added,omitempty"`
+	ProductAdded             *[]NotificationChannel `json:"product_added,omitempty"`
+	EngagementAdded          *[]NotificationChannel `json:"engagement_added,omitempty"`
+	TestAdded                *[]NotificationChannel `json:"test_added,omitempty"`
+	ScanAdded                *[]NotificationChannel `json:"scan_added,omitempty"`
+	JiraUpdate               *[]NotificationChannel `json:"jira_update,omitempty"`
+	UpcomingEngagement       *[]NotificationChannel `json:"upcoming_engagement,omitempty"`
+	StaleEngagement          *[]NotificationChannel `json:"stale_engagement,omitempty"`
+	AutoCloseEngagement      *[]NotificationChannel `json:"auto_close_engagement,omitempty"`
+	CloseEngagement          *[]NotificationChannel `json:"close_engagement,omitempty"`
+	UserMentioned            *[]NotificationChannel `json:"user_mentioned,omitempty"`
+	CodeReview               *[]NotificationChannel `json:"code_review,omitempty"`
+	ReviewRequested          *[]NotificationChannel `json:"review_requested,omitempty"`
+	Other                    *[]NotificationChannel `json:"other,omitempty"`
+	SLABreach                *[]NotificationChannel `json:"sla_breach,omitempty"`
+	SLABreachCombined        *[]NotificationChannel `json:"sla_breach_combined,omitempty"`
+	RiskAcceptanceExpiration *[]NotificationChannel `json:"risk_acceptance_expiration,omitempty"`
 
 	// ScanAddedEmpty is a single channel, or "" for none.
-	ScanAddedEmpty *string `json:"scan_added_empty,omitempty"`
+	ScanAddedEmpty *NotificationChannel `json:"scan_added_empty,omitempty"`
 }
 
 // normalized returns a copy of the patch whose pointers to nil slices point
@@ -285,7 +299,7 @@ type ListNotificationSettingsOptions struct {
 
 // ListNotificationSettingsResult is a page of notification settings.
 type ListNotificationSettingsResult struct {
-	Results []*NotificationSettings
+	Results []NotificationSettings
 
 	// Count is the number of rows that match the filters.
 	Count int
@@ -299,7 +313,7 @@ func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationSe
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*NotificationSettings]
+	var page listPage[NotificationSettings]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -324,7 +338,7 @@ func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificatio
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -392,7 +406,8 @@ func (s *NotificationsService) GetByScope(ctx context.Context, scope Notificatio
 		if err != nil {
 			return nil, resp, missingFilterObject(err, "user", "product")
 		}
-		for _, n := range list.Results {
+		for i := range list.Results {
+			n := &list.Results[i]
 			if n.User == user && n.Product == product && n.Template == template {
 				found = n
 				ids = append(ids, strconv.Itoa(n.ID))
@@ -521,7 +536,7 @@ func (s *NotificationsService) DeletePreview(ctx context.Context, id int, opt *D
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

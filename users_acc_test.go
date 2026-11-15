@@ -130,7 +130,7 @@ func TestAccUsers(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if !slices.ContainsFunc(preview.Results, func(o *defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
+	if !slices.ContainsFunc(preview.Results, func(o defectdojo.DeletedObject) bool { return o.Model == "Notifications" }) {
 		t.Errorf("DeletePreview() = %+v, want the user's notification settings", preview.Results)
 	}
 

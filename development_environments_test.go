@@ -28,7 +28,7 @@ func TestDevelopmentEnvironmentsService_List(t *testing.T) {
 	if list.Count != 8 || len(list.Results) != 3 {
 		t.Fatalf("List() = %d of %d, want 3 of 8", len(list.Results), list.Count)
 	}
-	if prod := list.Results[2]; *prod != (defectdojo.DevelopmentEnvironment{ID: 3, Name: "Production"}) {
+	if prod := list.Results[2]; prod != (defectdojo.DevelopmentEnvironment{ID: 3, Name: "Production"}) {
 		t.Errorf("third development environment = %+v, want Production", prod)
 	}
 }
@@ -218,7 +218,7 @@ func TestDevelopmentEnvironmentsService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "Development_Environment", ID: 12, Name: "QA"}) {
+	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Development_Environment", ID: 12, Name: "QA"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

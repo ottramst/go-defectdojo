@@ -280,7 +280,7 @@ func TestUsersService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 7 || *preview.Results[4] != (defectdojo.DeletedObject{Model: "Notifications", ID: 11, Name: "Notifications about all projects for Dependency Track (dependency-track)"}) {
+	if preview.Count != 7 || preview.Results[4] != (defectdojo.DeletedObject{Model: "Notifications", ID: 11, Name: "Notifications about all projects for Dependency Track (dependency-track)"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }
@@ -348,7 +348,7 @@ func TestConfigurationPermissionsService_List(t *testing.T) {
 		t.Fatalf("List() error = %v", err)
 	}
 	if list.Count != 52 || len(list.Results) != 3 ||
-		*list.Results[1] != (defectdojo.ConfigurationPermission{ID: 9, Name: "Can add user", Codename: "add_user"}) {
+		list.Results[1] != (defectdojo.ConfigurationPermission{ID: 9, Name: "Can add user", Codename: "add_user"}) {
 		t.Errorf("List() = %d %+v", list.Count, list.Results)
 	}
 }

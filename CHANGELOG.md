@@ -13,6 +13,10 @@ BREAKING CHANGES:
 * `Announcements.List` and `ListAll` take `ListAnnouncementsOptions`, and the product attribute services' take `ListProductAttributesOptions`, instead of `ListOptions` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `Notifications.GetByScope` takes a `NotificationScope{User, Product, Template}` instead of three values ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 * `CICDInfrastructure.GetByName` takes the infrastructure type in `GetCICDInfrastructureByNameOptions.InfrastructureType` instead of a third argument ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* Fields with fixed values have named string types, whose constants are typed too: `AnnouncementStyle`, `BusinessCriticality`, `CICDInfrastructureType`, `EngagementStatus`, `EngagementType`, `NotificationChannel`, `NotificationWebhookStatus` and `RegulationCategory`, and the new `JiraIssueType` (`JiraInstance.DefaultIssueType`) and `Severity` (`SystemSettings.JiraMinimumSeverity`). Untyped constants and literals still work; a `string` variable needs a conversion, such as `defectdojo.EngagementStatus(s)` ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* The notification events are `[]NotificationChannel`, and `NotificationSettings.ScanAddedEmpty` too: `NotificationChannels` is removed, and `NotificationSettings` decodes DefectDojo's single-channel `scan_added_empty` itself ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* Pages hold values: `List…Result.Results` and `DeletePreviewResult.Results` are `[]T` instead of `[]*T`. Use `&page.Results[i]` for a pointer; the `ListAll` iterators still yield pointers ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
+* `JiraProject.ArchiveBatch` is left out of the JSON when empty, like the other `ArchiveBatch` fields ([#30](https://github.com/ottramst/go-defectdojo/issues/30))
 
 FEATURES:
 

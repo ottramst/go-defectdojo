@@ -13,26 +13,37 @@ import (
 	"github.com/ottramst/go-defectdojo"
 )
 
-func TestNotificationChannels_UnmarshalJSON(t *testing.T) {
+// DefectDojo returns scan_added_empty as a list, and as a single channel in
+// the response to a write.
+func TestNotificationSettings_UnmarshalJSON(t *testing.T) {
 	tests := []struct {
 		in   string
-		want defectdojo.NotificationChannels
+		want []defectdojo.NotificationChannel
 	}{
-		{in: `["mail","alert"]`, want: defectdojo.NotificationChannels{"mail", "alert"}},
-		{in: `[]`, want: defectdojo.NotificationChannels{}},
-		{in: `"mail"`, want: defectdojo.NotificationChannels{"mail"}},
-		{in: `""`, want: defectdojo.NotificationChannels{}},
+		{in: `["mail","alert"]`, want: []defectdojo.NotificationChannel{"mail", "alert"}},
+		{in: `[]`, want: []defectdojo.NotificationChannel{}},
+		{in: `"mail"`, want: []defectdojo.NotificationChannel{"mail"}},
+		{in: `""`, want: []defectdojo.NotificationChannel{}},
 		{in: `null`, want: nil},
 	}
 	for _, tt := range tests {
-		var got defectdojo.NotificationChannels
-		if err := json.Unmarshal([]byte(tt.in), &got); err != nil || !reflect.DeepEqual(got, tt.want) {
-			t.Errorf("Unmarshal(%s) = %#v, %v; want %#v", tt.in, got, err, tt.want)
+		var got defectdojo.NotificationSettings
+		data := `{"id":3,"user":2,"product_added":["slack"],"scan_added_empty":` + tt.in + `}`
+		if err := json.Unmarshal([]byte(data), &got); err != nil || !reflect.DeepEqual(got.ScanAddedEmpty, tt.want) {
+			t.Errorf("Unmarshal(%s) ScanAddedEmpty = %#v, %v; want %#v", tt.in, got.ScanAddedEmpty, err, tt.want)
+		}
+		// The other fields decode as usual.
+		if got.ID != 3 || got.User != 2 || !reflect.DeepEqual(got.ProductAdded, []defectdojo.NotificationChannel{"slack"}) {
+			t.Errorf("Unmarshal(%s) = %+v, want ID 3, user 2 and product_added [slack]", tt.in, got)
 		}
 	}
-	var got defectdojo.NotificationChannels
-	if err := json.Unmarshal([]byte(`1`), &got); err == nil {
-		t.Error("Unmarshal(1) error = nil, want error")
+	var got defectdojo.NotificationSettings
+	if err := json.Unmarshal([]byte(`{"scan_added_empty":1}`), &got); err == nil {
+		t.Error("Unmarshal(scan_added_empty 1) error = nil, want error")
+	}
+	// Without scan_added_empty, it stays nil.
+	if err := json.Unmarshal([]byte(`{"id":1}`), &got); err != nil || got.ScanAddedEmpty != nil {
+		t.Errorf("Unmarshal(no scan_added_empty) = %#v, %v; want nil", got.ScanAddedEmpty, err)
 	}
 }
 
@@ -51,7 +62,7 @@ func TestNotificationsService_List(t *testing.T) {
 	if list.Count != 2 || list.Results[0].Product != 0 || list.Results[1].Product != 284 {
 		t.Errorf("List() = %d %+v", list.Count, list.Results)
 	}
-	if got := list.Results[1].ScanAddedEmpty; !reflect.DeepEqual(got, defectdojo.NotificationChannels{"mail"}) {
+	if got := list.Results[1].ScanAddedEmpty; !reflect.DeepEqual(got, []defectdojo.NotificationChannel{"mail"}) {
 		t.Errorf("ScanAddedEmpty = %#v, want [mail]", got)
 	}
 }
@@ -97,10 +108,10 @@ func TestNotificationsService_Get(t *testing.T) {
 		t.Fatalf("Get() error = %v", err)
 	}
 	// The system-wide settings: no user or product, DefectDojo's defaults.
-	alert := []string{"alert"}
+	alert := []defectdojo.NotificationChannel{"alert"}
 	if n.ID != 2 || n.User != 0 || n.Product != 0 || n.Template ||
 		!reflect.DeepEqual(n.ProductTypeAdded, alert) || !reflect.DeepEqual(n.RiskAcceptanceExpiration, alert) ||
-		!reflect.DeepEqual(n.ScanAddedEmpty, defectdojo.NotificationChannels{}) {
+		!reflect.DeepEqual(n.ScanAddedEmpty, []defectdojo.NotificationChannel{}) {
 		t.Errorf("Get() = %+v", n)
 	}
 	if _, _, err := client.Notifications.Get(context.Background(), 5, nil); !errors.Is(err, defectdojo.ErrNotFound) {
@@ -184,14 +195,14 @@ func TestNotificationsService_Create(t *testing.T) {
 	})
 	n, _, err := client.Notifications.Create(context.Background(), &defectdojo.NotificationSettings{
 		ID: 99, User: 1, Product: 284,
-		ProductAdded:   []string{"mail", "alert"},
-		SLABreach:      []string{},
-		ScanAddedEmpty: defectdojo.NotificationChannels{"mail"},
+		ProductAdded:   []defectdojo.NotificationChannel{"mail", "alert"},
+		SLABreach:      []defectdojo.NotificationChannel{},
+		ScanAddedEmpty: []defectdojo.NotificationChannel{"mail"},
 	}, nil)
 	if err != nil {
 		t.Fatalf("Create() error = %v", err)
 	}
-	if n.ID != 35 || !reflect.DeepEqual(n.ScanAddedEmpty, defectdojo.NotificationChannels{"mail"}) || len(n.SLABreach) != 0 {
+	if n.ID != 35 || !reflect.DeepEqual(n.ScanAddedEmpty, []defectdojo.NotificationChannel{"mail"}) || len(n.SLABreach) != 0 {
 		t.Errorf("Create() = %+v", n)
 	}
 }
@@ -205,7 +216,7 @@ func TestNotificationsService_Update(t *testing.T) {
 		{
 			// The scope is always sent, as null when it is zero.
 			name: "system",
-			in:   &defectdojo.NotificationSettings{Other: []string{"mail"}, ScanAddedEmpty: defectdojo.NotificationChannels{}},
+			in:   &defectdojo.NotificationSettings{Other: []defectdojo.NotificationChannel{"mail"}, ScanAddedEmpty: []defectdojo.NotificationChannel{}},
 			want: `{"user":null,"product":null,"template":false,"other":["mail"],"scan_added_empty":""}`,
 		},
 		{
@@ -229,7 +240,7 @@ func TestNotificationsService_Update(t *testing.T) {
 }
 
 func TestNotificationsService_Patch(t *testing.T) {
-	var none []string
+	var none []defectdojo.NotificationChannel
 	tests := []struct {
 		name  string
 		patch *defectdojo.NotificationSettingsPatch
@@ -239,7 +250,7 @@ func TestNotificationsService_Patch(t *testing.T) {
 		{
 			name: "set events",
 			patch: &defectdojo.NotificationSettingsPatch{
-				ProductTypeAdded: new([]string{"slack"}), RiskAcceptanceExpiration: new([]string{}), ScanAddedEmpty: new(""),
+				ProductTypeAdded: new([]defectdojo.NotificationChannel{"slack"}), RiskAcceptanceExpiration: new([]defectdojo.NotificationChannel{}), ScanAddedEmpty: new(defectdojo.NotificationChannel("")),
 			},
 			want: `{"product_type_added":["slack"],"risk_acceptance_expiration":[],"scan_added_empty":""}`,
 		},
@@ -306,7 +317,7 @@ func TestNotificationsService_invalidArguments(t *testing.T) {
 			return err
 		},
 		"Create two scan_added_empty channels": func() error {
-			_, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{ScanAddedEmpty: defectdojo.NotificationChannels{"mail", "alert"}}, nil)
+			_, _, err := client.Notifications.Create(ctx, &defectdojo.NotificationSettings{ScanAddedEmpty: []defectdojo.NotificationChannel{"mail", "alert"}}, nil)
 			return err
 		},
 		"Update zero ID": func() error { _, _, err := client.Notifications.Update(ctx, 0, n, nil); return err },

@@ -108,7 +108,7 @@ type ListUsersOptions struct {
 
 // ListUsersResult is a page of users.
 type ListUsersResult struct {
-	Results []*User
+	Results []User
 
 	// Count is the number of users that match the filters.
 	Count int
@@ -122,7 +122,7 @@ func (s *UsersService) List(ctx context.Context, opt *ListUsersOptions, opts ...
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*User]
+	var page listPage[User]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -147,7 +147,7 @@ func (s *UsersService) ListAll(ctx context.Context, opt *ListUsersOptions, opts 
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -189,7 +189,8 @@ func (s *UsersService) GetByUsername(ctx context.Context, username string, opt *
 		if err != nil {
 			return nil, resp, err
 		}
-		for _, u := range list.Results {
+		for i := range list.Results {
+			u := &list.Results[i]
 			if u.Username == username {
 				return u, resp, nil
 			}
@@ -327,7 +328,7 @@ func (s *UsersService) DeletePreview(ctx context.Context, id int, opt *DeletePre
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

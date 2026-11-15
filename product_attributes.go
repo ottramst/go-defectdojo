@@ -94,7 +94,7 @@ type ListProductAttributesOptions struct {
 
 // ListProductAttributesResult is a page of entries.
 type ListProductAttributesResult struct {
-	Results []*ProductAttribute
+	Results []ProductAttribute
 
 	// Count is the number of entries in the table.
 	Count int
@@ -111,7 +111,7 @@ func (s *ProductAttributesService) List(ctx context.Context, opt *ListProductAtt
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*ProductAttribute]
+	var page listPage[ProductAttribute]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -140,7 +140,7 @@ func (s *ProductAttributesService) ListAll(ctx context.Context, opt *ListProduct
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -189,7 +189,8 @@ func (s *ProductAttributesService) GetByValue(ctx context.Context, value string,
 	if err != nil {
 		return nil, resp, err
 	}
-	for _, a := range list.Results {
+	for i := range list.Results {
+		a := &list.Results[i]
 		if a.Value == value {
 			return a, resp, nil
 		}
@@ -304,7 +305,7 @@ func (s *ProductAttributesService) DeletePreview(ctx context.Context, id int, op
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

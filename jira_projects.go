@@ -101,7 +101,7 @@ type JiraProject struct {
 	// DefectDojo 3.5), and are always zero in the open-source edition. They
 	// are read-only.
 	ArchivedAt   time.Time `json:"archived_at,omitzero"`
-	ArchiveBatch string    `json:"archive_batch"`
+	ArchiveBatch string    `json:"archive_batch,omitempty"`
 }
 
 // UnmarshalJSON decodes a Jira project, with the JSON fields nil, rather than
@@ -256,7 +256,7 @@ type ListJiraProjectsOptions struct {
 
 // ListJiraProjectsResult is a page of Jira projects.
 type ListJiraProjectsResult struct {
-	Results []*JiraProject
+	Results []JiraProject
 
 	// Count is the number of Jira projects that match the filters.
 	Count int
@@ -270,7 +270,7 @@ func (s *JiraProjectsService) List(ctx context.Context, opt *ListJiraProjectsOpt
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*JiraProject]
+	var page listPage[JiraProject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -296,7 +296,7 @@ func (s *JiraProjectsService) ListAll(ctx context.Context, opt *ListJiraProjects
 		if err != nil {
 			return nil, 0, err
 		}
-		return result.Results, result.Count, nil
+		return pointers(result.Results), result.Count, nil
 	})
 }
 
@@ -437,7 +437,7 @@ func (s *JiraProjectsService) DeletePreview(ctx context.Context, id int, opt *De
 	if err != nil {
 		return nil, nil, err
 	}
-	var page listPage[*DeletedObject]
+	var page listPage[DeletedObject]
 	resp, err := s.client.do(ctx, http.MethodGet, path, nil, &page, opts)
 	if err != nil {
 		return nil, resp, err

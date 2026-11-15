@@ -21,7 +21,7 @@ func TestAnnouncementsService_List(t *testing.T) {
 		t.Fatalf("List() error = %v", err)
 	}
 	want := defectdojo.Announcement{ID: 1, Message: "Maintenance on <b>Saturday</b>.", Style: defectdojo.AnnouncementStyleWarning, Dismissable: true}
-	if list.Count != 1 || len(list.Results) != 1 || *list.Results[0] != want {
+	if list.Count != 1 || len(list.Results) != 1 || list.Results[0] != want {
 		t.Errorf("List() = %d %+v, want %+v", list.Count, list.Results, want)
 	}
 }
@@ -170,7 +170,7 @@ func TestAnnouncementsService_Patch(t *testing.T) {
 	}{
 		{name: "empty", patch: &defectdojo.AnnouncementPatch{}, want: `{}`},
 		{name: "dismissable", patch: &defectdojo.AnnouncementPatch{Dismissable: new(false)}, want: `{"dismissable":false}`},
-		{name: "text", patch: &defectdojo.AnnouncementPatch{Message: new("m"), Style: new("info")}, want: `{"message":"m","style":"info"}`},
+		{name: "text", patch: &defectdojo.AnnouncementPatch{Message: new("m"), Style: new(defectdojo.AnnouncementStyle("info"))}, want: `{"message":"m","style":"info"}`},
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {

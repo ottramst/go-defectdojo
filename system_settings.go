@@ -22,6 +22,18 @@ import (
 // DefectDojo API docs: https://docs.defectdojo.com/en/api/api-v2-docs/
 type SystemSettingsService service
 
+// Severity is the severity of a finding.
+type Severity string
+
+// The severities of findings, from the highest.
+const (
+	SeverityCritical Severity = "Critical"
+	SeverityHigh     Severity = "High"
+	SeverityMedium   Severity = "Medium"
+	SeverityLow      Severity = "Low"
+	SeverityInfo     Severity = "Info"
+)
+
 // SystemSettings are DefectDojo's system settings.
 //
 // DefectDojo returns the secrets SlackToken, MSTeamsURL and JiraWebhookSecret
@@ -52,7 +64,7 @@ type SystemSettings struct {
 
 	// JiraMinimumSeverity is the lowest severity of findings that are pushed
 	// to Jira: "Critical", "High", "Medium", "Low", "Info", or "" for all.
-	JiraMinimumSeverity string `json:"jira_minimum_severity"`
+	JiraMinimumSeverity Severity `json:"jira_minimum_severity"`
 
 	// JiraLabels are the labels of new Jira issues, separated by spaces (at
 	// most 200 characters).
@@ -179,13 +191,13 @@ type SystemSettingsPatch struct {
 	MaxDupes            Nullable[int] `json:"max_dupes,omitzero"`
 	EmailFrom           *string       `json:"email_from,omitempty"`
 
-	EnableJira                    *bool            `json:"enable_jira,omitempty"`
-	EnableJiraWebhook             *bool            `json:"enable_jira_web_hook,omitempty"`
-	DisableJiraWebhookSecret      *bool            `json:"disable_jira_webhook_secret,omitempty"`
-	JiraWebhookSecret             Nullable[string] `json:"jira_webhook_secret,omitzero"`
-	JiraMinimumSeverity           Nullable[string] `json:"jira_minimum_severity,omitzero"`
-	JiraLabels                    Nullable[string] `json:"jira_labels,omitzero"`
-	AddVulnerabilityIDToJiraLabel *bool            `json:"add_vulnerability_id_to_jira_label,omitempty"`
+	EnableJira                    *bool              `json:"enable_jira,omitempty"`
+	EnableJiraWebhook             *bool              `json:"enable_jira_web_hook,omitempty"`
+	DisableJiraWebhookSecret      *bool              `json:"disable_jira_webhook_secret,omitempty"`
+	JiraWebhookSecret             Nullable[string]   `json:"jira_webhook_secret,omitzero"`
+	JiraMinimumSeverity           Nullable[Severity] `json:"jira_minimum_severity,omitzero"`
+	JiraLabels                    Nullable[string]   `json:"jira_labels,omitzero"`
+	AddVulnerabilityIDToJiraLabel *bool              `json:"add_vulnerability_id_to_jira_label,omitempty"`
 
 	EnableGitHub *bool `json:"enable_github,omitempty"`
 
@@ -296,7 +308,7 @@ type GetSystemSettingsOptions struct{}
 //
 // DefectDojo API: GET /api/v2/system_settings/
 func (s *SystemSettingsService) Get(ctx context.Context, opt *GetSystemSettingsOptions, opts ...RequestOption) (*SystemSettings, *Response, error) {
-	var page listPage[*SystemSettings]
+	var page listPage[SystemSettings]
 	resp, err := s.client.do(ctx, http.MethodGet, "/api/v2/system_settings/", nil, &page, opts)
 	if err != nil {
 		return nil, resp, err
@@ -304,7 +316,7 @@ func (s *SystemSettingsService) Get(ctx context.Context, opt *GetSystemSettingsO
 	if page.Count != 1 || len(page.Results) != 1 {
 		return nil, resp, fmt.Errorf("defectdojo: expected one system settings object, got %d", page.Count)
 	}
-	return page.Results[0], resp, nil
+	return &page.Results[0], resp, nil
 }
 
 // PatchSystemSettingsOptions are the options of [SystemSettingsService.Patch].

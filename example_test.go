@@ -166,8 +166,8 @@ func ExampleNotificationsService_GetByScope() {
 		log.Fatal(err)
 	}
 	_, _, err = client.Notifications.Patch(ctx, system.ID, &defectdojo.NotificationSettingsPatch{
-		SLABreach:      &[]string{defectdojo.NotificationChannelMail, defectdojo.NotificationChannelAlert},
-		ScanAddedEmpty: new(""), // no channel
+		SLABreach:      &[]defectdojo.NotificationChannel{defectdojo.NotificationChannelMail, defectdojo.NotificationChannelAlert},
+		ScanAddedEmpty: new(defectdojo.NotificationChannel("")), // no channel
 	}, nil)
 	if err != nil {
 		log.Fatal(err)

@@ -203,7 +203,7 @@ func TestNoteTypesService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 7 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "Note_Type", ID: 5, Name: "Code Review"}) {
+	if preview.Count != 7 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Note_Type", ID: 5, Name: "Code Review"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results[0])
 	}
 }

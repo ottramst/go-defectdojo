@@ -207,7 +207,7 @@ func TestRegulationsService_Patch(t *testing.T) {
 		{name: "clear", patch: &defectdojo.RegulationPatch{Description: new(""), Reference: new("")}, want: `{"description":"","reference":""}`},
 		{
 			name:  "set fields",
-			patch: &defectdojo.RegulationPatch{Acronym: new("A"), Category: new("medical"), Jurisdiction: new("J")},
+			patch: &defectdojo.RegulationPatch{Acronym: new("A"), Category: new(defectdojo.RegulationCategory("medical")), Jurisdiction: new("J")},
 			want:  `{"acronym":"A","category":"medical","jurisdiction":"J"}`,
 		},
 	}
@@ -249,7 +249,7 @@ func TestRegulationsService_DeletePreview(t *testing.T) {
 	if err != nil {
 		t.Fatalf("DeletePreview() error = %v", err)
 	}
-	if preview.Count != 1 || *preview.Results[0] != (defectdojo.DeletedObject{Model: "Regulation", ID: 29, Name: "GDPR-T (European Union)"}) {
+	if preview.Count != 1 || preview.Results[0] != (defectdojo.DeletedObject{Model: "Regulation", ID: 29, Name: "GDPR-T (European Union)"}) {
 		t.Errorf("DeletePreview() = %d %+v", preview.Count, preview.Results)
 	}
 }

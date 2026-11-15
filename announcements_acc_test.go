@@ -61,13 +61,13 @@ func TestAccAnnouncements(t *testing.T) {
 	if err != nil || updated.Style != "danger" || updated.Dismissable {
 		t.Errorf("Update(no style) = %+v, %v; want the style kept", updated, err)
 	}
-	patched, _, err := client.Announcements.Patch(ctx, 1, &defectdojo.AnnouncementPatch{Style: new("success")}, nil)
+	patched, _, err := client.Announcements.Patch(ctx, 1, &defectdojo.AnnouncementPatch{Style: new(defectdojo.AnnouncementStyle("success"))}, nil)
 	if err != nil || patched.Style != "success" || patched.Message != "Updated again" {
 		t.Errorf("Patch() = %+v, %v; want the new style and the message kept", patched, err)
 	}
 	for name, patch := range map[string]*defectdojo.AnnouncementPatch{
 		"empty message": {Message: new("")},
-		"unknown style": {Style: new("Info")},
+		"unknown style": {Style: new(defectdojo.AnnouncementStyle("Info"))},
 	} {
 		if _, _, err := client.Announcements.Patch(ctx, 1, patch, nil); !errors.Is(err, defectdojo.ErrBadRequest) {
 			t.Errorf("Patch(%s) error = %v, want ErrBadRequest", name, err)
