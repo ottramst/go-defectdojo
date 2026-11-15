@@ -1,0 +1,17 @@
+{
+  "count": 2,
+  "next": null,
+  "previous": null,
+  "results": [
+    {
+      "model": "Announcement",
+      "id": 1,
+      "name": "Announcement object (1)"
+    },
+    {
+      "model": "UserAnnouncement",
+      "id": 7,
+      "name": "UserAnnouncement object (7)"
+    }
+  ]
+}
