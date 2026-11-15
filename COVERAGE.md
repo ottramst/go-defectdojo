@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**80 of 404 endpoints implemented.**
+**87 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -41,7 +41,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [location_products](#location_products) | 0 / 7 |
 | [metadata](#metadata) | 0 / 9 |
 | [network_locations](#network_locations) | 0 / 7 |
-| [note_type](#note_type) | 0 / 7 |
+| [note_type](#note_type) | 7 / 7 |
 | [notes](#notes) | 0 / 4 |
 | [notification_webhooks](#notification_webhooks) | 7 / 7 |
 | [notifications](#notifications) | 7 / 7 |
@@ -430,13 +430,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/note_type/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/note_type/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/note_type/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/note_type/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/note_type/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/note_type/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/note_type/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/note_type/` | ✅ | ✅ | `NoteTypesService.List` |  |
+| POST | `/api/v2/note_type/` | ✅ | ✅ | `NoteTypesService.Create` |  |
+| GET | `/api/v2/note_type/{id}/` | ✅ | ✅ | `NoteTypesService.Get` |  |
+| PUT | `/api/v2/note_type/{id}/` | ✅ | ✅ | `NoteTypesService.Update` |  |
+| PATCH | `/api/v2/note_type/{id}/` | ✅ | ✅ | `NoteTypesService.Patch` |  |
+| DELETE | `/api/v2/note_type/{id}/` | ✅ | ✅ | `NoteTypesService.Delete` |  |
+| GET | `/api/v2/note_type/{id}/delete_preview/` | ✅ | ✅ | `NoteTypesService.DeletePreview` |  |
 
 ## notes
 
