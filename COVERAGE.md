@@ -6,7 +6,7 @@ Endpoints of the DefectDojo API v2 OpenAPI schemas (3.4.304, 3.5.103) and the go
 
 Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo releases](https://github.com/DefectDojo/django-DefectDojo/releases), generated from DefectDojo, licensed under the [BSD 3-Clause License](https://github.com/DefectDojo/django-DefectDojo/blob/master/LICENSE.md).
 
-**87 of 404 endpoints implemented.**
+**94 of 404 endpoints implemented.**
 
 | Area | Implemented |
 |---|---|
@@ -18,7 +18,7 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 | [celery](#celery) | 0 / 4 |
 | [cicd_infrastructure](#cicd_infrastructure) | 0 / 7 |
 | [configuration_permissions](#configuration_permissions) | 2 / 2 |
-| [development_environments](#development_environments) | 0 / 7 |
+| [development_environments](#development_environments) | 7 / 7 |
 | [endpoint_meta_import](#endpoint_meta_import) | 0 / 1 |
 | [endpoint_status](#endpoint_status) | 0 / 2 |
 | [endpoints](#endpoints) | 0 / 3 |
@@ -154,13 +154,13 @@ Endpoint data comes from the `oas.json` schemas attached to the [DefectDojo rele
 
 | Method | Path | 3.4.304 | 3.5.103 | go-defectdojo | Notes |
 |---|---|:-:|:-:|---|---|
-| GET | `/api/v2/development_environments/` | ✅ | ✅ |  |  |
-| POST | `/api/v2/development_environments/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/development_environments/{id}/` | ✅ | ✅ |  |  |
-| PUT | `/api/v2/development_environments/{id}/` | ✅ | ✅ |  |  |
-| PATCH | `/api/v2/development_environments/{id}/` | ✅ | ✅ |  |  |
-| DELETE | `/api/v2/development_environments/{id}/` | ✅ | ✅ |  |  |
-| GET | `/api/v2/development_environments/{id}/delete_preview/` | ✅ | ✅ |  |  |
+| GET | `/api/v2/development_environments/` | ✅ | ✅ | `DevelopmentEnvironmentsService.List` |  |
+| POST | `/api/v2/development_environments/` | ✅ | ✅ | `DevelopmentEnvironmentsService.Create` |  |
+| GET | `/api/v2/development_environments/{id}/` | ✅ | ✅ | `DevelopmentEnvironmentsService.Get` |  |
+| PUT | `/api/v2/development_environments/{id}/` | ✅ | ✅ | `DevelopmentEnvironmentsService.Update` |  |
+| PATCH | `/api/v2/development_environments/{id}/` | ✅ | ✅ | `DevelopmentEnvironmentsService.Patch` |  |
+| DELETE | `/api/v2/development_environments/{id}/` | ✅ | ✅ | `DevelopmentEnvironmentsService.Delete` |  |
+| GET | `/api/v2/development_environments/{id}/delete_preview/` | ✅ | ✅ | `DevelopmentEnvironmentsService.DeletePreview` |  |
 
 ## endpoint_meta_import
 

@@ -245,8 +245,9 @@ func (s *NoteTypesService) Delete(ctx context.Context, id int, opts ...RequestOp
 
 // DeletePreview returns a page of the objects that deleting the note type
 // would remove: the note type itself, its notes ("Notes"), their history
-// ("Notes_history", "NoteHistory") and their links to findings, tests and
-// engagements ("Test_notes" and the like).
+// links ("Notes_history"), history rows of the type ("NoteHistory", from UI
+// edits; they can belong to notes of another type) and their links to
+// findings, tests and engagements ("Test_notes" and the like).
 //
 // DefectDojo API: GET /api/v2/note_type/{id}/delete_preview/
 func (s *NoteTypesService) DeletePreview(ctx context.Context, id int, opt *ListOptions, opts ...RequestOption) (*DeletePreviewList, *Response, error) {
