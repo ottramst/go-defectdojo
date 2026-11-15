@@ -164,7 +164,7 @@ func (s *CICDInfrastructureService) Get(ctx context.Context, id int, opts ...Req
 // name and type. Names are unique within a type; with an empty
 // infrastructureType, any type matches, and several matches are an error
 // naming their IDs. It returns an error matching [ErrNotFound] when there is
-// none.
+// none, and a 400 ([ErrBadRequest]) for an unknown infrastructureType.
 func (s *CICDInfrastructureService) GetByName(ctx context.Context, name, infrastructureType string, opts ...RequestOption) (*CICDInfrastructure, *Response, error) {
 	if name == "" {
 		return nil, nil, errors.New("defectdojo: CI/CD infrastructure name must not be empty")
@@ -219,8 +219,8 @@ func (s *CICDInfrastructureService) Create(ctx context.Context, ci *CICDInfrastr
 
 // Update replaces the writable fields of the CI/CD infrastructure object with
 // the given ID: an empty Description or URL clears it. InfrastructureType must
-// be set, as DefectDojo requires it, but DefectDojo ignores it: set it to the
-// current type. A name that another object of the type has is a 409
+// be set (the schema requires it), but DefectDojo ignores it on an existing
+// object: set it to the current type. A name that another object of the type has is a 409
 // ([ErrConflict]), not the 400 of [CICDInfrastructureService.Create].
 //
 // DefectDojo API: PUT /api/v2/cicd_infrastructure/{id}/

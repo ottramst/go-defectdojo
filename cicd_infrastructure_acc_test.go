@@ -58,6 +58,27 @@ func TestAccCICDInfrastructure(t *testing.T) {
 		t.Errorf("Create(unknown type) error = %v, want ErrBadRequest", err)
 	}
 
+	list, _, err := client.CICDInfrastructure.List(ctx, &defectdojo.ListCICDInfrastructureOptions{Name: name, InfrastructureType: "scm_server"})
+	if err != nil || list.Count != 1 || list.CICDInfrastructure[0].ID != scm.ID {
+		t.Errorf("List(name, scm_server) = %+v, %v; want the SCM server", list, err)
+	}
+	n := 0
+	for ci, err := range client.CICDInfrastructure.ListAll(ctx, &defectdojo.ListCICDInfrastructureOptions{Name: name}) {
+		if err != nil {
+			t.Fatalf("ListAll() error = %v", err)
+		}
+		if ci.ID != scm.ID && ci.ID != build.ID {
+			t.Errorf("ListAll(name) yielded %+v", ci)
+		}
+		n++
+	}
+	if n != 2 {
+		t.Errorf("ListAll(name) yielded %d objects, want the SCM and build servers", n)
+	}
+	if _, _, err := client.CICDInfrastructure.GetByName(ctx, name, "bogus"); !errors.Is(err, defectdojo.ErrBadRequest) {
+		t.Errorf("GetByName(unknown type) error = %v, want ErrBadRequest", err)
+	}
+
 	got, _, err := client.CICDInfrastructure.Get(ctx, scm.ID)
 	if err != nil || *got != want {
 		t.Errorf("Get() = %+v, %v; want %+v", got, err, want)
@@ -87,10 +108,11 @@ func TestAccCICDInfrastructure(t *testing.T) {
 	if err != nil || patched.Name != name || patched.URL != "https://git.example.com" {
 		t.Errorf("Patch() = %+v, %v; want the name and URL", patched, err)
 	}
-	// Renaming onto a name of the same type is a 409.
+	// Renaming an object to its own name is fine.
 	if _, _, err := client.CICDInfrastructure.Patch(ctx, orchestration.ID, &defectdojo.CICDInfrastructurePatch{Name: new(name + "-k8s")}); err != nil {
 		t.Fatalf("Patch(same name) error = %v", err)
 	}
+	// Renaming onto a name another object of the type has is a 409.
 	other := create(&defectdojo.CICDInfrastructure{Name: name + "-other", InfrastructureType: "scm_server"})
 	if _, _, err := client.CICDInfrastructure.Patch(ctx, other.ID, &defectdojo.CICDInfrastructurePatch{Name: new(name)}); !errors.Is(err, defectdojo.ErrConflict) {
 		t.Errorf("Patch(taken name) error = %v, want ErrConflict", err)

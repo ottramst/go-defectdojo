@@ -244,6 +244,7 @@ func checkContract(t contractReporter, spec *openAPISpec, c contract, version st
 	schema, ok := spec.Components.Schemas[c.schema]
 	if !ok {
 		t.Fatalf("schema %s does not exist", c.schema)
+		return
 	}
 	typ := reflect.TypeOf(c.value)
 	sent := make(map[string]bool)
