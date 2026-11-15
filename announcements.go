@@ -81,7 +81,8 @@ type ListAnnouncementsOptions struct {
 	// Message filters by exact message.
 	Message string `url:"message,omitempty"`
 
-	// Style filters by style, one of the AnnouncementStyle constants.
+	// Style filters by style, one of the AnnouncementStyle constants. An
+	// unknown style is a 400 ([ErrBadRequest]).
 	Style string `url:"style,omitempty"`
 
 	// Dismissable filters by whether users can dismiss the announcement.
@@ -133,12 +134,12 @@ func (s *AnnouncementsService) ListAll(ctx context.Context, opt *ListAnnouncemen
 	})
 }
 
-// GetCurrentAnnouncementOptions are the options of [AnnouncementsService.Current].
-type GetCurrentAnnouncementOptions struct{}
+// CurrentAnnouncementOptions are the options of [AnnouncementsService.Current].
+type CurrentAnnouncementOptions struct{}
 
 // Current returns the announcement. It returns an error matching
 // [ErrNotFound] when there is none.
-func (s *AnnouncementsService) Current(ctx context.Context, opt *GetCurrentAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
+func (s *AnnouncementsService) Current(ctx context.Context, opt *CurrentAnnouncementOptions, opts ...RequestOption) (*Announcement, *Response, error) {
 	list, resp, err := s.List(ctx, nil, opts...)
 	if err != nil {
 		return nil, resp, err

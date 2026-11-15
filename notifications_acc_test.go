@@ -131,7 +131,7 @@ func TestAccNotifications_product(t *testing.T) {
 	}
 
 	found := false
-	for n, err := range client.Notifications.ListAll(ctx, &defectdojo.ListNotificationsOptions{Product: product.ID}) {
+	for n, err := range client.Notifications.ListAll(ctx, &defectdojo.ListNotificationSettingsOptions{Product: product.ID}) {
 		if err != nil {
 			t.Fatalf("ListAll() error = %v", err)
 		}

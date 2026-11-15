@@ -42,7 +42,7 @@ func TestNotificationsService_List(t *testing.T) {
 		testQuery(t, r, "limit=2&product=284&template=false&user=1")
 		writeJSON(t, w, http.StatusOK, fixture(t, "notifications/list.json"))
 	})
-	list, _, err := client.Notifications.List(context.Background(), &defectdojo.ListNotificationsOptions{
+	list, _, err := client.Notifications.List(context.Background(), &defectdojo.ListNotificationSettingsOptions{
 		ListOptions: defectdojo.ListOptions{Limit: 2}, User: 1, Product: 284, Template: new(false),
 	})
 	if err != nil {
@@ -70,7 +70,7 @@ func TestNotificationsService_ListAll(t *testing.T) {
 		}
 	})
 	var ids []int
-	for n, err := range client.Notifications.ListAll(context.Background(), &defectdojo.ListNotificationsOptions{
+	for n, err := range client.Notifications.ListAll(context.Background(), &defectdojo.ListNotificationSettingsOptions{
 		ListOptions: defectdojo.ListOptions{Limit: 1}, Template: new(true),
 	}) {
 		if err != nil {

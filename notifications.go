@@ -269,9 +269,9 @@ func (patch *NotificationSettingsPatch) normalized() *NotificationSettingsPatch 
 	return &p
 }
 
-// ListNotificationsOptions are the options of [NotificationsService.List] and
+// ListNotificationSettingsOptions are the options of [NotificationsService.List] and
 // [NotificationsService.ListAll].
-type ListNotificationsOptions struct {
+type ListNotificationSettingsOptions struct {
 	ListOptions
 
 	// User and Product filter by ID. An ID that doesn't exist is a 400
@@ -283,8 +283,8 @@ type ListNotificationsOptions struct {
 	Template *bool `url:"template,omitempty"`
 }
 
-// ListNotificationsResult is a page of notification settings.
-type ListNotificationsResult struct {
+// ListNotificationSettingsResult is a page of notification settings.
+type ListNotificationSettingsResult struct {
 	Results []*NotificationSettings
 
 	// Count is the number of rows that match the filters.
@@ -294,7 +294,7 @@ type ListNotificationsResult struct {
 // List returns a page of notification settings, ordered by ID.
 //
 // DefectDojo API: GET /api/v2/notifications/
-func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationsOptions, opts ...RequestOption) (*ListNotificationsResult, *Response, error) {
+func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationSettingsOptions, opts ...RequestOption) (*ListNotificationSettingsResult, *Response, error) {
 	path, err := addQuery("/api/v2/notifications/", opt)
 	if err != nil {
 		return nil, nil, err
@@ -304,7 +304,7 @@ func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationsO
 	if err != nil {
 		return nil, resp, err
 	}
-	return &ListNotificationsResult{Results: page.Results, Count: page.Count}, resp, nil
+	return &ListNotificationSettingsResult{Results: page.Results, Count: page.Count}, resp, nil
 }
 
 // ListAll returns an iterator over the notification settings, starting at
@@ -312,8 +312,8 @@ func (s *NotificationsService) List(ctx context.Context, opt *ListNotificationsO
 //
 // Ranging over the iterator again starts over. On an error, the iterator
 // yields it once and stops.
-func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificationsOptions, opts ...RequestOption) iter.Seq2[*NotificationSettings, error] {
-	base := ListNotificationsOptions{}
+func (s *NotificationsService) ListAll(ctx context.Context, opt *ListNotificationSettingsOptions, opts ...RequestOption) iter.Seq2[*NotificationSettings, error] {
+	base := ListNotificationSettingsOptions{}
 	if opt != nil {
 		base = *opt
 	}
@@ -380,7 +380,7 @@ func (s *NotificationsService) GetByScope(ctx context.Context, scope Notificatio
 	if template && (user != 0 || product != 0) {
 		return nil, nil, errors.New("defectdojo: the notification settings template has no user or product")
 	}
-	listOpt := &ListNotificationsOptions{ListOptions: ListOptions{Limit: 100}, User: user, Product: product, Template: &template}
+	listOpt := &ListNotificationSettingsOptions{ListOptions: ListOptions{Limit: 100}, User: user, Product: product, Template: &template}
 	var (
 		found *NotificationSettings
 		ids   []string

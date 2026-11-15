@@ -26,6 +26,22 @@ func TestAnnouncementsService_List(t *testing.T) {
 	}
 }
 
+func TestAnnouncementsService_List_filters(t *testing.T) {
+	mux, client := setup(t)
+	mux.HandleFunc("GET /api/v2/announcements/", func(w http.ResponseWriter, r *http.Request) {
+		testQuery(t, r, "dismissable=false&message=Maintenance+on+Saturday&style=warning")
+		writeJSON(t, w, http.StatusOK, []byte(`{"count":0,"results":[]}`))
+	})
+	_, _, err := client.Announcements.List(context.Background(), &defectdojo.ListAnnouncementsOptions{
+		Message:     "Maintenance on Saturday",
+		Style:       defectdojo.AnnouncementStyleWarning,
+		Dismissable: new(false),
+	})
+	if err != nil {
+		t.Fatalf("List() error = %v", err)
+	}
+}
+
 func TestAnnouncementsService_ListAll(t *testing.T) {
 	mux, client := setup(t)
 	mux.HandleFunc("GET /api/v2/announcements/", func(w http.ResponseWriter, r *http.Request) {
