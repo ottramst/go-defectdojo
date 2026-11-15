@@ -212,7 +212,7 @@ func TestNoteTypesService_CountNotes(t *testing.T) {
 	t.Run("fixture", func(t *testing.T) {
 		mux, client := setup(t)
 		mux.HandleFunc("GET /api/v2/note_type/5/delete_preview/", func(w http.ResponseWriter, r *http.Request) {
-			testQuery(t, r, "limit=100")
+			testQuery(t, r, "limit=250")
 			writeJSON(t, w, http.StatusOK, fixture(t, "note_types/delete_preview.json"))
 		})
 		// Two notes, with the note type, their history and their test links.
@@ -225,14 +225,16 @@ func TestNoteTypesService_CountNotes(t *testing.T) {
 		mux.HandleFunc("GET /api/v2/note_type/5/delete_preview/", func(w http.ResponseWriter, r *http.Request) {
 			switch r.URL.Query().Get("offset") {
 			case "":
-				testQuery(t, r, "limit=100")
+				testQuery(t, r, "limit=250")
 				results := `{"model":"Note_Type","id":5,"name":"x"}`
 				for i := range 99 {
 					results += fmt.Sprintf(`,{"model":"Notes","id":%d,"name":"n"}`, i+1)
 				}
 				writeJSON(t, w, http.StatusOK, []byte(`{"count":102,"results":[`+results+`]}`))
 			case "100":
-				testQuery(t, r, "limit=100&offset=100")
+				// A server that caps the page size: the next page starts
+				// after the entries it returned.
+				testQuery(t, r, "limit=250&offset=100")
 				writeJSON(t, w, http.StatusOK, []byte(`{"count":102,"results":[{"model":"Notes","id":100,"name":"n"},{"model":"Test_notes","id":1,"name":"t"}]}`))
 			default:
 				t.Errorf("unexpected query %q", r.URL.RawQuery)

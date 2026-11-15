@@ -33,9 +33,9 @@ type NoteType struct {
 	// IsActive offers the type for new notes. DefectDojo defaults it to true.
 	IsActive bool `json:"is_active"`
 
-	// IsMandatory, on an active type, keeps the UI from closing findings,
-	// tests and products until they have a note of the type. DefectDojo
-	// defaults it to true.
+	// IsMandatory, on an active type, keeps the UI from closing a finding,
+	// or setting it inactive or false positive, until it has a note of the
+	// type. DefectDojo defaults it to true.
 	IsMandatory bool `json:"is_mandatory"`
 }
 
@@ -276,7 +276,9 @@ func (s *NoteTypesService) CountNotes(ctx context.Context, id int, opts ...Reque
 	if err := requirePositive("note type ID", id); err != nil {
 		return 0, nil, err
 	}
-	opt := &ListOptions{Limit: 100}
+	// DefectDojo 3.4 builds the whole preview for every page, so ask for
+	// large pages; 3.5 caps them at 250.
+	opt := &ListOptions{Limit: 250}
 	count := 0
 	for {
 		page, resp, err := s.DeletePreview(ctx, id, opt, opts...)
